@@ -1,7 +1,8 @@
 <script>
-  import { data, addDbCallback, getFromDb } from "./db";
-
-  addDbCallback(() => {
-    console.log($data);
-  })
+  import { data, addDbCallback, getFromDb, isLoggedIn } from "./db";
+  import LogIn from "./lib/LogIn.svelte";
 </script>
+
+{#if !isLoggedIn()}
+  <LogIn />
+{/if}
