@@ -1,99 +1,140 @@
 <script>
-    import { login, createUser } from "../db";
+    import {
+        signInWithEmailAndPassword,
+        createUserWithEmailAndPassword,
+        setPersistence,
+        browserLocalPersistence,
+    } from "firebase/auth";
+    import { auth, authWritable } from "../db";
 
-    async function logIn() {
+    function logIn() {
         let email = document.getElementById("email")["value"];
         let password = document.getElementById("password")["value"];
-        let passwordConfirm = document.getElementById("confirmPassword")["value"];
 
-        if (password == passwordConfirm) {
-            let result = await login(email, password);
-            console.log(result);
-        } else {
-            alert("The passwords must match.");
-        }
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Nothing
+            })
+            .catch((error) => {
+                error = error.code;
+                if (error == "auth/user-not-found") {
+                    alert("User not found.");
+                } else if (error == "auth/wrong-password") {
+                    alert("Wrong password.");
+                } else {
+                    alert("An error has occured.");
+                }
+            });
+        authWritable.set(auth);
     }
 
-    async function signUp() {
+    function signUp() {
         let email = document.getElementById("email")["value"];
         let password = document.getElementById("password")["value"];
-        let passwordConfirm = document.getElementById("confirmPassword")["value"];
 
-        if (password == passwordConfirm) {
-            let result = await createUser(email, password);
-        } else {
-            alert("The passwords must match.");
-        }
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Nothing
+            })
+            .catch((error) => {
+                error = error.code;
+                console.log(error);
+                if (error == "auth/weak-password") {
+                    alert("The password is too weak.");
+                } else if (error == "auth/email-already-in-use") {
+                    alert("This email is already in use.");
+                } else {
+                    alert("An error has occured.");
+                }
+            });
+        authWritable.set(auth);
     }
 </script>
 
 <div id="mainPage">
     <p id="title">Sign In</p>
-    <div id="inputs">
-        <input type="email" placeholder="Email" id="email" />
-        <input type="password" placeholder="Password" id="password" />
-        <input
-            type="password"
-            placeholder="Confirm Password"
-            id="confirmPassword"
-        />
-    </div>
-    <div id="buttons">
-        <button on:click={logIn}>Log In</button>
-        <button on:click={signUp}>Sign Up</button>
+    <div id="inputsAndButtonsFlex">
+        <div id="inputs">
+            <input type="email" placeholder="Email" id="email" />
+            <input type="password" placeholder="Password" id="password" />
+        </div>
+        <div id="buttons">
+            <button on:click={logIn}>Log In</button>
+            <button on:click={signUp}>Sign Up</button>
+        </div>
     </div>
 </div>
 
 <style>
     #mainPage {
-        display: block;
+        display: absolute;
         margin-left: auto;
         margin-right: auto;
-        width: 75vw;
-        height: 75vh;
+        width: 90vmin;
+        height: 100vmin;
         background-color: #d4d4d4;
         border-radius: 10px;
-        margin-top: -10vh;
+        position: absolute;
+        left: 50%;
+        top: 0;
+        transform: translateX(-50%) translateY(5vmin);
     }
 
     #title {
         font-size: 5vw;
         text-align: center;
         font-weight: bold;
+        padding-top: 1vh;
+        margin-bottom: 0;
     }
 
     input {
         display: block;
         margin-left: auto;
         margin-right: auto;
-        width: 50vw;
-        height: 5vh;
+        width: 50vmin;
+        height: 5vmin;
         border-radius: 10px;
-        margin-top: 5vh;
-        font-size: 4vw;
+        font-size: 3vw;
         text-align: center;
+        margin-bottom: 10px;
     }
 
     button {
         display: block;
         margin-left: auto;
         margin-right: auto;
-        width: 50vw;
-        height: 5vh;
+        width: 50vmin;
+        height: 8vmin;
         border-radius: 10px;
-        margin-top: 5vh;
-        font-size: 4vh;
+        font-size: 4vmin;
         text-align: center;
-        padding-top: 0vh;
+        margin-bottom: 10px;
+        /* Vertically align text */
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
-    #inputs{
+    #inputs {
         display: flex;
         flex-direction: column;
+        justify-content: space-evenly;
+        height: 10vh;
     }
 
-    #buttons{
+    #buttons {
         display: flex;
         flex-direction: column;
+        justify-content: space-evenly;
+        margin: 5vw;
+        height: 10vh;
+    }
+
+    #inputsAndButtonsFlex {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        height: 100%;
     }
 </style>
