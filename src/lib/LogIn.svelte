@@ -2,10 +2,9 @@
     import {
         signInWithEmailAndPassword,
         createUserWithEmailAndPassword,
-        setPersistence,
-        browserLocalPersistence,
     } from "firebase/auth";
-    import { auth, authWritable } from "../db";
+    import { auth, authWritable, userId, setToDb } from "../db";
+    import { writable } from "svelte/store";
 
     function logIn() {
         let email = document.getElementById("email")["value"];
@@ -13,7 +12,7 @@
 
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
-                // Nothing
+                userId.set(userCredential.user.uid);
             })
             .catch((error) => {
                 error = error.code;
@@ -34,11 +33,11 @@
 
         createUserWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
-                // Nothing
+                userId.set(userCredential.user.uid);
+                setToDb(`users/${userCredential.user.uid}`, { email: email });
             })
             .catch((error) => {
                 error = error.code;
-                console.log(error);
                 if (error == "auth/weak-password") {
                     alert("The password is too weak.");
                 } else if (error == "auth/email-already-in-use") {

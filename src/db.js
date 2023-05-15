@@ -30,30 +30,27 @@ onAuthStateChanged(auth, (user) => {
     authWritable.set(auth);
 });
 
-export let data = writable({});
-let dbCallbacks = []
-onValue(ref(db, "a"), (snapshot) => {
-    data.set(snapshot.val());
-    for (let i = 0; i < dbCallbacks.length; i++) {
-        dbCallbacks[i]()
-    }
-});
+export let userId = writable()
+export let userData = writable();
 
-export function addDbCallback(callback) {
-    dbCallbacks.push(callback)
-}
+authWritable.subscribe((value) => {
+    if(value == undefined) return;
+    userId.set(value.currentUser?.uid)
+})
 
-export function getFromDb(path) {
-    get(child(ref(db), path)).then((snapshot) => {
-        return snapshot.val()
+userId.subscribe(async (value) => {
+    if(value == undefined) return;
+    userData.set(await getFromDb(`users/${value}`))
+})
+
+export async function getFromDb(path) {
+    let value;
+    await get(child(ref(db), path)).then((snapshot) => {
+        value = snapshot.val()
     })
+    return value;
 }
 
 export function setToDb(path, data) {
     set(ref(db, path), data);
-}
-
-// Check if user is logged in
-export function isLoggedIn() {
-    return auth.currentUser != null;
 }
