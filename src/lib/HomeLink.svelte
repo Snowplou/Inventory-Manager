@@ -1,23 +1,20 @@
-<!-- Sign Out button floating on the top right of the screen -->
 <script>
-    import { auth } from "../db.js";
-
-    function signOut() {
-        auth.signOut();
-    }
+    import { pageState } from "../db";
 </script>
 
-<button on:click={signOut}>Sign Out</button>
+<button on:click={() => pageState.set("home")}>
+    Home
+</button>
 
 <style>
     button {
         position: absolute;
         top: 0;
-        right: 0;
+        left: 0;
         background-color: #d4d4d4;
         border-radius: 10px;
         margin-top: 1vh;
-        margin-right: 1vw;
+        margin-left: 1vw;
         font-size: 4vmin;
         width: 20vw;
         height: 10vh;
