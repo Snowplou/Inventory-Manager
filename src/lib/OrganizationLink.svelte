@@ -2,7 +2,7 @@
     import { pageState } from "../db";
 
     function clicked(elm){
-        pageState.set("organizations")        
+        pageState.set("organizations")
     }
 </script>
 
