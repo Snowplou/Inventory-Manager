@@ -4,6 +4,8 @@
 
     function signOut() {
         auth.signOut();
+        // Refresh the page
+        location.reload();
     }
 </script>
 

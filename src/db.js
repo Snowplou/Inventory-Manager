@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getDatabase, ref, onValue, child, get, set } from "firebase/database";
 import { writable } from "svelte/store";
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "firebase/auth";
+import { get as writeableGet } from "svelte/store";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -36,13 +37,17 @@ export let userId = writable()
 export let userData = writable();
 
 authWritable.subscribe((value) => {
-    if(value == undefined) return;
+    if (value == undefined) return;
     userId.set(value.currentUser?.uid)
 })
 
 userId.subscribe(async (value) => {
-    if(value == undefined) return;
-    userData.set(await getFromDb(`users/${value}`))
+    if (value == undefined) return;
+    // userData.set(await getFromDb(`users/${value}`))
+    // Update userData whenever the firebase `users/${userId}` changes
+    onValue(ref(db, `users/${writeableGet(userId)}`), (snapshot) => {
+        userData.set(snapshot.val());
+    });
 })
 
 export async function getFromDb(path) {

@@ -24,7 +24,7 @@
       </div>
     {:else if $pageState == "teams"}
       <Teams />
-    {:else if $pageState == "organization"}
+    {:else if $pageState == "organizations"}
       <Organizations />
     {/if}
   {/if}
