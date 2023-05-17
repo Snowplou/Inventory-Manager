@@ -1,5 +1,5 @@
 <script>
-    import { userData, getFromDb, setToDb } from "../db";
+    import { userData, userId, getFromDb, setToDb } from "../db";
     let organizationSelected = $userData.organizations[0].name;
 
     function organizationClicked(name) {
@@ -18,7 +18,10 @@
                 return;
             }
         }
-        console.log(name);
+        let organization = {name: name, teams: [], owner: $userData.email}
+        setToDb(`organizations/${organizations.length}`, organization);
+        organization = {name: name}
+        setToDb(`users/${$userId}/organizations/${$userData.organizations.length}`, organization);
     }
 </script>
 
