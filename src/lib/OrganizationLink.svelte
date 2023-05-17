@@ -2,20 +2,7 @@
     import { pageState } from "../db";
 
     function clicked(elm){
-        // pageState.set("organizations")
-
-        // Translate element down
-        let amount = 0;
-        let interval = setInterval(() => {
-            elm.style.transform = `translateY(${amount}vh)`;
-            amount++;
-            if(amount >= 75){
-                // Delete elm
-                elm.remove();
-                clearInterval(interval)
-            }
-        }, 10);
-        
+        pageState.set("organizations")        
     }
 </script>
 
