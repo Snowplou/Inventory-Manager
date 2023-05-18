@@ -1,6 +1,6 @@
 <script>
     import { userData, userId, organizations, getFromDb, setToDb } from "../db";
-    let organizationSelected = ""
+    let organizationSelected = "a"
 
     function organizationClicked(name) {
         organizationSelected = name;
@@ -27,6 +27,14 @@
             `users/${$userId}/organizations/${$userData.organizations.length}`,
             organization2
         );
+    }
+
+    async function memberButton(elm) {
+        let email = elm.target.parentNode.children[0].value;
+        if (email == "") {
+            return;
+        }
+        
     }
 </script>
 
@@ -70,7 +78,19 @@
 
 {#if organizationSelected}
     <div id="organizationInfo">
-        <p>{organizationSelected}</p>
+        <p id="organtizationTitle">{organizationSelected}</p>
+    </div>
+    <div id="newMember">
+        <input
+            type="text"
+            maxlength="100"
+            id="newMemberInput"
+            placeholder="New Member"
+        />
+        <button
+            id="newMemberButton"
+            on:click={(elm) => organizationButton(elm)}>Add</button
+        >
     </div>
 {/if}
 
@@ -79,13 +99,61 @@
         position: absolute;
         right: 2vw;
         top: 15vh;
-        width: 35vw;
+        width: 36vw;
         overflow-y: scroll;
         text-align: left;
         background-color: #007bff;
         border-radius: 10px;
-        padding-left: 5px;
         height: 72vh;
+    }
+
+    #organtizationTitle {
+        text-align: center;
+        font-size: 4vh;
+        font-weight: bold;
+        margin-top: 0;
+        color: white;
+        overflow-x: scroll;
+        white-space: nowrap;
+        margin-left: 2px;
+        margin-right: 2px;
+    }
+
+    #newMember {
+        position: absolute;
+        right: 3vw;
+        top: 22vh;
+        width: 34vw;
+        height: 7vh;
+        background-color: #d4d4d4;
+        border-radius: 10px;
+    }
+
+    #newMemberInput {
+        position: absolute;
+        left: 1vw;
+        bottom: 1.5vh;
+        width: 18vw;
+        height: 3vh;
+        background-color: #d4d4d4;
+        border-radius: 10px;
+        padding-left: 5px;
+        font-size: 1.5vh;
+    }
+
+    #newMemberButton {
+        position: absolute;
+        right: 1vw;
+        bottom: 1vh;
+        width: 10vw;
+        height: 5vh;
+        color: white;
+        background-color: #007bff;
+        border-radius: 10px;
+        font-size: 2vh;
+        font-weight: bold;
+        text-align: center;
+        padding: 0;
     }
 
     #newOrganization {
