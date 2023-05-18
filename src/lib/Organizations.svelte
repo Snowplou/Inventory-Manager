@@ -12,9 +12,9 @@
             return;
         }
         let organizations = await getFromDb("organizations");
-        if (organizations) {
-            for (let i = 0; i < organizations.length; i++) {
-                if (organizations[i].name == name) {
+        if (organizations != undefined) {
+            for (let organization of Object.values(organizations)) {
+                if (organization) {
                     alert("Organization already exists");
                     return;
                 }
@@ -34,6 +34,7 @@
         if (email == "") {
             return;
         }
+        console.log(email);
         
     }
 </script>
@@ -89,7 +90,7 @@
         />
         <button
             id="newMemberButton"
-            on:click={(elm) => organizationButton(elm)}>Add</button
+            on:click={(elm) => memberButton(elm)}>Add</button
         >
     </div>
 {/if}
