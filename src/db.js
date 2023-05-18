@@ -48,11 +48,22 @@ userId.subscribe(async (value) => {
     // Update userData whenever the firebase `users/${userId}` changes
     onValue(ref(db, `users/${writeableGet(userId)}`), (snapshot) => {
         userData.set(snapshot.val());
+        if (writeableGet(userData).organizations) {
+            for (let organization of writeableGet(userData).organizations) {
+                onValue(ref(db, `organizations/${organization.name}`), (snapshot) => {
+                    organizations.update((organizations) => {
+                        organizations[organization.name] = snapshot.val();
+                        return organizations;
+                    })
+                }
+                )
+            }
+        }
     });
 })
 
 export async function getFromDb(path) {
-    let value;
+    let value = {};
     await get(child(ref(db), path)).then((snapshot) => {
         value = snapshot.val()
     })
