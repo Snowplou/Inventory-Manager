@@ -31,8 +31,6 @@ onAuthStateChanged(auth, (user) => {
     authWritable.set(auth);
 });
 
-console.log(auth);
-
 export let pageState = writable("home");
 
 export let userId = writable()

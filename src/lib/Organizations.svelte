@@ -1,6 +1,8 @@
 <script>
+    import { update } from "firebase/database";
     import { userData, userId, organizations, getFromDb, setToDb } from "../db";
-    let organizationSelected = "a"
+    import { writable } from "svelte/store";
+    let organizationSelected = "a";
 
     function organizationClicked(name) {
         organizationSelected = name;
@@ -11,16 +13,11 @@
         if (name == "") {
             return;
         }
-        let organizations = await getFromDb("organizations");
-        if (organizations != undefined) {
-            for (let organization of Object.values(organizations)) {
-                if (organization) {
-                    alert("Organization already exists");
-                    return;
-                }
-            }
+        if (await getFromDb(`organizations/${name}/a`)) {
+            alert("Organization already exists");
+            return;
         }
-        let organization = { owner: $userData.email };
+        let organization = { owner: $userData.email, a: true };
         setToDb(`organizations/${name}`, organization);
         let organization2 = { name: name };
         setToDb(
@@ -30,12 +27,47 @@
     }
 
     async function memberButton(elm) {
-        let email = elm.target.parentNode.children[0].value;
-        if (email == "") {
+        let id = elm.target.parentNode.children[0].value;
+        if (id == "") {
             return;
         }
-        console.log(email);
-        
+
+        let chosenUser = await getFromDb(`users/${id}`);
+        if (!chosenUser) {
+            alert("User not found");
+            return;
+        } else if (chosenUser.email == $userData.email) {
+            alert("You cannot add yourself");
+            return;
+        }
+
+        let organization = await getFromDb(
+            `organizations/${organizationSelected}`
+        );
+
+        if (organization.members) {
+            if (organization.members[id]) {
+                alert("User is already in organization");
+                return;
+            }
+        }
+
+        setToDb(`organizations/${organizationSelected}/members/${id}`, {
+            email: chosenUser.email,
+            rank: "member",
+            team: -1,
+        });
+        let userOrgObj = { name: organizationSelected, rank: "member" };
+        if (chosenUser.organizations)
+            setToDb(
+                `users/${id}/organizations/${
+                    Object.keys(chosenUser.organizations).length
+                }`,
+                userOrgObj
+            );
+        else setToDb(`users/${id}/organizations/0`, userOrgObj);
+
+        elm.target.parentNode.children[0].value = "";
     }
 </script>
 
@@ -88,9 +120,8 @@
             id="newMemberInput"
             placeholder="New Member"
         />
-        <button
-            id="newMemberButton"
-            on:click={(elm) => memberButton(elm)}>Add</button
+        <button id="newMemberButton" on:click={(elm) => memberButton(elm)}
+            >Add</button
         >
     </div>
 {/if}

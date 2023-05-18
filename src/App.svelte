@@ -1,5 +1,5 @@
 <script>
-  import { authWritable, pageState } from "./db";
+  import { authWritable, pageState, userId } from "./db";
   import HomeLink from "./lib/HomeLink.svelte";
   import LogIn from "./lib/LogIn.svelte";
   import OrganizationLink from "./lib/OrganizationLink.svelte";
@@ -18,6 +18,7 @@
     {/if}
     <SignOut />
     {#if $pageState == "home"}
+      <p>User ID: {$userId}</p>
       <div id="linksCenter">
         <TeamsLink />
         <OrganizationLink />
