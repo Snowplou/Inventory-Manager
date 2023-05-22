@@ -3,9 +3,9 @@
   import HomeLink from "./lib/HomeLink.svelte";
   import LogIn from "./lib/LogIn.svelte";
   import OrganizationLink from "./lib/OrganizationLink.svelte";
-    import Organizations from "./lib/Organizations.svelte";
+  import Organizations from "./lib/Organizations.svelte";
   import SignOut from "./lib/SignOut.svelte";
-    import Teams from "./lib/Teams.svelte";
+  import Teams from "./lib/Teams.svelte";
   import TeamsLink from "./lib/TeamsLink.svelte";
 </script>
 

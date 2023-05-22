@@ -2,10 +2,14 @@
     import { update } from "firebase/database";
     import { userData, userId, organizations, getFromDb, setToDb } from "../db";
     import { writable } from "svelte/store";
-    let organizationSelected = "a";
+    let organizationSelected = "";
+    let organizationMembers = writable({});
 
-    function organizationClicked(name) {
+    async function organizationClicked(name) {
         organizationSelected = name;
+        organizationMembers.set(
+            await getFromDb(`organizations/${name}/members`)
+        );
     }
 
     async function organizationButton(elm) {
@@ -124,9 +128,30 @@
             >Add</button
         >
     </div>
+
+    <div id="memberList">
+        {#each Object.values($organizationMembers) as member}
+            <div class="memberListItem">
+                <p>{member.email}</p>
+            </div>
+        {/each}
+    </div>
 {/if}
 
 <style>
+
+    #memberList {
+        position: absolute;
+        right: 2vw;
+        top: 30vh;
+        width: 36vw;
+        overflow-y: scroll;
+        text-align: left;
+        background-color: #007bff;
+        border-radius: 10px;
+        height: 57vh;
+    }
+
     #organizationInfo {
         position: absolute;
         right: 2vw;
