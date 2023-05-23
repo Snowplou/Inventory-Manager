@@ -6,7 +6,7 @@
     let organizationMembers = writable({});
     let organizationTeams = writable({});
 
-    function emailToUserId(email){
+    function emailToUserId(email) {
         let i = 0;
         for (let member of Object.values($organizationMembers)) {
             if (member.email == email) {
@@ -50,7 +50,7 @@
         }
 
         // If the id is an email, alert the user that they must use an id
-        if(id.includes("@")){
+        if (id.includes("@")) {
             alert("Please use the user ID");
             return;
         }
@@ -88,7 +88,9 @@
         organizationMembers.set(
             await getFromDb(`organizations/${organizationSelected}/members`)
         );
-        organizationTeams.set(await getFromDb(`organizations/${organizationSelected}/teams`));
+        organizationTeams.set(
+            await getFromDb(`organizations/${organizationSelected}/teams`)
+        );
 
         elm.target.parentNode.children[0].value = "";
     }
@@ -107,9 +109,12 @@
         );
     }
 
-    async function memberRemove(elm){
-
-        if(!confirm(`Are you sure you want to remove ${elm.target.parentNode.children[0].innerHTML} from ${organizationSelected}?`)){
+    async function memberRemove(elm) {
+        if (
+            !confirm(
+                `Are you sure you want to remove ${elm.target.parentNode.children[0].innerHTML} from ${organizationSelected}?`
+            )
+        ) {
             return;
         }
 
@@ -119,16 +124,35 @@
             `organizations/${organizationSelected}/members/${userId}`,
             null
         );
-        setToDb(
-            `users/${userId}/organizations/${organizationSelected}`,
-            null
-        );
+        setToDb(`users/${userId}/organizations/${organizationSelected}`, null);
 
         // Update the organization members and teams
         organizationMembers.set(
             await getFromDb(`organizations/${name}/members`)
         );
         organizationTeams.set(await getFromDb(`organizations/${name}/teams`));
+    }
+
+    async function teamButton(elm) {
+        let team = elm.target.parentNode.children[0].value;
+        if (team == "") {
+            return;
+        }
+        console.log(team);
+        // let organization = await getFromDb(
+        //     `organizations/${organizationSelected}`
+        // );
+        // if (organization.teams) {
+        //     if (organization.teams[team]) {
+        //         alert("Team already exists");
+        //         return;
+        //     }
+        // }
+        // setToDb(`organizations/${organizationSelected}/teams/${team}`, team);
+        // elm.target.parentNode.children[0].value = "";
+        // organizationTeams.set(
+        //     await getFromDb(`organizations/${organizationSelected}/teams`)
+        // );
     }
 </script>
 
@@ -198,18 +222,53 @@
                 {#each Object.values($organizationMembers) as member}
                     <div class="memberListItem">
                         <p class="memberEmail">{member.email}</p>
-                        <select on:change={(elm) => ranked(elm)} value={$organizationMembers[emailToUserId(member.email)].rank}>
+                        <select
+                            on:change={(elm) => ranked(elm)}
+                            value={$organizationMembers[
+                                emailToUserId(member.email)
+                            ].rank}
+                        >
                             {#each Object.values($organizationTeams) as team}
                                 <option value={team}>{team}</option>
                             {/each}
                         </select>
-                        <p class="memberRemove" on:click={(elm) => memberRemove(elm)} on:keydown={(elm) => memberRemove(elm)}>❌</p>
+                        <p
+                            class="memberRemove"
+                            on:click={(elm) => memberRemove(elm)}
+                            on:keydown={(elm) => memberRemove(elm)}
+                        >
+                            ❌
+                        </p>
                     </div>
                 {/each}
             {/if}
         </div>
     {/key}
 {/if}
+
+{#key $organizationTeams}
+    {#if organizationSelected}
+        <div id="organizationTeamList">
+            <p id="organizationTeamListTitle">Teams</p>
+            <div id="newTeam">
+                <input
+                    type="text"
+                    maxlength="100"
+                    id="newTeamInput"
+                    placeholder="New Team"
+                />
+                <button id="newTeamButton" on:click={(elm) => teamButton(elm)}
+                    >Add</button
+                >
+            </div>
+            {#each Object.values($organizationTeams) as team}
+                <div class="organizationTeamListItem">
+                    <p>{team}</p>
+                </div>
+            {/each}
+        </div>
+    {/if}
+{/key}
 
 <style>
     #memberList {
@@ -273,7 +332,7 @@
         font-weight: bold;
         margin-top: 0;
         color: white;
-        overflow-x: scroll;
+        overflow-x: auto;
         white-space: nowrap;
         margin-left: 2px;
         margin-right: 2px;
@@ -369,16 +428,88 @@
         left: 2vw;
         top: 22vh;
         width: 55vw;
-        overflow-y: scroll;
+        overflow-y: auto;
         text-align: left;
         background-color: #007bff;
         border-radius: 10px;
         padding-left: 5px;
-        max-height: 65vh;
+        max-height: 35vh;
     }
 
     .listItem {
         margin: 5px;
         overflow-x: auto;
     }
+
+    #organizationTeamList {
+        position: absolute;
+        left: 2vw;
+        top: 60vh;
+        width: 55vw;
+        overflow-y: auto;
+        text-align: left;
+        background-color: #007bff;
+        border-radius: 10px;
+        max-height: 28vh;
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    #organizationTeamListTitle {
+        text-align: center;
+        font-size: 4vh;
+        font-weight: bold;
+        margin-top: 0;
+        margin-bottom: 0;
+        color: white;
+        overflow-x: auto;
+        white-space: nowrap;
+        margin-left: 2px;
+        margin-right: 2px;
+    }
+
+    .organizationTeamListItem {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-content: center;
+        width: 95%;
+        height: 5vh;
+        background-color: #d4d4d4;
+        border-radius: 10px;
+        margin-bottom: 1vh;
+    }
+
+    #newTeam {
+        width: 31vw;
+        height: 7vh;
+        background-color: #d4d4d4;
+        border-radius: 10px;
+        margin: 0;
+        padding: 0;
+    }
+
+    #newTeamInput {
+        width: 18vw;
+        height: 3vh;
+        background-color: #d4d4d4;
+        border-radius: 10px;
+        padding-left: 5px;
+        font-size: 1.5vh;
+    }
+
+    #newTeamButton {
+        width: 10vw;
+        height: 5vh;
+        color: white;
+        background-color: #007bff;
+        border-radius: 10px;
+        font-size: 2vh;
+        font-weight: bold;
+        text-align: center;
+        padding: 0;
+    }
+    
 </style>
