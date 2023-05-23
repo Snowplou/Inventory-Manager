@@ -4,6 +4,7 @@ import { getDatabase, ref, onValue, child, get, set } from "firebase/database";
 import { writable } from "svelte/store";
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "firebase/auth";
 import { get as writeableGet } from "svelte/store";
+import { compute_slots } from "svelte/internal";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -49,14 +50,23 @@ userId.subscribe(async (value) => {
     onValue(ref(db, `users/${writeableGet(userId)}`), (snapshot) => {
         userData.set(snapshot.val());
         if (writeableGet(userData).organizations) {
-            for (let organization of writeableGet(userData).organizations) {
-                onValue(ref(db, `organizations/${organization.name}`), (snapshot) => {
+            // for (let organization of writeableGet(userData).organizations) {
+            //     onValue(ref(db, `organizations/${organization.name}`), (snapshot) => {
+            //         organizations.update((organizations) => {
+            //             organizations[organization.name] = snapshot.val();
+            //             return organizations;
+            //         })
+            //     }
+            //     )
+            // }
+            let orgsKeys = Object.keys(writeableGet(userData).organizations);
+            for (let i = 0; i < orgsKeys.length; i++) {
+                onValue(ref(db, `organizations/${orgsKeys[i]}`), (snapshot) => {
                     organizations.update((organizations) => {
-                        organizations[organization.name] = snapshot.val();
+                        organizations[orgsKeys[i]] = snapshot.val();
                         return organizations;
                     })
-                }
-                )
+                })
             }
         }
     });

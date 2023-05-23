@@ -4,12 +4,14 @@
     import { writable } from "svelte/store";
     let organizationSelected = "";
     let organizationMembers = writable({});
+    let organizationTeams = writable({});
 
     async function organizationClicked(name) {
         organizationSelected = name;
         organizationMembers.set(
             await getFromDb(`organizations/${name}/members`)
         );
+        organizationTeams.set(await getFromDb(`organizations/${name}/teams`));
     }
 
     async function organizationButton(elm) {
@@ -21,13 +23,14 @@
             alert("Organization already exists");
             return;
         }
-        let organization = { owner: $userData.email, a: true };
+        let organization = {
+            owner: $userData.email,
+            a: true,
+            teams: { 0: "Unranked" },
+        };
         setToDb(`organizations/${name}`, organization);
-        let organization2 = { name: name };
-        setToDb(
-            `users/${$userId}/organizations/${$userData.organizations.length}`,
-            organization2
-        );
+        let organization2 = { rank: "Unranked" };
+        setToDb(`users/${$userId}/organizations/${name}`, organization2);
     }
 
     async function memberButton(elm) {
@@ -61,17 +64,28 @@
             rank: "member",
             team: -1,
         });
-        let userOrgObj = { name: organizationSelected, rank: "member" };
-        if (chosenUser.organizations)
-            setToDb(
-                `users/${id}/organizations/${
-                    Object.keys(chosenUser.organizations).length
-                }`,
-                userOrgObj
-            );
-        else setToDb(`users/${id}/organizations/0`, userOrgObj);
+        let userOrgObj = { rank: "Unranked" };
+        setToDb(
+            `users/${id}/organizations/${organizationSelected}`,
+            userOrgObj
+        );
 
         elm.target.parentNode.children[0].value = "";
+    }
+
+    async function ranked(elm) {
+        let team = elm.target.value;
+        let user = elm.target.parentNode.children[0].innerHTML;
+        let userId;
+        let i = 0;
+        for (let member of Object.values($organizationMembers)) {
+            if (member.email == user) {
+                userId = Object.keys($organizationMembers)[i];
+                break;
+            }
+            i++;
+        }
+        console.log(userId);
     }
 </script>
 
@@ -80,19 +94,19 @@
     <!-- Organization list -->
     <div id="organizationList">
         {#if $userData.organizations}
-            {#each $userData.organizations as organization}
+            {#each Object.values($userData.organizations) as organization, i}
                 <div class="listItem">
                     <!-- Organization name is highlighted if it is selected -->
                     <p
                         style={"color: " +
-                            (organization.name == organizationSelected
+                            (Object.keys($userData.organizations)[i] == organizationSelected
                                 ? "darkGray"
                                 : "white")}
-                        on:click={() => organizationClicked(organization.name)}
+                        on:click={() => organizationClicked(Object.keys($userData.organizations)[i])}
                         on:keydown={() =>
-                            organizationClicked(organization.name)}
+                            organizationClicked(Object.keys($userData.organizations)[i])}
                     >
-                        {organization.name}
+                        {Object.keys($userData.organizations)[i]}
                     </p>
                 </div>
             {/each}
@@ -133,23 +147,41 @@
         {#each Object.values($organizationMembers) as member}
             <div class="memberListItem">
                 <p>{member.email}</p>
+                <select on:change={(elm) => ranked(elm)}>
+                    {#each Object.values($organizationTeams) as team}
+                        <option value={team}>{team}</option>
+                    {/each}
+                </select>
             </div>
         {/each}
     </div>
 {/if}
 
 <style>
-
     #memberList {
         position: absolute;
         right: 2vw;
         top: 30vh;
-        width: 36vw;
+        max-width: 36vw;
         overflow-y: scroll;
-        text-align: left;
-        background-color: #007bff;
+        overflow-x: scroll;
+        text-align: center;
+        /* background-color: green; */
         border-radius: 10px;
-        height: 57vh;
+        max-height: 57vh;
+    }
+
+    .memberListItem {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 5vh;
+        background-color: #d4d4d4;
+        border-radius: 10px;
+        margin: 0;
+        padding: 0;
+        margin-bottom: 1vh;
     }
 
     #organizationInfo {
@@ -178,12 +210,14 @@
 
     #newMember {
         position: absolute;
-        right: 3vw;
+        right: 6vw;
         top: 22vh;
-        width: 34vw;
+        width: 31vw;
         height: 7vh;
         background-color: #d4d4d4;
         border-radius: 10px;
+        margin: 0;
+        padding: 0;
     }
 
     #newMemberInput {
