@@ -36,7 +36,7 @@
         let organization = {
             owner: $userData.email,
             a: true,
-            teams: { 0: "Unranked" },
+            teams: { 0: "Unranked", 1: "Admin" },
         };
         setToDb(`organizations/${name}`, organization);
         let organization2 = { rank: "Unranked" };
@@ -49,11 +49,17 @@
             return;
         }
 
-        let chosenUser = await getFromDb(`users/${id}`);
-        if (!chosenUser) {
+        // If the id is an email, alert the user that they must use an id
+        if(id.includes("@")){
+            alert("Please use the user ID");
+            return;
+        }
+
+        let chosenUserEmail = await getFromDb(`users/${id}/email`);
+        if (!chosenUserEmail) {
             alert("User not found");
             return;
-        } else if (chosenUser.email == $userData.email) {
+        } else if (chosenUserEmail == $userData.email) {
             alert("You cannot add yourself");
             return;
         }
@@ -70,15 +76,19 @@
         }
 
         setToDb(`organizations/${organizationSelected}/members/${id}`, {
-            email: chosenUser.email,
-            rank: "member",
-            team: -1,
+            email: chosenUserEmail,
+            rank: "Unranked",
         });
         let userOrgObj = { rank: "Unranked" };
         setToDb(
             `users/${id}/organizations/${organizationSelected}`,
             userOrgObj
         );
+
+        organizationMembers.set(
+            await getFromDb(`organizations/${organizationSelected}/members`)
+        );
+        organizationTeams.set(await getFromDb(`organizations/${organizationSelected}/teams`));
 
         elm.target.parentNode.children[0].value = "";
     }
@@ -95,6 +105,30 @@
             `users/${userId}/organizations/${organizationSelected}/rank`,
             team
         );
+    }
+
+    async function memberRemove(elm){
+
+        if(!confirm(`Are you sure you want to remove ${elm.target.parentNode.children[0].innerHTML} from ${organizationSelected}?`)){
+            return;
+        }
+
+        let user = elm.target.parentNode.children[0].innerHTML;
+        let userId = emailToUserId(user);
+        setToDb(
+            `organizations/${organizationSelected}/members/${userId}`,
+            null
+        );
+        setToDb(
+            `users/${userId}/organizations/${organizationSelected}`,
+            null
+        );
+
+        // Update the organization members and teams
+        organizationMembers.set(
+            await getFromDb(`organizations/${name}/members`)
+        );
+        organizationTeams.set(await getFromDb(`organizations/${name}/teams`));
     }
 </script>
 
@@ -163,12 +197,13 @@
             {#if $organizationMembers}
                 {#each Object.values($organizationMembers) as member}
                     <div class="memberListItem">
-                        <p>{member.email}</p>
+                        <p class="memberEmail">{member.email}</p>
                         <select on:change={(elm) => ranked(elm)} value={$organizationMembers[emailToUserId(member.email)].rank}>
                             {#each Object.values($organizationTeams) as team}
                                 <option value={team}>{team}</option>
                             {/each}
                         </select>
+                        <p class="memberRemove" on:click={(elm) => memberRemove(elm)} on:keydown={(elm) => memberRemove(elm)}>❌</p>
                     </div>
                 {/each}
             {/if}
@@ -179,28 +214,41 @@
 <style>
     #memberList {
         position: absolute;
-        right: 2vw;
+        right: 5.5vw;
         top: 30vh;
-        max-width: 36vw;
-        overflow-y: scroll;
-        overflow-x: scroll;
+        max-width: 32vw;
+        overflow-y: auto;
+        overflow-x: auto;
         text-align: center;
-        /* background-color: green; */
         border-radius: 10px;
         max-height: 57vh;
     }
 
     .memberListItem {
         display: flex;
+        flex-wrap: wrap;
         justify-content: center;
         align-items: center;
         width: 100%;
-        height: 5vh;
+        height: 10vh;
         background-color: #d4d4d4;
         border-radius: 10px;
         margin: 0;
         padding: 0;
         margin-bottom: 1vh;
+    }
+
+    .memberEmail {
+        margin-bottom: 0;
+    }
+
+    .memberRemove {
+        cursor: pointer;
+        padding-left: 4px;
+    }
+
+    select {
+        margin-bottom: 4px;
     }
 
     #organizationInfo {
