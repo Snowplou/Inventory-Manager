@@ -218,7 +218,6 @@
         top: 30vh;
         max-width: 32vw;
         overflow-y: auto;
-        overflow-x: auto;
         text-align: center;
         border-radius: 10px;
         max-height: 57vh;
@@ -239,7 +238,12 @@
     }
 
     .memberEmail {
+        max-width: 32vw;
+        overflow-x: auto;
+        margin-top: 2px;
         margin-bottom: 0;
+        padding-left: 2px;
+        padding-right: 2px;
     }
 
     .memberRemove {
