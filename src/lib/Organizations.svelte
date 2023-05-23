@@ -6,6 +6,16 @@
     let organizationMembers = writable({});
     let organizationTeams = writable({});
 
+    function emailToUserId(email){
+        let i = 0;
+        for (let member of Object.values($organizationMembers)) {
+            if (member.email == email) {
+                return Object.keys($organizationMembers)[i];
+            }
+            i++;
+        }
+    }
+
     async function organizationClicked(name) {
         organizationSelected = name;
         organizationMembers.set(
@@ -76,16 +86,15 @@
     async function ranked(elm) {
         let team = elm.target.value;
         let user = elm.target.parentNode.children[0].innerHTML;
-        let userId;
-        let i = 0;
-        for (let member of Object.values($organizationMembers)) {
-            if (member.email == user) {
-                userId = Object.keys($organizationMembers)[i];
-                break;
-            }
-            i++;
-        }
-        console.log(userId);
+        let userId = emailToUserId(user);
+        setToDb(
+            `organizations/${organizationSelected}/members/${userId}/rank`,
+            team
+        );
+        setToDb(
+            `users/${userId}/organizations/${organizationSelected}/rank`,
+            team
+        );
     }
 </script>
 
@@ -99,12 +108,18 @@
                     <!-- Organization name is highlighted if it is selected -->
                     <p
                         style={"color: " +
-                            (Object.keys($userData.organizations)[i] == organizationSelected
+                            (Object.keys($userData.organizations)[i] ==
+                            organizationSelected
                                 ? "darkGray"
                                 : "white")}
-                        on:click={() => organizationClicked(Object.keys($userData.organizations)[i])}
+                        on:click={() =>
+                            organizationClicked(
+                                Object.keys($userData.organizations)[i]
+                            )}
                         on:keydown={() =>
-                            organizationClicked(Object.keys($userData.organizations)[i])}
+                            organizationClicked(
+                                Object.keys($userData.organizations)[i]
+                            )}
                     >
                         {Object.keys($userData.organizations)[i]}
                     </p>
@@ -143,18 +158,22 @@
         >
     </div>
 
-    <div id="memberList">
-        {#each Object.values($organizationMembers) as member}
-            <div class="memberListItem">
-                <p>{member.email}</p>
-                <select on:change={(elm) => ranked(elm)}>
-                    {#each Object.values($organizationTeams) as team}
-                        <option value={team}>{team}</option>
-                    {/each}
-                </select>
-            </div>
-        {/each}
-    </div>
+    {#key $organizationMembers}
+        <div id="memberList">
+            {#if $organizationMembers}
+                {#each Object.values($organizationMembers) as member}
+                    <div class="memberListItem">
+                        <p>{member.email}</p>
+                        <select on:change={(elm) => ranked(elm)} value={$organizationMembers[emailToUserId(member.email)].rank}>
+                            {#each Object.values($organizationTeams) as team}
+                                <option value={team}>{team}</option>
+                            {/each}
+                        </select>
+                    </div>
+                {/each}
+            {/if}
+        </div>
+    {/key}
 {/if}
 
 <style>
