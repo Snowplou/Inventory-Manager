@@ -1,5 +1,5 @@
 <script>
-    import { update } from "firebase/database";
+    import { set, update } from "firebase/database";
     import { userData, userId, organizations, getFromDb, setToDb } from "../db";
     import { writable } from "svelte/store";
     let organizationSelected = "";
@@ -128,9 +128,11 @@
 
         // Update the organization members and teams
         organizationMembers.set(
-            await getFromDb(`organizations/${name}/members`)
+            await getFromDb(`organizations/${organizationSelected}/members`)
         );
-        organizationTeams.set(await getFromDb(`organizations/${name}/teams`));
+        organizationTeams.set(
+            await getFromDb(`organizations/${organizationSelected}/teams`)
+        );
     }
 
     async function teamButton(elm) {
@@ -139,16 +141,77 @@
             return;
         }
         let org = await getFromDb(`organizations/${organizationSelected}`);
-        if(Object.values(org.teams).includes(team)) {
+        if (Object.values(org.teams).includes(team)) {
             alert("This team already exists");
             return;
         }
-        setToDb(`organizations/${organizationSelected}/teams/${Object.values(org.teams).length}`, team);
+        setToDb(
+            `organizations/${organizationSelected}/teams/${
+                Object.values(org.teams).length
+            }`,
+            team
+        );
         elm.target.parentNode.children[0].value = "";
         organizationTeams.update((teams) => {
             teams[Object.values(org.teams).length] = team;
             return teams;
         });
+    }
+
+    async function organizationTeamListRemove(elm) {
+        let team = elm.target.parentNode.children[0].innerHTML;
+
+        if (
+            !confirm(
+                `Are you sure you want to remove ${team} from ${organizationSelected}?`
+            )
+        ) {
+            return;
+        }
+
+        let memberValues = Object.values($organizationMembers);
+        let memberKeys = Object.keys($organizationMembers);
+        for (let i = 0; i < memberValues.length; i++) {
+            if (memberValues[i].rank == team) {
+                console.log(organizationSelected);
+                setToDb(
+                    `organizations/${organizationSelected}/members/${memberKeys[i]}/rank`,
+                    "Unranked"
+                );
+                setToDb(
+                    `users/${memberKeys[i]}/organizations/${organizationSelected}/rank`,
+                    "Unranked"
+                );
+            }
+        }
+
+        // Update the organization members and teams
+        organizationMembers.set(
+            await getFromDb(`organizations/${organizationSelected}/members`)
+        );
+        organizationTeams.set(
+            await getFromDb(`organizations/${organizationSelected}/teams`)
+        );
+
+        // Remove team from organizationTeams
+        organizationTeams.update((teams) => {
+            let newTeamList = {};
+            let teamList = Object.values(teams);
+            for (let i = 0; i < teamList.length - 1; i++) {
+                console.log(teamList[i]);
+                if (teamList[i] != team) newTeamList[i] = teamList[i];
+                // else i--
+            }
+            return newTeamList;
+        });
+
+        console.log($organizationTeams);
+
+        // // Remove team from database
+        // setToDb(
+        //     `organizations/${organizationSelected}/teams`,
+        //     $organizationTeams
+        // );
     }
 </script>
 
@@ -260,7 +323,16 @@
             {#each Object.values($organizationTeams) as team}
                 <div class="organizationTeamListItem">
                     <p>{team}</p>
-                    <p class="organizationTeamListRemove">❌</p>
+                    {#if team != "Unranked" && team != "Admin"}
+                        <p
+                            class="organizationTeamListRemove"
+                            on:click={(elm) => organizationTeamListRemove(elm)}
+                            on:keydown={(elm) =>
+                                organizationTeamListRemove(elm)}
+                        >
+                            ❌
+                        </p>
+                    {/if}
                 </div>
             {/each}
         </div>
@@ -485,9 +557,10 @@
         margin-top: 0;
         margin-bottom: 0;
     }
-    
+
     .organizationTeamListRemove {
         margin-left: 10px;
+        cursor: pointer;
     }
 
     #newTeam {
@@ -522,5 +595,4 @@
         text-align: center;
         padding: 0;
     }
-    
 </style>
