@@ -138,21 +138,17 @@
         if (team == "") {
             return;
         }
-        console.log(team);
-        // let organization = await getFromDb(
-        //     `organizations/${organizationSelected}`
-        // );
-        // if (organization.teams) {
-        //     if (organization.teams[team]) {
-        //         alert("Team already exists");
-        //         return;
-        //     }
-        // }
-        // setToDb(`organizations/${organizationSelected}/teams/${team}`, team);
-        // elm.target.parentNode.children[0].value = "";
-        // organizationTeams.set(
-        //     await getFromDb(`organizations/${organizationSelected}/teams`)
-        // );
+        let org = await getFromDb(`organizations/${organizationSelected}`);
+        if(Object.values(org.teams).includes(team)) {
+            alert("This team already exists");
+            return;
+        }
+        setToDb(`organizations/${organizationSelected}/teams/${Object.values(org.teams).length}`, team);
+        elm.target.parentNode.children[0].value = "";
+        organizationTeams.update((teams) => {
+            teams[Object.values(org.teams).length] = team;
+            return teams;
+        });
     }
 </script>
 
@@ -264,6 +260,7 @@
             {#each Object.values($organizationTeams) as team}
                 <div class="organizationTeamListItem">
                     <p>{team}</p>
+                    <p class="organizationTeamListRemove">❌</p>
                 </div>
             {/each}
         </div>
@@ -360,6 +357,7 @@
         border-radius: 10px;
         padding-left: 5px;
         font-size: 1.5vh;
+        text-align: center;
     }
 
     #newMemberButton {
@@ -480,6 +478,16 @@
         background-color: #d4d4d4;
         border-radius: 10px;
         margin-bottom: 1vh;
+        overflow: auto;
+    }
+
+    .organizationTeamListItem p {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+    
+    .organizationTeamListRemove {
+        margin-left: 10px;
     }
 
     #newTeam {
@@ -489,6 +497,8 @@
         border-radius: 10px;
         margin: 0;
         padding: 0;
+        margin-top: 5px;
+        margin-bottom: 5px;
     }
 
     #newTeamInput {
@@ -498,6 +508,7 @@
         border-radius: 10px;
         padding-left: 5px;
         font-size: 1.5vh;
+        text-align: center;
     }
 
     #newTeamButton {
