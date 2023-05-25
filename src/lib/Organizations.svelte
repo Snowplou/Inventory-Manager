@@ -321,17 +321,20 @@
 {#key $organizationTeams}
     {#if organizationSelected}
         <div id="organizationTeamList">
-            <p id="organizationTeamListTitle">Teams</p>
-            <div id="newTeam">
-                <input
-                    type="text"
-                    maxlength="100"
-                    id="newTeamInput"
-                    placeholder="New Team"
-                />
-                <button id="newTeamButton" on:click={(elm) => teamButton(elm)}
-                    >Add</button
-                >
+            <div id="organizationTeamsTitleAndAdd">
+                <p id="organizationTeamListTitle">Teams</p>
+                <div id="newTeam">
+                    <input
+                        type="text"
+                        maxlength="100"
+                        id="newTeamInput"
+                        placeholder="New Team"
+                    />
+                    <button
+                        id="newTeamButton"
+                        on:click={(elm) => teamButton(elm)}>Add</button
+                    >
+                </div>
             </div>
             {#each Object.values($organizationTeams) as team}
                 <div class="organizationTeamListItem">
@@ -372,6 +375,7 @@
         align-items: center;
         width: 100%;
         height: 10vh;
+        min-height: 70px;
         background-color: #d4d4d4;
         border-radius: 10px;
         margin: 0;
@@ -514,8 +518,12 @@
     }
 
     .listItem {
+        display: flex;
+        align-items: center;
         margin: 5px;
+        height: 5vh;
         overflow-x: auto;
+        overflow-y: hidden;
     }
 
     #organizationTeamList {
@@ -532,6 +540,12 @@
         flex-wrap: wrap;
         flex-direction: row;
         justify-content: center;
+    }
+
+    #organizationTeamsTitleAndAdd {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     #organizationTeamListTitle {
@@ -571,7 +585,12 @@
     }
 
     #newTeam {
-        width: 31vw;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+        align-items: center;
+        align-content: center;
+        width: 48vw;
         height: 7vh;
         background-color: #d4d4d4;
         border-radius: 10px;
