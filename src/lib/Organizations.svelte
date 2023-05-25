@@ -5,6 +5,7 @@
     let organizationSelected = "";
     let organizationMembers = writable({});
     let organizationTeams = writable({});
+    let organizationOwner = writable("");
 
     function emailToUserId(email) {
         let i = 0;
@@ -21,7 +22,12 @@
         organizationMembers.set(
             await getFromDb(`organizations/${name}/members`)
         );
-        organizationTeams.set(await getFromDb(`organizations/${name}/teams`));
+        organizationTeams.set(
+            await getFromDb(`organizations/${name}/teamList`)
+        );
+        organizationOwner.set(
+            String(await getFromDb(`organizations/${name}/owner`))
+        );
     }
 
     async function organizationButton(elm) {
@@ -36,10 +42,10 @@
         let organization = {
             owner: $userData.email,
             a: true,
-            teams: { 0: "Unranked", 1: "Admin" },
+            teams: { 0: "Unsorted", 1: "Coach" },
         };
         setToDb(`organizations/${name}`, organization);
-        let organization2 = { rank: "Unranked" };
+        let organization2 = { rank: "Unsorted" };
         setToDb(`users/${$userId}/organizations/${name}`, organization2);
     }
 
@@ -77,9 +83,9 @@
 
         setToDb(`organizations/${organizationSelected}/members/${id}`, {
             email: chosenUserEmail,
-            rank: "Unranked",
+            rank: "Unsorted",
         });
-        let userOrgObj = { rank: "Unranked" };
+        let userOrgObj = { rank: "Unsorted" };
         setToDb(
             `users/${id}/organizations/${organizationSelected}`,
             userOrgObj
@@ -89,7 +95,7 @@
             await getFromDb(`organizations/${organizationSelected}/members`)
         );
         organizationTeams.set(
-            await getFromDb(`organizations/${organizationSelected}/teams`)
+            await getFromDb(`organizations/${organizationSelected}/teamList`)
         );
 
         elm.target.parentNode.children[0].value = "";
@@ -131,7 +137,7 @@
             await getFromDb(`organizations/${organizationSelected}/members`)
         );
         organizationTeams.set(
-            await getFromDb(`organizations/${organizationSelected}/teams`)
+            await getFromDb(`organizations/${organizationSelected}/teamList`)
         );
     }
 
@@ -146,7 +152,7 @@
             return;
         }
         setToDb(
-            `organizations/${organizationSelected}/teams/${
+            `organizations/${organizationSelected}/teamList/${
                 Object.values(org.teams).length
             }`,
             team
@@ -176,11 +182,11 @@
                 console.log(organizationSelected);
                 setToDb(
                     `organizations/${organizationSelected}/members/${memberKeys[i]}/rank`,
-                    "Unranked"
+                    "Unsorted"
                 );
                 setToDb(
                     `users/${memberKeys[i]}/organizations/${organizationSelected}/rank`,
-                    "Unranked"
+                    "Unsorted"
                 );
             }
         }
@@ -190,28 +196,21 @@
             await getFromDb(`organizations/${organizationSelected}/members`)
         );
         organizationTeams.set(
-            await getFromDb(`organizations/${organizationSelected}/teams`)
+            await getFromDb(`organizations/${organizationSelected}/teamList`)
         );
 
-        // Remove team from organizationTeams
-        organizationTeams.update((teams) => {
-            let newTeamList = {};
-            let teamList = Object.values(teams);
-            for (let i = 0; i < teamList.length - 1; i++) {
-                console.log(teamList[i]);
-                if (teamList[i] != team) newTeamList[i] = teamList[i];
-                // else i--
-            }
-            return newTeamList;
-        });
+        let newTeamList = Object.values($organizationTeams);
+        newTeamList.splice(newTeamList.indexOf(team), 1);
 
-        console.log($organizationTeams);
+        setToDb(`organizations/${organizationSelected}/teamList`, newTeamList);
 
-        // // Remove team from database
-        // setToDb(
-        //     `organizations/${organizationSelected}/teams`,
-        //     $organizationTeams
-        // );
+        // Update the organization members and teams
+        organizationMembers.set(
+            await getFromDb(`organizations/${organizationSelected}/members`)
+        );
+        organizationTeams.set(
+            await getFromDb(`organizations/${organizationSelected}/teamList`)
+        );
     }
 </script>
 
@@ -261,48 +260,62 @@
 
 {#if organizationSelected}
     <div id="organizationInfo">
-        <p id="organtizationTitle">{organizationSelected}</p>
-    </div>
-    <div id="newMember">
-        <input
-            type="text"
-            maxlength="100"
-            id="newMemberInput"
-            placeholder="New Member"
-        />
-        <button id="newMemberButton" on:click={(elm) => memberButton(elm)}
-            >Add</button
-        >
-    </div>
+        <p id="organizationTitle">{organizationSelected}</p>
 
-    {#key $organizationMembers}
-        <div id="memberList">
-            {#if $organizationMembers}
-                {#each Object.values($organizationMembers) as member}
+        <div id="newMember">
+            <input
+                type="text"
+                maxlength="100"
+                id="newMemberInput"
+                placeholder="New Member"
+            />
+            <button id="newMemberButton" on:click={(elm) => memberButton(elm)}
+                >Add</button
+            >
+        </div>
+
+        {#key $organizationMembers}
+            <div id="memberList">
+                {#if $organizationMembers}
                     <div class="memberListItem">
-                        <p class="memberEmail">{member.email}</p>
+                        <p class="memberEmail">{$organizationOwner}</p>
                         <select
                             on:change={(elm) => ranked(elm)}
-                            value={$organizationMembers[
-                                emailToUserId(member.email)
-                            ].rank}
+                            value={$organizationOwner}
+                            disabled={true}
                         >
-                            {#each Object.values($organizationTeams) as team}
-                                <option value={team}>{team}</option>
-                            {/each}
+                            <option value={$organizationOwner}>Coach</option>
                         </select>
-                        <p
-                            class="memberRemove"
-                            on:click={(elm) => memberRemove(elm)}
-                            on:keydown={(elm) => memberRemove(elm)}
-                        >
-                            ❌
-                        </p>
                     </div>
-                {/each}
-            {/if}
-        </div>
-    {/key}
+                    {#each Object.values($organizationMembers) as member}
+                        <div class="memberListItem">
+                            <p class="memberEmail">{member.email}</p>
+                            <select
+                                on:change={(elm) => ranked(elm)}
+                                value={$organizationMembers[
+                                    emailToUserId(member.email)
+                                ].rank}
+                                disabled={(member.rank != "Coach" &&
+                                    $organizationOwner != $userData.email) ||
+                                    $userData.email == member.email}
+                            >
+                                {#each Object.values($organizationTeams) as team}
+                                    <option value={team}>{team}</option>
+                                {/each}
+                            </select>
+                            <p
+                                class="memberRemove"
+                                on:click={(elm) => memberRemove(elm)}
+                                on:keydown={(elm) => memberRemove(elm)}
+                            >
+                                ❌
+                            </p>
+                        </div>
+                    {/each}
+                {/if}
+            </div>
+        {/key}
+    </div>
 {/if}
 
 {#key $organizationTeams}
@@ -323,7 +336,7 @@
             {#each Object.values($organizationTeams) as team}
                 <div class="organizationTeamListItem">
                     <p>{team}</p>
-                    {#if team != "Unranked" && team != "Admin"}
+                    {#if team != "Unsorted" && team != "Coach"}
                         <p
                             class="organizationTeamListRemove"
                             on:click={(elm) => organizationTeamListRemove(elm)}
@@ -341,14 +354,15 @@
 
 <style>
     #memberList {
-        position: absolute;
-        right: 5.5vw;
-        top: 30vh;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 2vh;
         max-width: 32vw;
         overflow-y: auto;
         text-align: center;
         border-radius: 10px;
-        max-height: 57vh;
+        max-height: 50vh;
     }
 
     .memberListItem {
@@ -377,10 +391,7 @@
     .memberRemove {
         cursor: pointer;
         padding-left: 4px;
-    }
-
-    select {
-        margin-bottom: 4px;
+        margin-top: 0;
     }
 
     #organizationInfo {
@@ -393,9 +404,12 @@
         background-color: #007bff;
         border-radius: 10px;
         height: 72vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
-    #organtizationTitle {
+    #organizationTitle {
         text-align: center;
         font-size: 4vh;
         font-weight: bold;
@@ -403,14 +417,13 @@
         color: white;
         overflow-x: auto;
         white-space: nowrap;
-        margin-left: 2px;
-        margin-right: 2px;
+        max-width: 36vw;
     }
 
     #newMember {
-        position: absolute;
-        right: 6vw;
-        top: 22vh;
+        display: flex;
+        align-items: center;
+        justify-content: space-evenly;
         width: 31vw;
         height: 7vh;
         background-color: #d4d4d4;
@@ -420,9 +433,6 @@
     }
 
     #newMemberInput {
-        position: absolute;
-        left: 1vw;
-        bottom: 1.5vh;
         width: 18vw;
         height: 3vh;
         background-color: #d4d4d4;
@@ -433,9 +443,6 @@
     }
 
     #newMemberButton {
-        position: absolute;
-        right: 1vw;
-        bottom: 1vh;
         width: 10vw;
         height: 5vh;
         color: white;
