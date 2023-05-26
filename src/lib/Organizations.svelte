@@ -527,6 +527,10 @@
         color: white;
     }
 
+    .listItem:hover {
+        background-color: #0056b3;
+    }
+
     #organizationTeamList {
         position: absolute;
         left: 2vw;
