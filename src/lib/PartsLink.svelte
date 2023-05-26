@@ -2,7 +2,7 @@
     import { pageState } from "../db";
 </script>
 
-<button on:click={() => pageState.set("teams")}>
+<button on:click={() => pageState.set("parts")}>
     Manage Parts
 </button>
 

@@ -5,12 +5,17 @@
         setToDb,
         userData,
         userId,
-        organizations,
+        pageState,
     } from "../db";
     let teamSelected = "";
     let parts = {};
     let teamList = [];
 
+    // Delete me
+    // Delete me
+    // Delete me
+    // Delete me
+    // Delete me
     // Delete me
     organizationSelectionForParts.set("Canyon High School");
     (async () => {
@@ -20,6 +25,12 @@
             )
         );
     })();
+    // Delete me
+    // Delete me
+    // Delete me
+    // Delete me
+    // Delete me
+    // Delete me
 
     async function organizationClicked(elm) {
         organizationSelectionForParts.set(elm.target.innerHTML);
@@ -36,6 +47,10 @@
 
     async function teamClicked(elm) {
         teamSelected = elm.target.innerHTML;
+    }
+
+    async function addPartsClicked(){
+        pageState.set("addParts");
     }
 </script>
 
@@ -71,6 +86,8 @@
             >Organization Selection</button
         >
     </div>
+
+    <button id="addParts" on:click={addPartsClicked} on:keydown={addPartsClicked}>Add Parts</button>
 {/if}
 
 <style>
@@ -144,5 +161,28 @@
 
     .organizationListItem:hover {
         background-color: #0056b3;
+    }
+
+    #addParts {
+        position: absolute;
+        top: 0;
+        right: 40vw;
+        background-color: #007bff;
+        border-radius: 10px;
+        margin-top: 1vh;
+        margin-right: 1vw;
+        font-size: 4vmin;
+        width: 20vw;
+        height: 10vh;
+        /* Vertically align text */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background-color 0.25s ease-in-out;
+    }
+
+    #addParts:hover {
+        background-color: #0056b3;
+        transition: background-color 0.25s ease-in-out;
     }
 </style>

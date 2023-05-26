@@ -39,6 +39,11 @@ export let userData = writable();
 export let organizations = writable({});
 export let organizationSelectionForParts = writable("");
 
+export let products = writable({});
+(async () => {
+    products.set(await getFromDb("products"));
+})();
+
 authWritable.subscribe((value) => {
     if (value == undefined) return;
     userId.set(value.currentUser?.uid)

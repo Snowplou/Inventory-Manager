@@ -7,6 +7,7 @@
   import Organizations from "./lib/Organizations.svelte";
   import SignOut from "./lib/SignOut.svelte";
   import Parts from "./lib/Parts.svelte";
+  import AddParts from "./lib/AddParts.svelte";
 </script>
 
 {#key $authWritable.currentUser}
@@ -23,10 +24,12 @@
         <PartsLink />
         <OrganizationLink />
       </div>
-    {:else if $pageState == "teams"}
+    {:else if $pageState == "parts"}
       <Parts />
     {:else if $pageState == "organizations"}
       <Organizations />
+    {:else if $pageState == "addParts"}
+      <AddParts />
     {/if}
   {/if}
 {/key}

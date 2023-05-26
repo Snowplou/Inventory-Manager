@@ -27,5 +27,11 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        transition: background-color 0.25s ease-in-out;
+    }
+
+    button:hover {
+        background-color: #bfbfbf;
+        transition: background-color 0.25s ease-in-out;
     }
 </style>
