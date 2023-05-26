@@ -223,7 +223,7 @@
                 <div class="listItem" style={"background-color: " +
                 (Object.keys($userData.organizations)[i] ==
                 organizationSelected
-                    ? "darkGray"
+                    ? "#0f48f2"
                     : "none")}
                     on:click={() =>
                         organizationClicked(
