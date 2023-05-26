@@ -220,23 +220,21 @@
     <div id="organizationList">
         {#if $userData.organizations}
             {#each Object.values($userData.organizations) as organization, i}
-                <div class="listItem">
-                    <!-- Organization name is highlighted if it is selected -->
-                    <p
-                        style={"color: " +
-                            (Object.keys($userData.organizations)[i] ==
-                            organizationSelected
-                                ? "darkGray"
-                                : "white")}
-                        on:click={() =>
-                            organizationClicked(
-                                Object.keys($userData.organizations)[i]
-                            )}
-                        on:keydown={() =>
-                            organizationClicked(
-                                Object.keys($userData.organizations)[i]
-                            )}
+                <div class="listItem" style={"background-color: " +
+                (Object.keys($userData.organizations)[i] ==
+                organizationSelected
+                    ? "darkGray"
+                    : "none")}
+                    on:click={() =>
+                        organizationClicked(
+                            Object.keys($userData.organizations)[i]
+                        )}
+                    on:keydown={() =>
+                        organizationClicked(
+                            Object.keys($userData.organizations)[i]
+                        )}
                     >
+                    <p>
                         {Object.keys($userData.organizations)[i]}
                     </p>
                 </div>
@@ -513,17 +511,20 @@
         text-align: left;
         background-color: #007bff;
         border-radius: 10px;
-        padding-left: 5px;
         max-height: 35vh;
     }
 
     .listItem {
         display: flex;
         align-items: center;
-        margin: 5px;
+        margin: 0;
+        padding-left: 5px;
+        padding-right: 5px;
         height: 5vh;
         overflow-x: auto;
         overflow-y: hidden;
+        cursor: pointer;
+        color: white;
     }
 
     #organizationTeamList {
