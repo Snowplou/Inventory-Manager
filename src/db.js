@@ -37,6 +37,7 @@ export let pageState = writable("home");
 export let userId = writable()
 export let userData = writable();
 export let organizations = writable({});
+export let organizationSelectionForParts = writable("");
 
 authWritable.subscribe((value) => {
     if (value == undefined) return;

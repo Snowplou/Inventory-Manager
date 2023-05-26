@@ -3,10 +3,10 @@
   import HomeLink from "./lib/HomeLink.svelte";
   import LogIn from "./lib/LogIn.svelte";
   import OrganizationLink from "./lib/OrganizationLink.svelte";
+  import PartsLink from "./lib/PartsLink.svelte";
   import Organizations from "./lib/Organizations.svelte";
   import SignOut from "./lib/SignOut.svelte";
-  import Teams from "./lib/Teams.svelte";
-  import TeamsLink from "./lib/TeamsLink.svelte";
+  import Parts from "./lib/Parts.svelte";
 </script>
 
 {#key $authWritable.currentUser}
@@ -20,11 +20,11 @@
     {#if $pageState == "home"}
       <p>User ID: {$userId}</p>
       <div id="linksCenter">
-        <TeamsLink />
+        <PartsLink />
         <OrganizationLink />
       </div>
     {:else if $pageState == "teams"}
-      <Teams />
+      <Parts />
     {:else if $pageState == "organizations"}
       <Organizations />
     {/if}

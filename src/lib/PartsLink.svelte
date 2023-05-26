@@ -3,7 +3,7 @@
 </script>
 
 <button on:click={() => pageState.set("teams")}>
-    Teams
+    Manage Parts
 </button>
 
 <style>
