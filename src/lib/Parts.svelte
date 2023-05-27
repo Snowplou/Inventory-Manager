@@ -102,22 +102,34 @@
         let productCount =
             $organizations[$organizationSelectionForParts].teams[$teamSelected]
                 .products[product];
-        if (productCount == 1) {
-            setToDb(
-                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
-                null
-            );
+
+        if ($teamSelected != "Inventory") {
+            if (productCount == 1) {
+                setToDb(
+                    `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
+                    null
+                );
+            } else {
+                setToDb(
+                    `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
+                    productCount - 1
+                );
+            }
         } else {
-            setToDb(
-                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
-                productCount - 1
-            );
+            console.log("transfer");
         }
 
-        elm.target.parentElement.children[3].innerHTML = "Removed!";
-        setTimeout(() => {
-            elm.target.parentElement.children[3].innerHTML = "Remove";
-        }, 500);
+        if ($teamSelected) {
+            elm.target.parentElement.children[3].innerHTML = "Removed!";
+            setTimeout(() => {
+                elm.target.parentElement.children[3].innerHTML = "Remove";
+            }, 500);
+        } else {
+            elm.target.parentElement.children[3].innerHTML = "Transferred!";
+            setTimeout(() => {
+                elm.target.parentElement.children[3].innerHTML = "Transfer";
+            }, 500);
+        }
     }
 </script>
 
@@ -152,15 +164,15 @@
             {/if}
         {/each}
         <p
-                    class="teamListItem"
-                    on:click={(elm) => teamClicked(elm)}
-                    on:keydown={(elm) => teamClicked(elm)}
-                    style="background-color: {"Inventory" == $teamSelected
-                        ? '#0056b3'
-                        : ''}"
-                >
-                    Inventory
-                </p>
+            class="teamListItem"
+            on:click={(elm) => teamClicked(elm)}
+            on:keydown={(elm) => teamClicked(elm)}
+            style="background-color: {'Inventory' == $teamSelected
+                ? '#0056b3'
+                : ''}"
+        >
+            Inventory
+        </p>
         <button
             id="goBackToOrganizationSelection"
             on:click={goBackToOrganizationSelection}
@@ -180,6 +192,13 @@
     {#key $organizationSelectionForParts}
         {#key $teamSelected}
             <div id="partsList">
+                <!-- <select>
+                    {#if $organizations.teamList}
+                        {#each Object.values($organizations.teamList) as organization}
+                            <option value={organization}>{organization}</option>
+                        {/each}
+                    {/if}
+                </select>             -->
                 {#each Object.values(teamProducts) as productCount, i}
                     <div class="part">
                         <img
@@ -193,7 +212,10 @@
                         <p>Count: {productCount}</p>
                         <button
                             on:click={removeProduct}
-                            on:keydown={removeProduct}>{$teamSelected != "Inventory" ? "Remove" : "Transfer"}</button
+                            on:keydown={removeProduct}
+                            >{$teamSelected != "Inventory"
+                                ? "Remove"
+                                : "Transfer"}</button
                         >
                     </div>
                 {:else}
@@ -207,6 +229,14 @@
 {/if}
 
 <style>
+    select {
+        position: absolute;
+        left: 50%;
+        top: 2vh;
+        width: 5vw;
+        height: 3vh;
+    }
+
     #partsList {
         position: absolute;
         left: 24vw;
