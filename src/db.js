@@ -38,18 +38,14 @@ export let userId = writable()
 export let userData = writable();
 export let organizations = writable({});
 export let organizationSelectionForParts = writable("");
-
-// Change to ""
-// Change to ""
-// Change to ""
-// Change to ""
-// Change to ""
-export let teamSelected = writable("15442B");
-// Change to ""
-// Change to ""
-// Change to ""
-// Change to ""
-// Change to ""
+export let pathChanger = {
+    ".": "a1802s3na79",
+    "#": "8sb28218ab2",
+    "$": "ab19a7ba18a",
+    "[": "auba189a9na1",
+    "]": "aab2723na81n",
+};
+export let teamSelected = writable("");
 
 export let products = writable({});
 (async () => {

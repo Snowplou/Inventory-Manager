@@ -7,7 +7,8 @@
         userId,
         pageState,
         products,
-        teamSelected
+        teamSelected,
+        pathChanger
     } from "../db";
 
     async function backButtonPressed() {
@@ -67,14 +68,6 @@
         }
     }
 
-    let pathChanger = {
-        ".": "a1802s3na79",
-        "#": "8sb28218ab2",
-        "$": "ab19a7ba18a",
-        "[": "auba189a9na1",
-        "]": "aab2723na81n",
-    }
-
     async function addProduct(elm){
         let product = elm.target.parentElement.children[1].innerHTML;
 
@@ -132,9 +125,9 @@
                     src={product.url}
                     alt={product.name}
                 />
-                <p class="productName">{product.name}</p>
-                <p class="productPrice">${product.price}</p>
-                <button class="addProductButton" on:click={(elm) => addProduct(elm)} on:keydown={(elm) => addProduct(elm)}>Add</button>
+                <p>{product.name}</p>
+                <p>${product.price}</p>
+                <button on:click={(elm) => addProduct(elm)} on:keydown={(elm) => addProduct(elm)}>Add</button>
             </div>
         {:else}
             <p id="noCategorySelected">No Category Selected</p>

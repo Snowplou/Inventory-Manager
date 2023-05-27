@@ -4,42 +4,55 @@
         getFromDb,
         setToDb,
         userData,
-        userId,
         pageState,
-        teamSelected
+        teamSelected,
+        organizations,
+        pathChanger,
     } from "../db";
     import { writable } from "svelte/store";
     let parts = {};
-    let teamList = [];
+    let teamProducts = {};
 
-    // Delete me
-    // Delete me
-    // Delete me
-    // Delete me
-    // Delete me
-    // Delete me
-    organizationSelectionForParts.set("Canyon High School");
-    (async () => {
-        teamList = Object.values(
-            await getFromDb(
-                `organizations/${$organizationSelectionForParts}/teamList`
-            )
-        );
-    })();
-    // Delete me
-    // Delete me
-    // Delete me
-    // Delete me
-    // Delete me
-    // Delete me
+    function updateParts(){
+        if (!$organizationSelectionForParts) return;
+        if(!$teamSelected){
+            teamProducts = {}
+        }
+        else if(!$organizations[$organizationSelectionForParts].teams){
+            teamProducts = {}
+        }
+        else if (
+            !$organizations[$organizationSelectionForParts].teams[$teamSelected]
+        ) {
+            teamProducts = {};
+        } else {
+            teamProducts = {
+                ...$organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ].products,
+            };
+        }
+    }
+
+    organizations.subscribe((value) => {
+        updateParts()
+    });
+
+    organizationSelectionForParts.subscribe((value) => {
+        updateParts()
+    });
+
+    teamSelected.subscribe((value) => {
+        updateParts()
+    });
 
     async function organizationClicked(elm) {
-        organizationSelectionForParts.set(elm.target.innerHTML);
-        teamList = Object.values(
-            await getFromDb(
-                `organizations/${$organizationSelectionForParts}/teamList`
-            )
-        );
+        let orgName = elm.target.innerHTML;
+        // If last character is a space, remove it
+        if (orgName[orgName.length - 1] == " ") {
+            orgName = orgName.slice(0, -1);
+        }
+        organizationSelectionForParts.set(orgName);
     }
 
     async function goBackToOrganizationSelection() {
@@ -47,11 +60,22 @@
     }
 
     async function teamClicked(elm) {
-        teamSelected.set(elm.target.innerHTML)
+        teamSelected.set(elm.target.innerHTML);
     }
 
-    async function addPartsClicked(){
+    async function addPartsClicked() {
         pageState.set("addParts");
+    }
+
+    function decodeProductName(name) {
+        let decodedName = name;
+        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            decodedName = decodedName.replaceAll(
+                Object.values(pathChanger)[i],
+                Object.keys(pathChanger)[i]
+            );
+        }
+        return decodedName;
     }
 </script>
 
@@ -69,13 +93,15 @@
     </div>
 {:else}
     <div id="teamSelection">
-        {#each teamList as team}
+        {#each $organizations[$organizationSelectionForParts].teamList as team}
             {#if team != "Unsorted" && team != "Coach"}
                 <p
                     class="teamListItem"
                     on:click={(elm) => teamClicked(elm)}
                     on:keydown={(elm) => teamClicked(elm)}
-                    style="background-color: {team == $teamSelected ? '#0056b3' : ''}"
+                    style="background-color: {team == $teamSelected
+                        ? '#0056b3'
+                        : ''}"
                 >
                     {team}
                 </p>
@@ -89,10 +115,90 @@
         >
     </div>
 
-    <button id="addParts" on:click={addPartsClicked} on:keydown={addPartsClicked}>Add Parts</button>
+    <button
+        id="addParts"
+        on:click={addPartsClicked}
+        on:keydown={addPartsClicked}>Add Parts</button
+    >
+
+    {#key $organizationSelectionForParts}
+        {#key $teamSelected}
+            <div id="partsList">
+                {#each Object.values(teamProducts) as productCount, i}
+                    <div class="part">
+                        <!-- <img
+                    class="productImage"
+                    src={}
+                    alt={}
+                /> -->
+                        <p>{decodeProductName(Object.keys(teamProducts)[i])}</p>
+                        <p>{productCount}</p>
+                        <button>Remove</button>
+                    </div>
+                {:else}
+                    <p id="noPartsFound">
+                        No parts found.<br />You need to add parts to this team.
+                    </p>
+                {/each}
+            </div>
+        {/key}
+    {/key}
 {/if}
 
 <style>
+    #partsList {
+        position: absolute;
+        left: 24vw;
+        top: 12vh;
+        width: 74vw;
+        height: 72vh;
+        border-radius: 10px;
+        background-color: #007bff;
+        overflow-y: auto;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .part img {
+        margin-top: 5px;
+        width: 50%;
+        height: auto;
+        object-fit: contain;
+        border-radius: 10px;
+    }
+
+    .part p {
+        margin-top: 0;
+        margin-bottom: 2px;
+    }
+
+    .part button {
+        background-color: white;
+        transition: background-color 0.25s ease-in-out;
+    }
+
+    .part button:hover {
+        background-color: lightgray;
+        transition: background-color 0.25s ease-in-out;
+    }
+
+    .part {
+        width: 30vw;
+        height: calc(35vh + 3vw);
+        margin-bottom: 5vh;
+        position: relative;
+    }
+
+    #noPartsFound {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+        margin-right: auto;
+        color: white;
+        font-size: 8vmin;
+        font-weight: bold;
+    }
+
     #teamSelection {
         position: absolute;
         top: 12vh;
