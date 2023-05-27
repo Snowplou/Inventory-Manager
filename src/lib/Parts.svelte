@@ -159,7 +159,7 @@
         >
     </div>
 
-    {#if $teamSelected}
+    {#if $teamSelected && ($userData.organizations[$organizationSelectionForParts].rank == "Owner" || $userData.organizations[$organizationSelectionForParts].rank == "Coach")}
         <button
             id="addParts"
             on:click={addPartsClicked}
