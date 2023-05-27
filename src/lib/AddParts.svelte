@@ -155,9 +155,6 @@
                 {:else}
                     <p>Count: 0</p>
                 {/if}
-                <!-- {#key $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product.name)]}
-                    <p>Count: {getCount(product.name)}</p>
-                {/key} -->
 
                 <button on:click={(elm) => addProduct(elm)} on:keydown={(elm) => addProduct(elm)}>Add</button>
             </div>

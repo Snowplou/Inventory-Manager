@@ -42,7 +42,7 @@
         let organization = {
             owner: $userData.email,
             a: true,
-            teams: { 0: "Unsorted", 1: "Coach" },
+            teamList: { 0: "Unsorted", 1: "Coach" },
         };
         setToDb(`organizations/${name}`, organization);
         let organization2 = { rank: "Unsorted" };
@@ -147,9 +147,11 @@
             return;
         }
         let org = await getFromDb(`organizations/${organizationSelected}`);
-        if (Object.values(org.teams).includes(team)) {
-            alert("This team already exists");
-            return;
+        if (org.teams) {
+            if (Object.values(org.teams).includes(team)) {
+                alert("This team already exists");
+                return;
+            }
         }
         setToDb(
             `organizations/${organizationSelected}/teamList/${
@@ -220,11 +222,13 @@
     <div id="organizationList">
         {#if $userData.organizations}
             {#each Object.values($userData.organizations) as organization, i}
-                <div class="listItem" style={"background-color: " +
-                (Object.keys($userData.organizations)[i] ==
-                organizationSelected
-                    ? "#0056b3"
-                    : "none")}
+                <div
+                    class="listItem"
+                    style={"background-color: " +
+                        (Object.keys($userData.organizations)[i] ==
+                        organizationSelected
+                            ? "#0056b3"
+                            : "none")}
                     on:click={() =>
                         organizationClicked(
                             Object.keys($userData.organizations)[i]
@@ -233,7 +237,7 @@
                         organizationClicked(
                             Object.keys($userData.organizations)[i]
                         )}
-                    >
+                >
                     <p>
                         {Object.keys($userData.organizations)[i]}
                     </p>
