@@ -538,10 +538,12 @@
         overflow-y: hidden;
         cursor: pointer;
         color: white;
+        transition: background-color 0.25s ease-in-out;
     }
 
     .listItem:hover {
         background-color: #0056b3;
+        transition: background-color 0.25s ease-in-out;
     }
 
     #organizationTeamList {

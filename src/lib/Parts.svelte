@@ -151,6 +151,16 @@
                 </p>
             {/if}
         {/each}
+        <p
+                    class="teamListItem"
+                    on:click={(elm) => teamClicked(elm)}
+                    on:keydown={(elm) => teamClicked(elm)}
+                    style="background-color: {"Inventory" == $teamSelected
+                        ? '#0056b3'
+                        : ''}"
+                >
+                    Inventory
+                </p>
         <button
             id="goBackToOrganizationSelection"
             on:click={goBackToOrganizationSelection}
@@ -183,7 +193,7 @@
                         <p>Count: {productCount}</p>
                         <button
                             on:click={removeProduct}
-                            on:keydown={removeProduct}>Remove</button
+                            on:keydown={removeProduct}>{$teamSelected != "Inventory" ? "Remove" : "Transfer"}</button
                         >
                     </div>
                 {:else}
