@@ -8,6 +8,7 @@
         teamSelected,
         organizations,
         pathChanger,
+        products,
     } from "../db";
     import { writable } from "svelte/store";
     let parts = {};
@@ -77,6 +78,15 @@
         }
         return decodedName;
     }
+
+    function nameToImage(name){
+        name = decodeProductName(name)
+        for(let product of Object.values($products)){
+            if(product.name == name){
+                return product.url
+            }
+        }
+    }
 </script>
 
 {#if !$organizationSelectionForParts}
@@ -126,13 +136,13 @@
             <div id="partsList">
                 {#each Object.values(teamProducts) as productCount, i}
                     <div class="part">
-                        <!-- <img
+                        <img
                     class="productImage"
-                    src={}
-                    alt={}
-                /> -->
+                    src={nameToImage(Object.keys(teamProducts)[i])}
+                    alt={decodeProductName(Object.keys(teamProducts)[i])}
+                />
                         <p>{decodeProductName(Object.keys(teamProducts)[i])}</p>
-                        <p>{productCount}</p>
+                        <p>Count: {productCount}</p>
                         <button>Remove</button>
                     </div>
                 {:else}
