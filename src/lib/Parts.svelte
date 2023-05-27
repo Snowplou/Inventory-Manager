@@ -14,15 +14,13 @@
     let parts = {};
     let teamProducts = {};
 
-    function updateParts(){
+    function updateParts() {
         if (!$organizationSelectionForParts) return;
-        if(!$teamSelected){
-            teamProducts = {}
-        }
-        else if(!$organizations[$organizationSelectionForParts].teams){
-            teamProducts = {}
-        }
-        else if (
+        if (!$teamSelected) {
+            teamProducts = {};
+        } else if (!$organizations[$organizationSelectionForParts].teams) {
+            teamProducts = {};
+        } else if (
             !$organizations[$organizationSelectionForParts].teams[$teamSelected]
         ) {
             teamProducts = {};
@@ -36,15 +34,15 @@
     }
 
     organizations.subscribe((value) => {
-        updateParts()
+        updateParts();
     });
 
     organizationSelectionForParts.subscribe((value) => {
-        updateParts()
+        updateParts();
     });
 
     teamSelected.subscribe((value) => {
-        updateParts()
+        updateParts();
     });
 
     async function organizationClicked(elm) {
@@ -70,6 +68,8 @@
 
     function decodeProductName(name) {
         let decodedName = name;
+        // Remove amp
+        decodedName = decodedName.replaceAll("&amp;", "&");
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
             decodedName = decodedName.replaceAll(
                 Object.values(pathChanger)[i],
@@ -79,27 +79,61 @@
         return decodedName;
     }
 
-    function nameToImage(name){
-        name = decodeProductName(name)
-        for(let product of Object.values($products)){
-            if(product.name == name){
-                return product.url
+    function nameToImage(name) {
+        name = decodeProductName(name);
+        for (let product of Object.values($products)) {
+            if (product.name == name) {
+                return product.url;
             }
         }
+    }
+
+    async function removeProduct(elm) {
+        let product = elm.target.parentElement.children[1].innerHTML;
+
+        // Replace the characters that firebase doesn't like
+        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            product = product.replaceAll(
+                Object.keys(pathChanger)[i],
+                Object.values(pathChanger)[i]
+            );
+        }
+
+        let productCount =
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .products[product];
+        if (productCount == 1) {
+            setToDb(
+                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
+                null
+            );
+        } else {
+            setToDb(
+                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
+                productCount - 1
+            );
+        }
+
+        elm.target.parentElement.children[3].innerHTML = "Removed!";
+        setTimeout(() => {
+            elm.target.parentElement.children[3].innerHTML = "Remove";
+        }, 500);
     }
 </script>
 
 {#if !$organizationSelectionForParts}
     <div id="organizationSelection">
-        {#each Object.keys($userData.organizations) as organization}
-            <p
-                class="organizationListItem"
-                on:click={(elm) => organizationClicked(elm)}
-                on:keydown={(elm) => organizationClicked(elm)}
-            >
-                {organization}
-            </p>
-        {/each}
+        {#if $userData}
+            {#each Object.keys($userData.organizations) as organization}
+                <p
+                    class="organizationListItem"
+                    on:click={(elm) => organizationClicked(elm)}
+                    on:keydown={(elm) => organizationClicked(elm)}
+                >
+                    {organization}
+                </p>
+            {/each}
+        {/if}
     </div>
 {:else}
     <div id="teamSelection">
@@ -125,11 +159,13 @@
         >
     </div>
 
-    <button
-        id="addParts"
-        on:click={addPartsClicked}
-        on:keydown={addPartsClicked}>Add Parts</button
-    >
+    {#if $teamSelected}
+        <button
+            id="addParts"
+            on:click={addPartsClicked}
+            on:keydown={addPartsClicked}>Add Parts</button
+        >
+    {/if}
 
     {#key $organizationSelectionForParts}
         {#key $teamSelected}
@@ -137,13 +173,18 @@
                 {#each Object.values(teamProducts) as productCount, i}
                     <div class="part">
                         <img
-                    class="productImage"
-                    src={nameToImage(Object.keys(teamProducts)[i])}
-                    alt={decodeProductName(Object.keys(teamProducts)[i])}
-                />
+                            class="productImage"
+                            src={nameToImage(Object.keys(teamProducts)[i])}
+                            alt={decodeProductName(
+                                Object.keys(teamProducts)[i]
+                            )}
+                        />
                         <p>{decodeProductName(Object.keys(teamProducts)[i])}</p>
                         <p>Count: {productCount}</p>
-                        <button>Remove</button>
+                        <button
+                            on:click={removeProduct}
+                            on:keydown={removeProduct}>Remove</button
+                        >
                     </div>
                 {:else}
                     <p id="noPartsFound">

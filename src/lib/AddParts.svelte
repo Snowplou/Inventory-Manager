@@ -3,8 +3,7 @@
         organizationSelectionForParts,
         getFromDb,
         setToDb,
-        userData,
-        userId,
+        organizations,
         pageState,
         products,
         teamSelected,
@@ -83,10 +82,29 @@
         else{
             setToDb(`organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`, Number(teamProducts) + 1);
         }
-        elm.target.parentElement.children[3].innerHTML = "Added!";
+        elm.target.parentElement.children[4].innerHTML = "Added!";
         setTimeout(() => {
-            elm.target.parentElement.children[3].innerHTML = "Add";
+            elm.target.parentElement.children[4].innerHTML = "Add";
         }, 500);
+    }
+
+    function encode(name){
+        for(let i = 0; i < Object.keys(pathChanger).length; i++){
+            name = name.replaceAll(Object.keys(pathChanger)[i], Object.values(pathChanger)[i]);
+        }
+        name = name.replaceAll("&", "&amp;");
+        return name
+    }
+
+    function getCount(productName){
+        productName = encode(productName);
+        let count = $organizations[$organizationSelectionForParts].teams[$teamSelected].products[productName];
+        if(!count){
+            return 0;
+        }
+        else{
+            return count;
+        }
     }
     
 </script>
@@ -127,10 +145,24 @@
                 />
                 <p>{product.name}</p>
                 <p>${product.price}</p>
+
+                {#if $organizations[$organizationSelectionForParts].teams}
+                    {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product.name)]}
+                        <p>Count: {$organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product.name)]}</p>
+                    {:else}
+                        <p>Count: 0</p>
+                    {/if}
+                {:else}
+                    <p>Count: 0</p>
+                {/if}
+                <!-- {#key $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product.name)]}
+                    <p>Count: {getCount(product.name)}</p>
+                {/key} -->
+
                 <button on:click={(elm) => addProduct(elm)} on:keydown={(elm) => addProduct(elm)}>Add</button>
             </div>
         {:else}
-            <p id="noCategorySelected">No Category Selected</p>
+            <p id="noCategorySelected">Please select either IQ or V5.</p>
         {/each}
     </div>
 {/key}
@@ -225,7 +257,7 @@
         border-radius: 10px;
         margin-top: 1vh;
         margin-right: 1vw;
-        font-size: 4vmin;
+        font-size: calc(1.5vh + 1vw);
         width: 20vw;
         height: 10vh;
         /* Vertically align text */
