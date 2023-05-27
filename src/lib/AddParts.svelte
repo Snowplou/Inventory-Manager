@@ -253,6 +253,7 @@
         position: absolute;
         top: 0;
         right: 40vw;
+        color: white;
         background-color: #007bff;
         border-radius: 10px;
         margin-top: 1vh;
