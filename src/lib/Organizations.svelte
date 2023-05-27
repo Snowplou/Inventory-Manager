@@ -147,21 +147,27 @@
             return;
         }
         let org = await getFromDb(`organizations/${organizationSelected}`);
-        if (org.teams) {
-            if (Object.values(org.teams).includes(team)) {
+        if (org.teamList) {
+            if (Object.values(org.teamList).includes(team)) {
                 alert("This team already exists");
                 return;
             }
         }
-        setToDb(
-            `organizations/${organizationSelected}/teamList/${
-                Object.values(org.teams).length
-            }`,
-            team
-        );
+
+        if (org.teamList) {
+            setToDb(
+                `organizations/${organizationSelected}/teamList/${
+                    Object.values(org.teamList).length
+                }`,
+                team
+            );
+        } else {
+            setToDb(`organizations/${organizationSelected}/teamList/2`, team);
+        }
         elm.target.parentNode.children[0].value = "";
         organizationTeams.update((teams) => {
-            teams[Object.values(org.teams).length] = team;
+            if (org.teamList) teams[Object.values(org.teamList).length] = team;
+            else teams[0] = team;
             return teams;
         });
     }
@@ -320,41 +326,44 @@
     </div>
 {/if}
 
-{#key $organizationTeams}
-    {#if organizationSelected}
-        <div id="organizationTeamList">
-            <div id="organizationTeamsTitleAndAdd">
-                <p id="organizationTeamListTitle">Teams</p>
-                <div id="newTeam">
-                    <input
-                        type="text"
-                        maxlength="100"
-                        id="newTeamInput"
-                        placeholder="New Team"
-                    />
-                    <button
-                        id="newTeamButton"
-                        on:click={(elm) => teamButton(elm)}>Add</button
-                    >
-                </div>
-            </div>
-            {#each Object.values($organizationTeams) as team}
-                <div class="organizationTeamListItem">
-                    <p>{team}</p>
-                    {#if team != "Unsorted" && team != "Coach"}
-                        <p
-                            class="organizationTeamListRemove"
-                            on:click={(elm) => organizationTeamListRemove(elm)}
-                            on:keydown={(elm) =>
-                                organizationTeamListRemove(elm)}
+{#key $userData}
+    {#key $organizationTeams}
+        {#if organizationSelected}
+            <div id="organizationTeamList">
+                <div id="organizationTeamsTitleAndAdd">
+                    <p id="organizationTeamListTitle">Teams</p>
+                    <div id="newTeam">
+                        <input
+                            type="text"
+                            maxlength="100"
+                            id="newTeamInput"
+                            placeholder="New Team"
+                        />
+                        <button
+                            id="newTeamButton"
+                            on:click={(elm) => teamButton(elm)}>Add</button
                         >
-                            ❌
-                        </p>
-                    {/if}
+                    </div>
                 </div>
-            {/each}
-        </div>
-    {/if}
+                {#each Object.values($organizationTeams) as team}
+                    <div class="organizationTeamListItem">
+                        <p>{team}</p>
+                        {#if team != "Unsorted" && team != "Coach"}
+                            <p
+                                class="organizationTeamListRemove"
+                                on:click={(elm) =>
+                                    organizationTeamListRemove(elm)}
+                                on:keydown={(elm) =>
+                                    organizationTeamListRemove(elm)}
+                            >
+                                ❌
+                            </p>
+                        {/if}
+                    </div>
+                {/each}
+            </div>
+        {/if}
+    {/key}
 {/key}
 
 <style>
