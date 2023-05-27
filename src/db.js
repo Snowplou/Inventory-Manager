@@ -39,6 +39,18 @@ export let userData = writable();
 export let organizations = writable({});
 export let organizationSelectionForParts = writable("");
 
+// Change to ""
+// Change to ""
+// Change to ""
+// Change to ""
+// Change to ""
+export let teamSelected = writable("15442B");
+// Change to ""
+// Change to ""
+// Change to ""
+// Change to ""
+// Change to ""
+
 export let products = writable({});
 (async () => {
     products.set(await getFromDb("products"));

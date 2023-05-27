@@ -6,8 +6,9 @@
         userData,
         userId,
         pageState,
+        teamSelected
     } from "../db";
-    let teamSelected = "";
+    import { writable } from "svelte/store";
     let parts = {};
     let teamList = [];
 
@@ -46,7 +47,7 @@
     }
 
     async function teamClicked(elm) {
-        teamSelected = elm.target.innerHTML;
+        teamSelected.set(elm.target.innerHTML)
     }
 
     async function addPartsClicked(){
@@ -74,6 +75,7 @@
                     class="teamListItem"
                     on:click={(elm) => teamClicked(elm)}
                     on:keydown={(elm) => teamClicked(elm)}
+                    style="background-color: {team == $teamSelected ? '#0056b3' : ''}"
                 >
                     {team}
                 </p>
