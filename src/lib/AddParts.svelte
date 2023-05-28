@@ -88,9 +88,9 @@
                 Number(teamProducts) + 1
             );
         }
-        elm.target.parentElement.children[4].innerHTML = "Added!";
+        elm.target.parentElement.children[3].innerHTML = "Added!";
         setTimeout(() => {
-            elm.target.parentElement.children[4].innerHTML = "Add";
+            elm.target.parentElement.children[3].innerHTML = "Add";
         }, 500);
     }
 

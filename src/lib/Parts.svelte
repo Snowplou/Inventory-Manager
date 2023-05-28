@@ -13,8 +13,12 @@
     import { writable } from "svelte/store";
     let parts = {};
     let teamProducts = {};
-    let selectedTeamForTransfer =
-        $organizations[$organizationSelectionForParts].teamList[2];
+    let selectedTeamForTransfer = "";
+    organizationSelectionForParts.subscribe(() => {
+        if(!$organizationSelectionForParts) return;
+        selectedTeamForTransfer =
+            $organizations[$organizationSelectionForParts].teamList[2];
+    })
 
     function updateParts() {
         if (!$organizationSelectionForParts) return;
