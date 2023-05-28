@@ -66,25 +66,24 @@
 
 <style>
     #mainPage {
-        display: absolute;
-        margin-left: auto;
-        margin-right: auto;
-        width: 90vmin;
-        height: 100vmin;
+        position: absolute;
+        left: 10vw;
+        top: 5vh;
+        width: 80vw;
+        height: 90vh;
         background-color: #d4d4d4;
         border-radius: 10px;
-        position: absolute;
-        left: 50%;
-        top: 0;
-        transform: translateX(-50%) translateY(5vmin);
+        margin-bottom: 0;
     }
 
     #title {
-        font-size: 5vw;
-        text-align: center;
+        position: absolute;
+        width: 100%;
+        left: 0;
+        top: 4vh;
+        margin: 0;
+        font-size: 10vmin;
         font-weight: bold;
-        padding-top: 1vh;
-        margin-bottom: 0;
     }
 
     input {
@@ -94,7 +93,7 @@
         width: 50vmin;
         height: 5vmin;
         border-radius: 10px;
-        font-size: 3vw;
+        font-size: 3vmin;
         text-align: center;
         margin-bottom: 10px;
     }
@@ -131,9 +130,13 @@
     }
 
     #inputsAndButtonsFlex {
+        position: absolute;
+        left: 0;
+        top: 14vh;
+        width: 100%;
+        height: 76vh;
         display: flex;
         flex-direction: column;
-        justify-content: space-evenly;
-        height: 100%;
+        justify-content: center;
     }
 </style>
