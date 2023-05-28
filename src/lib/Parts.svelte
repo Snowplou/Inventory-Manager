@@ -15,10 +15,10 @@
     let teamProducts = {};
     let selectedTeamForTransfer = "";
     organizationSelectionForParts.subscribe(() => {
-        if(!$organizationSelectionForParts) return;
+        if (!$organizationSelectionForParts) return;
         selectedTeamForTransfer =
             $organizations[$organizationSelectionForParts].teamList[2];
-    })
+    });
 
     function updateParts() {
         if (!$organizationSelectionForParts) return;
@@ -96,7 +96,6 @@
 
     async function removeProduct(elm, type) {
         let product = elm.target.parentElement.children[1].innerHTML;
-        let button = elm.target.parentElement.children[3];
 
         let productCount =
             $organizations[$organizationSelectionForParts].teams[$teamSelected]
@@ -113,6 +112,10 @@
                     `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
                     productCount - 1
                 );
+                elm.target.parentElement.children[3].innerHTML = "Removed!";
+                setTimeout(() => {
+                    elm.target.parentElement.children[3].innerHTML = "Remove";
+                }, 500);
             }
         } else {
             let transferTeam = document.getElementById(
@@ -134,22 +137,21 @@
                 `organizations/${$organizationSelectionForParts}/teams/${transferTeam}/products/${product}`,
                 teamCount + 1
             );
-            setToDb(
-                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
-                productCount == 1 ? null : productCount - 1
-            );
-        }
-
-        if ($teamSelected != "Inventory") {
-            button.innerHTML = "Removed!";
-            setTimeout(() => {
-                button.innerHTML = "Remove";
-            }, 500);
-        } else {
-            button.innerHTML = "Transferred!";
-            setTimeout(() => {
-                button.innerHTML = "Transfer";
-            }, 500);
+            if (productCount == 1) {
+                setToDb(
+                    `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
+                    null
+                );
+            } else {
+                setToDb(
+                    `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
+                    productCount - 1
+                );
+                elm.target.parentElement.children[4].innerHTML = "Transferred!";
+                setTimeout(() => {
+                    elm.target.parentElement.children[4].innerHTML = "Transfer";
+                }, 500);
+            }
         }
     }
 </script>
@@ -212,51 +214,44 @@
 
     {#key $organizationSelectionForParts}
         {#key $teamSelected}
-            {#key $organizations[$organizationSelectionForParts]}
-                <div
-                    id="partsList"
-                    style="top: {$teamSelected != 'Inventory'
-                        ? '12vh'
-                        : '16vh'};"
-                >
-                    {#each Object.values(teamProducts) as productCount, i}
-                        <div class="part">
-                            <img
-                                class="productImage"
-                                src={nameToImage(Object.keys(teamProducts)[i])}
-                                alt={decodeProductName(
-                                    Object.keys(teamProducts)[i]
-                                )}
-                            />
-                            <p>
-                                {decodeProductName(
-                                    Object.keys(teamProducts)[i]
-                                )}
-                            </p>
-                            <p>Count: {productCount}</p>
-                            <button
-                                on:click={(elm) => removeProduct(elm, "remove")}
-                                on:keydown={(elm) =>
-                                    removeProduct(elm, "remove")}>Remove</button
-                            >
-                            {#if $teamSelected == "Inventory"}
-                                <button
-                                    on:click={(elm) =>
-                                        removeProduct(elm, "transfer")}
-                                    on:keydown={(elm) =>
-                                        removeProduct(elm, "transfer")}
-                                    >Transfer</button
-                                >
-                            {/if}
-                        </div>
-                    {:else}
-                        <p id="noPartsFound">
-                            No parts found.<br />You need to add parts to this
-                            team.
+            <div
+                id="partsList"
+                style="top: {$teamSelected != 'Inventory' ? '12vh' : '16vh'};"
+            >
+                {#each Object.values(teamProducts) as productCount, i}
+                    <div class="part">
+                        <img
+                            class="productImage"
+                            src={nameToImage(Object.keys(teamProducts)[i])}
+                            alt={decodeProductName(
+                                Object.keys(teamProducts)[i]
+                            )}
+                        />
+                        <p>
+                            {decodeProductName(Object.keys(teamProducts)[i])}
                         </p>
-                    {/each}
-                </div>
-            {/key}
+                        <p>Count: {productCount}</p>
+                        <button
+                            on:click={(elm) => removeProduct(elm, "remove")}
+                            on:keydown={(elm) => removeProduct(elm, "remove")}
+                            >Remove</button
+                        >
+                        {#if $teamSelected == "Inventory"}
+                            <button
+                                on:click={(elm) =>
+                                    removeProduct(elm, "transfer")}
+                                on:keydown={(elm) =>
+                                    removeProduct(elm, "transfer")}
+                                >Transfer</button
+                            >
+                        {/if}
+                    </div>
+                {:else}
+                    <p id="noPartsFound">
+                        No parts found.<br />You need to add parts to this team.
+                    </p>
+                {/each}
+            </div>
         {/key}
     {/key}
 {/if}
