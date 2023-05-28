@@ -7,7 +7,7 @@
         pageState,
         products,
         teamSelected,
-        pathChanger
+        pathChanger,
     } from "../db";
 
     async function backButtonPressed() {
@@ -49,38 +49,44 @@
         for (let i = 0; i < Object.keys($products).length; i++) {
             if ($products[i].category) {
                 if ($products[i].category.includes(categorySelected)) {
-
-
-                    if(vexType == "All"){
+                    if (vexType == "All") {
                         filteredProducts.push($products[i]);
-                    }
-                    else if($products[i].type){
-                        for(let j = 0; j < $products[i].type.length; j++){
-                            if($products[i].type[j].includes(vexType)){
+                    } else if ($products[i].type) {
+                        for (let j = 0; j < $products[i].type.length; j++) {
+                            if ($products[i].type[j].includes(vexType)) {
                                 filteredProducts.push($products[i]);
                             }
                         }
                     }
-
                 }
             }
         }
     }
 
-    async function addProduct(elm){
+    async function addProduct(elm) {
         let product = elm.target.parentElement.children[1].innerHTML;
 
         // Replace the characters that firebase doesn't like
-        for(let i = 0; i < Object.keys(pathChanger).length; i++){
-            product = product.replaceAll(Object.keys(pathChanger)[i], Object.values(pathChanger)[i]);
+        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            product = product.replaceAll(
+                Object.keys(pathChanger)[i],
+                Object.values(pathChanger)[i]
+            );
         }
-        
-        let teamProducts = await getFromDb(`organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`);
-        if(!teamProducts){
-            setToDb(`organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`, 1);
-        }
-        else{
-            setToDb(`organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`, Number(teamProducts) + 1);
+
+        let teamProducts = await getFromDb(
+            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`
+        );
+        if (!teamProducts) {
+            setToDb(
+                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
+                1
+            );
+        } else {
+            setToDb(
+                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
+                Number(teamProducts) + 1
+            );
         }
         elm.target.parentElement.children[4].innerHTML = "Added!";
         setTimeout(() => {
@@ -88,25 +94,28 @@
         }, 500);
     }
 
-    function encode(name){
-        for(let i = 0; i < Object.keys(pathChanger).length; i++){
-            name = name.replaceAll(Object.keys(pathChanger)[i], Object.values(pathChanger)[i]);
+    function encode(name) {
+        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            name = name.replaceAll(
+                Object.keys(pathChanger)[i],
+                Object.values(pathChanger)[i]
+            );
         }
         name = name.replaceAll("&", "&amp;");
-        return name
+        return name;
     }
 
-    function getCount(productName){
+    function getCount(productName) {
         productName = encode(productName);
-        let count = $organizations[$organizationSelectionForParts].teams[$teamSelected].products[productName];
-        if(!count){
+        let count =
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .products[productName];
+        if (!count) {
             return 0;
-        }
-        else{
+        } else {
             return count;
         }
     }
-    
 </script>
 
 <button
@@ -144,12 +153,18 @@
                     alt={product.name}
                 />
                 <p>{product.name}</p>
-                <p>${product.price}</p>
+                <!-- <p>${product.price}</p> -->
 
                 {#if $organizations[$organizationSelectionForParts].teams}
                     {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
                         {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product.name)]}
-                            <p>Count: {$organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product.name)]}</p>
+                            <p>
+                                Count: {$organizations[
+                                    $organizationSelectionForParts
+                                ].teams[$teamSelected].products[
+                                    encode(product.name)
+                                ]}
+                            </p>
                         {:else}
                             <p>Count: 0</p>
                         {/if}
@@ -160,7 +175,10 @@
                     <p>Count: 0</p>
                 {/if}
 
-                <button on:click={(elm) => addProduct(elm)} on:keydown={(elm) => addProduct(elm)}>Add</button>
+                <button
+                    on:click={(elm) => addProduct(elm)}
+                    on:keydown={(elm) => addProduct(elm)}>Add</button
+                >
             </div>
         {:else}
             <p id="noCategorySelected">Please select either IQ or V5.</p>

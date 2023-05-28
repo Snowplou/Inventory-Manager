@@ -13,6 +13,8 @@
     import { writable } from "svelte/store";
     let parts = {};
     let teamProducts = {};
+    let selectedTeamForTransfer =
+        $organizations[$organizationSelectionForParts].teamList[2];
 
     function updateParts() {
         if (!$organizationSelectionForParts) return;
@@ -88,7 +90,7 @@
         }
     }
 
-    async function removeProduct(elm) {
+    async function removeProduct(elm, type) {
         let product = elm.target.parentElement.children[1].innerHTML;
         let button = elm.target.parentElement.children[3];
 
@@ -96,7 +98,7 @@
             $organizations[$organizationSelectionForParts].teams[$teamSelected]
                 .products[product];
 
-        if ($teamSelected != "Inventory") {
+        if (type == "remove") {
             if (productCount == 1) {
                 setToDb(
                     `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
@@ -206,35 +208,51 @@
 
     {#key $organizationSelectionForParts}
         {#key $teamSelected}
-            <div
-                id="partsList"
-                style="top: {$teamSelected != 'Inventory' ? '12vh' : '16vh'};"
-            >
-                {#each Object.values(teamProducts) as productCount, i}
-                    <div class="part">
-                        <img
-                            class="productImage"
-                            src={nameToImage(Object.keys(teamProducts)[i])}
-                            alt={decodeProductName(
-                                Object.keys(teamProducts)[i]
-                            )}
-                        />
-                        <p>{decodeProductName(Object.keys(teamProducts)[i])}</p>
-                        <p>Count: {productCount}</p>
-                        <button
-                            on:click={removeProduct}
-                            on:keydown={removeProduct}
-                            >{$teamSelected != "Inventory"
-                                ? "Remove"
-                                : "Transfer"}</button
-                        >
-                    </div>
-                {:else}
-                    <p id="noPartsFound">
-                        No parts found.<br />You need to add parts to this team.
-                    </p>
-                {/each}
-            </div>
+            {#key $organizations[$organizationSelectionForParts]}
+                <div
+                    id="partsList"
+                    style="top: {$teamSelected != 'Inventory'
+                        ? '12vh'
+                        : '16vh'};"
+                >
+                    {#each Object.values(teamProducts) as productCount, i}
+                        <div class="part">
+                            <img
+                                class="productImage"
+                                src={nameToImage(Object.keys(teamProducts)[i])}
+                                alt={decodeProductName(
+                                    Object.keys(teamProducts)[i]
+                                )}
+                            />
+                            <p>
+                                {decodeProductName(
+                                    Object.keys(teamProducts)[i]
+                                )}
+                            </p>
+                            <p>Count: {productCount}</p>
+                            <button
+                                on:click={(elm) => removeProduct(elm, "remove")}
+                                on:keydown={(elm) =>
+                                    removeProduct(elm, "remove")}>Remove</button
+                            >
+                            {#if $teamSelected == "Inventory"}
+                                <button
+                                    on:click={(elm) =>
+                                        removeProduct(elm, "transfer")}
+                                    on:keydown={(elm) =>
+                                        removeProduct(elm, "transfer")}
+                                    >Transfer</button
+                                >
+                            {/if}
+                        </div>
+                    {:else}
+                        <p id="noPartsFound">
+                            No parts found.<br />You need to add parts to this
+                            team.
+                        </p>
+                    {/each}
+                </div>
+            {/key}
         {/key}
     {/key}
 {/if}
@@ -242,7 +260,11 @@
 {#if $teamSelected == "Inventory"}
     <div id="transferInputs">
         <p id="transferToTeamText">Transfer to team:</p>
-        <select id="transferToTeamSelect">
+        <select
+            id="transferToTeamSelect"
+            value={selectedTeamForTransfer}
+            on:change={(elm) => (selectedTeamForTransfer = elm.target.value)}
+        >
             {#each Object.values($organizations[$organizationSelectionForParts].teamList) as team}
                 {#if team != "Unsorted" && team != "Coach"}
                     <option value={team}>{team}</option>
