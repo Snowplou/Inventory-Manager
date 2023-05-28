@@ -90,14 +90,7 @@
 
     async function removeProduct(elm) {
         let product = elm.target.parentElement.children[1].innerHTML;
-
-        // Replace the characters that firebase doesn't like
-        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
-            product = product.replaceAll(
-                Object.keys(pathChanger)[i],
-                Object.values(pathChanger)[i]
-            );
-        }
+        let button = elm.target.parentElement.children[3];
 
         let productCount =
             $organizations[$organizationSelectionForParts].teams[$teamSelected]
@@ -116,18 +109,40 @@
                 );
             }
         } else {
-            console.log("transfer");
+            let transferTeam = document.getElementById(
+                "transferToTeamSelect"
+            ).value;
+            let teamCount;
+            if (
+                $organizations[$organizationSelectionForParts].teams[
+                    transferTeam
+                ]
+            ) {
+                teamCount =
+                    $organizations[$organizationSelectionForParts].teams[
+                        transferTeam
+                    ].products[product];
+            }
+            if (!teamCount) teamCount = 0;
+            setToDb(
+                `organizations/${$organizationSelectionForParts}/teams/${transferTeam}/products/${product}`,
+                teamCount + 1
+            );
+            setToDb(
+                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
+                productCount == 1 ? null : productCount - 1
+            );
         }
 
-        if ($teamSelected) {
-            elm.target.parentElement.children[3].innerHTML = "Removed!";
+        if ($teamSelected != "Inventory") {
+            button.innerHTML = "Removed!";
             setTimeout(() => {
-                elm.target.parentElement.children[3].innerHTML = "Remove";
+                button.innerHTML = "Remove";
             }, 500);
         } else {
-            elm.target.parentElement.children[3].innerHTML = "Transferred!";
+            button.innerHTML = "Transferred!";
             setTimeout(() => {
-                elm.target.parentElement.children[3].innerHTML = "Transfer";
+                button.innerHTML = "Transfer";
             }, 500);
         }
     }
@@ -191,14 +206,10 @@
 
     {#key $organizationSelectionForParts}
         {#key $teamSelected}
-            <div id="partsList">
-                <!-- <select>
-                    {#if $organizations.teamList}
-                        {#each Object.values($organizations.teamList) as organization}
-                            <option value={organization}>{organization}</option>
-                        {/each}
-                    {/if}
-                </select>             -->
+            <div
+                id="partsList"
+                style="top: {$teamSelected != 'Inventory' ? '12vh' : '16vh'};"
+            >
                 {#each Object.values(teamProducts) as productCount, i}
                     <div class="part">
                         <img
@@ -228,19 +239,43 @@
     {/key}
 {/if}
 
+{#if $teamSelected == "Inventory"}
+    <div id="transferInputs">
+        <p id="transferToTeamText">Transfer to team:</p>
+        <select id="transferToTeamSelect">
+            {#each Object.values($organizations[$organizationSelectionForParts].teamList) as team}
+                {#if team != "Unsorted" && team != "Coach"}
+                    <option value={team}>{team}</option>
+                {/if}
+            {/each}
+        </select>
+    </div>
+{/if}
+
 <style>
     select {
+        text-align: center;
+    }
+
+    #transferToTeamText {
+        font-size: 3vw;
+    }
+
+    #transferInputs {
         position: absolute;
-        left: 50%;
-        top: 2vh;
-        width: 5vw;
-        height: 3vh;
+        left: 25vw;
+        top: 11.5vh;
+        width: 40vw;
+        height: 4vh;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        /* background-color: gray; */
     }
 
     #partsList {
         position: absolute;
         left: 24vw;
-        top: 12vh;
         width: 74vw;
         height: 72vh;
         border-radius: 10px;
