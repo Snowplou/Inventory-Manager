@@ -32,6 +32,7 @@
 
     let categorySelected = "";
     let vexType = "All";
+    let search = "";
     let filteredProducts = [];
 
     async function categoryClicked(elm) {
@@ -44,17 +45,40 @@
         applyFilter();
     }
 
+    function searchChanged(elm) {
+        search = elm.target.value;
+        applyFilter();
+    }
+
+    function searchFilter(product) {
+        let searchTerms = search.split(" ");
+        for (let i = 0; i < searchTerms.length; i++) {
+            if (
+                !product.name
+                    .toLowerCase()
+                    .includes(searchTerms[i].toLowerCase())
+            ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     async function applyFilter() {
         filteredProducts = [];
         for (let i = 0; i < Object.keys($products).length; i++) {
             if ($products[i].category) {
                 if ($products[i].category.includes(categorySelected)) {
                     if (vexType == "All") {
+                        if (searchFilter($products[i])) {
                         filteredProducts.push($products[i]);
+                        }
                     } else if ($products[i].type) {
                         for (let j = 0; j < $products[i].type.length; j++) {
                             if ($products[i].type[j].includes(vexType)) {
+                                if (searchFilter($products[i])) {
                                 filteredProducts.push($products[i]);
+                                }
                             }
                         }
                     }
@@ -186,6 +210,13 @@
     </div>
 {/key}
 
+<input
+    type="text"
+    id="searchBar"
+    placeholder="Search"
+    on:input={(elm) => searchChanged(elm)}
+/>
+
 <style>
     #noCategorySelected {
         display: flex;
@@ -251,21 +282,31 @@
 
     .product {
         width: 30vw;
-        height: calc(35vh + 3vw);
         margin-bottom: 5vh;
         position: relative;
     }
 
     #productList {
         position: absolute;
-        left: 0;
-        top: 26vh;
-        width: 100%;
-        height: 72vh;
+        left: 1vw;
+        top: 34vh;
+        width: 98vw;
+        height: 64vh;
         background-color: gray;
         overflow-y: auto;
         display: flex;
         flex-wrap: wrap;
+        border-radius: 10px;
+    }
+
+    #searchBar {
+        position: absolute;
+        left: 25vw;
+        top: 26vh;
+        width: 50vw;
+        height: 6vh;
+        text-align: center;
+        font-size: 4vmin;
     }
 
     #backToPartList {

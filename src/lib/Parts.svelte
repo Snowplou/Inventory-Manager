@@ -1,4 +1,6 @@
 <script>
+    // @ts-nocheck
+
     import {
         organizationSelectionForParts,
         getFromDb,
@@ -14,6 +16,7 @@
     let parts = {};
     let teamProducts = {};
     let selectedTeamForTransfer = "";
+    let search = "";
     organizationSelectionForParts.subscribe(() => {
         if (!$organizationSelectionForParts) return;
         selectedTeamForTransfer =
@@ -154,6 +157,20 @@
             }
         }
     }
+
+    function searchChanged(elm) {
+        search = elm.target.value;
+    }
+
+    function searchFilter(product) {
+        let searchTerms = search.split(" ");
+        for (let i = 0; i < searchTerms.length; i++) {
+            if (!product.toLowerCase().includes(searchTerms[i].toLowerCase())) {
+                return false;
+            }
+        }
+        return true;
+    }
 </script>
 
 {#if !$organizationSelectionForParts}
@@ -214,44 +231,57 @@
 
     {#key $organizationSelectionForParts}
         {#key $teamSelected}
-            <div
-                id="partsList"
-                style="top: {$teamSelected != 'Inventory' ? '12vh' : '16vh'};"
-            >
-                {#each Object.values(teamProducts) as productCount, i}
-                    <div class="part">
-                        <img
-                            class="productImage"
-                            src={nameToImage(Object.keys(teamProducts)[i])}
-                            alt={decodeProductName(
-                                Object.keys(teamProducts)[i]
-                            )}
-                        />
-                        <p>
-                            {decodeProductName(Object.keys(teamProducts)[i])}
-                        </p>
-                        <p>Count: {productCount}</p>
-                        <button
-                            on:click={(elm) => removeProduct(elm, "remove")}
-                            on:keydown={(elm) => removeProduct(elm, "remove")}
-                            >Remove</button
-                        >
-                        {#if $teamSelected == "Inventory"}
-                            <button
-                                on:click={(elm) =>
-                                    removeProduct(elm, "transfer")}
-                                on:keydown={(elm) =>
-                                    removeProduct(elm, "transfer")}
-                                >Transfer</button
-                            >
+            {#key search}
+                <div
+                    id="partsList"
+                    style="top: {$teamSelected != 'Inventory'
+                        ? '20vh'
+                        : '24vh'};"
+                >
+                    {#each Object.values(teamProducts) as productCount, i}
+                        {#if searchFilter(Object.keys(teamProducts)[i])}
+                            <div class="part">
+                                <img
+                                    class="productImage"
+                                    src={nameToImage(
+                                        Object.keys(teamProducts)[i]
+                                    )}
+                                    alt={decodeProductName(
+                                        Object.keys(teamProducts)[i]
+                                    )}
+                                />
+                                <p>
+                                    {decodeProductName(
+                                        Object.keys(teamProducts)[i]
+                                    )}
+                                </p>
+                                <p>Count: {productCount}</p>
+                                <button
+                                    on:click={(elm) =>
+                                        removeProduct(elm, "remove")}
+                                    on:keydown={(elm) =>
+                                        removeProduct(elm, "remove")}
+                                    >Remove</button
+                                >
+                                {#if $teamSelected == "Inventory"}
+                                    <button
+                                        on:click={(elm) =>
+                                            removeProduct(elm, "transfer")}
+                                        on:keydown={(elm) =>
+                                            removeProduct(elm, "transfer")}
+                                        >Transfer</button
+                                    >
+                                {/if}
+                            </div>
                         {/if}
-                    </div>
-                {:else}
-                    <p id="noPartsFound">
-                        No parts found.<br />You need to add parts to this team.
-                    </p>
-                {/each}
-            </div>
+                    {:else}
+                        <p id="noPartsFound">
+                            No parts found.<br />You need to add parts to this
+                            team.
+                        </p>
+                    {/each}
+                </div>
+            {/key}
         {/key}
     {/key}
 {/if}
@@ -273,9 +303,26 @@
     </div>
 {/if}
 
+<input
+    type="text"
+    id="searchBar"
+    placeholder="Search"
+    on:input={(elm) => searchChanged(elm)}
+/>
+
 <style>
     select {
         text-align: center;
+    }
+
+    #searchBar {
+        position: absolute;
+        left: 25vw;
+        top: 12vh;
+        width: 65vw;
+        height: 6vh;
+        text-align: center;
+        font-size: 4vmin;
     }
 
     #transferToTeamText {
@@ -285,13 +332,12 @@
     #transferInputs {
         position: absolute;
         left: 25vw;
-        top: 11.5vh;
+        top: 19.5vh;
         width: 40vw;
         height: 4vh;
         display: flex;
         align-items: center;
         justify-content: space-around;
-        /* background-color: gray; */
     }
 
     #partsList {
