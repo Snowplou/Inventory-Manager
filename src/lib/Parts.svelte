@@ -189,6 +189,16 @@
     </div>
 {:else}
     <div id="teamSelection">
+        <p
+            class="teamListItem"
+            on:click={(elm) => teamClicked(elm)}
+            on:keydown={(elm) => teamClicked(elm)}
+            style="background-color: {'Inventory' == $teamSelected
+                ? '#0056b3'
+                : ''}"
+        >
+            Inventory
+        </p>
         {#each $organizations[$organizationSelectionForParts].teamList as team}
             {#if team != "Unsorted" && team != "Coach"}
                 <p
@@ -203,16 +213,6 @@
                 </p>
             {/if}
         {/each}
-        <p
-            class="teamListItem"
-            on:click={(elm) => teamClicked(elm)}
-            on:keydown={(elm) => teamClicked(elm)}
-            style="background-color: {'Inventory' == $teamSelected
-                ? '#0056b3'
-                : ''}"
-        >
-            Inventory
-        </p>
         <button
             id="goBackToOrganizationSelection"
             on:click={goBackToOrganizationSelection}
@@ -363,6 +363,7 @@
     .part p {
         margin-top: 0;
         margin-bottom: 2px;
+        color: white;
     }
 
     .part button {
