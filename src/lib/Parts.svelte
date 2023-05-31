@@ -258,22 +258,24 @@
                                     </p>
                                     <p>Count: {productCount}</p>
                                 </div>
-                                <button
-                                    on:click={(elm) =>
-                                        removeProduct(elm, "remove")}
-                                    on:keydown={(elm) =>
-                                        removeProduct(elm, "remove")}
-                                    >Remove</button
-                                >
-                                {#if $teamSelected == "Inventory"}
+                                <div class="partListButtons">
                                     <button
                                         on:click={(elm) =>
-                                            removeProduct(elm, "transfer")}
+                                            removeProduct(elm, "remove")}
                                         on:keydown={(elm) =>
-                                            removeProduct(elm, "transfer")}
-                                        >Transfer</button
+                                            removeProduct(elm, "remove")}
+                                        >Remove</button
                                     >
-                                {/if}
+                                    {#if $teamSelected == "Inventory"}
+                                        <button
+                                            on:click={(elm) =>
+                                                removeProduct(elm, "transfer")}
+                                            on:keydown={(elm) =>
+                                                removeProduct(elm, "transfer")}
+                                            >Transfer</button
+                                        >
+                                    {/if}
+                                </div>
                             </div>
                         {/if}
                     {:else}
@@ -381,9 +383,16 @@
         transition: background-color 0.25s ease-in-out;
     }
 
+    .partListButtons {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+    }
+
     .part {
-        /* width: 65vw; */
-        margin-bottom: 4vh;
+        margin-top: 0.5vh;
+        margin-bottom: 3.5vh;
         margin-left: 1vw;
         margin-right: 1vw;
         position: relative;
