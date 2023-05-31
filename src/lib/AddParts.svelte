@@ -71,13 +71,13 @@
                 if ($products[i].category.includes(categorySelected)) {
                     if (vexType == "All") {
                         if (searchFilter($products[i])) {
-                        filteredProducts.push($products[i]);
+                            filteredProducts.push($products[i]);
                         }
                     } else if ($products[i].type) {
                         for (let j = 0; j < $products[i].type.length; j++) {
                             if ($products[i].type[j].includes(vexType)) {
                                 if (searchFilter($products[i])) {
-                                filteredProducts.push($products[i]);
+                                    filteredProducts.push($products[i]);
                                 }
                             }
                         }
@@ -297,6 +297,7 @@
         display: flex;
         flex-wrap: wrap;
         border-radius: 10px;
+        align-items: center;
     }
 
     #searchBar {
