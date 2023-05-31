@@ -250,12 +250,14 @@
                                         Object.keys(teamProducts)[i]
                                     )}
                                 />
-                                <p>
-                                    {decodeProductName(
-                                        Object.keys(teamProducts)[i]
-                                    )}
-                                </p>
-                                <p>Count: {productCount}</p>
+                                <div class="partPList">
+                                    <p>
+                                        {decodeProductName(
+                                            Object.keys(teamProducts)[i]
+                                        )}
+                                    </p>
+                                    <p>Count: {productCount}</p>
+                                </div>
                                 <button
                                     on:click={(elm) =>
                                         removeProduct(elm, "remove")}
@@ -349,13 +351,16 @@
         background-color: #007bff;
         overflow-y: auto;
         display: flex;
-        flex-wrap: wrap;
+        /* flex-wrap: wrap; */
+        flex-direction: column;
     }
 
     .part img {
         margin-top: 5px;
-        width: 50%;
-        height: auto;
+        /* width: 50%; */
+        /* height: auto; */
+        width: auto;
+        height: 10vh;
         object-fit: contain;
         border-radius: 10px;
     }
@@ -377,10 +382,14 @@
     }
 
     .part {
-        width: 30vw;
-        height: calc(35vh + 3vw);
-        margin-bottom: 5vh;
+        /* width: 65vw; */
+        margin-bottom: 4vh;
+        margin-left: 1vw;
+        margin-right: 1vw;
         position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 
     #noPartsFound {
