@@ -98,7 +98,7 @@
     }
 
     async function removeProduct(elm, type) {
-        let product = elm.target.parentElement.children[1].innerHTML;
+        let product = elm.target.parentElement.parentElement.children[1].children[0].innerHTML
 
         let productCount =
             $organizations[$organizationSelectionForParts].teams[$teamSelected]
