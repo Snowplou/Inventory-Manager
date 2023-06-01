@@ -98,7 +98,9 @@
     }
 
     async function removeProduct(elm, type) {
-        let product = elm.target.parentElement.parentElement.children[1].children[0].innerHTML
+        let product =
+            elm.target.parentElement.parentElement.children[1].children[0]
+                .innerHTML;
 
         let productCount =
             $organizations[$organizationSelectionForParts].teams[$teamSelected]
@@ -314,6 +316,26 @@
     on:input={(elm) => searchChanged(elm)}
 />
 
+{#if $teamSelected == "Inventory"}
+    <style>
+        .partListButtons {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;;
+            height: 100%;
+        }
+    </style>
+{:else}
+    <style>
+        .partListButtons {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+        }
+    </style>
+{/if}
+
 <style>
     select {
         text-align: center;
@@ -383,13 +405,6 @@
         transition: background-color 0.25s ease-in-out;
     }
 
-    .partListButtons {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 100%;
-    }
-
     .part {
         margin-top: 0.5vh;
         margin-bottom: 3.5vh;
@@ -399,6 +414,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        min-height: 115px;
     }
 
     #noPartsFound {
