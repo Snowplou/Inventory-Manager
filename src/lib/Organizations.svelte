@@ -1,6 +1,6 @@
 <script>
     import { set, update } from "firebase/database";
-    import { userData, userId, organizations, getFromDb, setToDb } from "../db";
+    import { userData, userId, organizations, getFromDb, setToDb, emailChanger } from "../db";
     import { writable } from "svelte/store";
     let organizationSelected = "";
     let organizationMembers = writable({});
@@ -15,6 +15,17 @@
             }
             i++;
         }
+    }
+
+    async function emailToUserIdDb(email){
+        let temp;
+        for(let i = 0; i < Object.keys(emailChanger).length; i++) {
+            email = email.replaceAll(Object.keys(emailChanger)[i], Object.values(emailChanger)[i])
+        }
+        await getFromDb(`emailToId/${email}`).then((value) => {
+            temp = value
+        })
+        return temp
     }
 
     async function organizationClicked(name) {
@@ -50,16 +61,11 @@
     }
 
     async function memberButton(elm) {
-        let id = elm.target.parentNode.children[0].value;
-        if (id == "") {
+        let email = elm.target.parentNode.children[0].value;
+        if(email == ""){
             return;
         }
-
-        // If the id is an email, alert the user that they must use an id
-        if (id.includes("@")) {
-            alert("Please use the user ID");
-            return;
-        }
+        let id = await emailToUserIdDb(email);
 
         let chosenUserEmail = await getFromDb(`users/${id}/email`);
         if (!chosenUserEmail) {

@@ -45,6 +45,10 @@ export let pathChanger = {
     "[": "auba189a9na1",
     "]": "aab2723na81n",
 };
+export let emailChanger = {
+    ".": "unahuh18ab1z",
+    "@": "89236taban19",
+}
 export let teamSelected = writable("");
 
 export let products = writable({});
