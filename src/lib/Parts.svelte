@@ -88,6 +88,19 @@
         return decodedName;
     }
 
+    function encodeProductName(name){
+        let encodedName = name;
+        // Add amp
+        encodedName = encodedName.replaceAll("&", "&amp;");
+        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            encodedName = encodedName.replaceAll(
+                Object.keys(pathChanger)[i],
+                Object.values(pathChanger)[i]
+            );
+        }
+        return encodedName;
+    }
+
     function nameToImage(name) {
         name = decodeProductName(name);
         for (let product of Object.values($products)) {
@@ -101,6 +114,7 @@
         let product =
             elm.target.parentElement.parentElement.children[1].children[0]
                 .innerHTML;
+        product = encodeProductName(product);
 
         let productCount =
             $organizations[$organizationSelectionForParts].teams[$teamSelected]
@@ -117,15 +131,19 @@
                     `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
                     productCount - 1
                 );
-                elm.target.parentElement.children[3].innerHTML = "Removed!";
+                elm.target.parentElement.children[0].innerHTML = "Removed!";
                 setTimeout(() => {
-                    elm.target.parentElement.children[3].innerHTML = "Remove";
+                    elm.target.parentElement.children[0].innerHTML = "Remove";
                 }, 500);
             }
         } else {
             let transferTeam = document.getElementById(
                 "transferToTeamSelect"
             ).value;
+            if(!transferTeam){
+                alert("Please select a team to transfer to.");
+                return;
+            }
             let teamCount;
             if (
                 $organizations[$organizationSelectionForParts].teams[
@@ -138,6 +156,7 @@
                     ].products[product];
             }
             if (!teamCount) teamCount = 0;
+            console.log(`organizations/${$organizationSelectionForParts}/teams/${transferTeam}/products/${product}`)
             setToDb(
                 `organizations/${$organizationSelectionForParts}/teams/${transferTeam}/products/${product}`,
                 teamCount + 1
@@ -152,9 +171,9 @@
                     `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
                     productCount - 1
                 );
-                elm.target.parentElement.children[4].innerHTML = "Transferred!";
+                elm.target.parentElement.children[1].innerHTML = "Transferred!";
                 setTimeout(() => {
-                    elm.target.parentElement.children[4].innerHTML = "Transfer";
+                    elm.target.parentElement.children[1].innerHTML = "Transfer";
                 }, 500);
             }
         }
@@ -297,7 +316,7 @@
         <p id="transferToTeamText">Transfer to team:</p>
         <select
             id="transferToTeamSelect"
-            value={selectedTeamForTransfer}
+            value="Unselected"
             on:change={(elm) => (selectedTeamForTransfer = elm.target.value)}
         >
             {#each Object.values($organizations[$organizationSelectionForParts].teamList) as team}
