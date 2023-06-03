@@ -122,7 +122,7 @@
 
     async function ranked(elm) {
         let team = elm.target.value;
-        let user = elm.target.parentNode.children[0].innerHTML;
+        let user = elm.target.parentNode.parentNode.children[0].innerHTML
         let userId = emailToUserId(user);
         setToDb(
             `organizations/${organizationSelected}/members/${userId}/rank`,
@@ -135,15 +135,16 @@
     }
 
     async function memberRemove(elm) {
+        let user = elm.target.parentNode.parentNode.children[0].innerHTML;
+
         if (
             !confirm(
-                `Are you sure you want to remove ${elm.target.parentNode.children[0].innerHTML} from ${organizationSelected}?`
+                `Are you sure you want to remove ${user} from ${organizationSelected}?`
             )
         ) {
             return;
         }
 
-        let user = elm.target.parentNode.children[0].innerHTML;
         let userId = emailToUserId(user);
         setToDb(
             `organizations/${organizationSelected}/members/${userId}`,
@@ -202,18 +203,20 @@
             return;
         }
 
-        let memberValues = Object.values($organizationMembers);
-        let memberKeys = Object.keys($organizationMembers);
-        for (let i = 0; i < memberValues.length; i++) {
-            if (memberValues[i].rank == team) {
-                setToDb(
-                    `organizations/${organizationSelected}/members/${memberKeys[i]}/rank`,
-                    "Unsorted"
-                );
-                setToDb(
-                    `users/${memberKeys[i]}/organizations/${organizationSelected}/rank`,
-                    "Unsorted"
-                );
+        if ($organizationMembers) {
+            let memberValues = Object.values($organizationMembers);
+            let memberKeys = Object.keys($organizationMembers);
+            for (let i = 0; i < memberValues.length; i++) {
+                if (memberValues[i].rank == team) {
+                    setToDb(
+                        `organizations/${organizationSelected}/members/${memberKeys[i]}/rank`,
+                        "Unsorted"
+                    );
+                    setToDb(
+                        `users/${memberKeys[i]}/organizations/${organizationSelected}/rank`,
+                        "Unsorted"
+                    );
+                }
             }
         }
 
@@ -241,7 +244,6 @@
 </script>
 
 {#key $userData}
-    <p id="listTile">Organizations</p>
     <!-- Organization list -->
     <div id="organizationList">
         {#if $userData.organizations}
@@ -316,28 +318,31 @@
                     {#each Object.values($organizationMembers) as member}
                         <div class="memberListItem">
                             <p class="memberEmail">{member.email}</p>
-                            <select
-                                on:change={(elm) => ranked(elm)}
-                                value={$organizationMembers[
-                                    emailToUserId(member.email)
-                                ].rank}
-                                disabled={(member.rank != "Coach" &&
-                                    $organizationOwner != $userData.email) ||
-                                    $userData.email == member.email}
-                            >
-                                {#each Object.values($organizationTeams) as team}
-                                    <option value={team}>{team}</option>
-                                {/each}
-                            </select>
-                            {#if $organizations[organizationSelected].owner == $userData.email}
-                                <p
-                                    class="memberRemove"
-                                    on:click={(elm) => memberRemove(elm)}
-                                    on:keydown={(elm) => memberRemove(elm)}
+                            <div class="memberListItemSelectAndRemove">
+                                <select
+                                    on:change={(elm) => ranked(elm)}
+                                    value={$organizationMembers[
+                                        emailToUserId(member.email)
+                                    ].rank}
+                                    disabled={(member.rank != "Coach" &&
+                                        $organizationOwner !=
+                                            $userData.email) ||
+                                        $userData.email == member.email}
                                 >
-                                    ❌
-                                </p>
-                            {/if}
+                                    {#each Object.values($organizationTeams) as team}
+                                        <option value={team}>{team}</option>
+                                    {/each}
+                                </select>
+                                {#if $organizations[organizationSelected].owner == $userData.email}
+                                    <p
+                                        class="memberRemove"
+                                        on:click={(elm) => memberRemove(elm)}
+                                        on:keydown={(elm) => memberRemove(elm)}
+                                    >
+                                        ❌
+                                    </p>
+                                {/if}
+                            </div>
                         </div>
                     {/each}
                 {/if}
@@ -365,22 +370,24 @@
                         >
                     </div>
                 </div>
-                {#each Object.values($organizationTeams) as team}
-                    <div class="organizationTeamListItem">
-                        <p>{team}</p>
-                        {#if team != "Unsorted" && team != "Coach" && $organizations[organizationSelected].owner == $userData.email}
-                            <p
-                                class="organizationTeamListRemove"
-                                on:click={(elm) =>
-                                    organizationTeamListRemove(elm)}
-                                on:keydown={(elm) =>
-                                    organizationTeamListRemove(elm)}
-                            >
-                                ❌
-                            </p>
-                        {/if}
-                    </div>
-                {/each}
+                <div id="organizationTeamListOfTeams">
+                    {#each Object.values($organizationTeams) as team}
+                        <div class="organizationTeamListItem">
+                            <p>{team}</p>
+                            {#if team != "Unsorted" && team != "Coach" && $organizations[organizationSelected].owner == $userData.email}
+                                <p
+                                    class="organizationTeamListRemove"
+                                    on:click={(elm) =>
+                                        organizationTeamListRemove(elm)}
+                                    on:keydown={(elm) =>
+                                        organizationTeamListRemove(elm)}
+                                >
+                                    ❌
+                                </p>
+                            {/if}
+                        </div>
+                    {/each}
+                </div>
             </div>
         {/if}
     {/key}
@@ -388,34 +395,49 @@
 
 <style>
     #memberList {
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
         margin-top: 2vh;
-        max-width: 32vw;
+        min-width: 100%;
+        max-width: 100%;
+        height: 26vh;
         overflow-y: auto;
         text-align: center;
-        border-radius: 10px;
-        max-height: 50vh;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-around;
+    }
+
+    @media screen and (max-width: 300px) {
+        #memberList {
+            max-width: 90vw;
+        }
+    }
+    @media screen and (min-width: 300px) {
+        #memberList {
+            max-width: 300px;
+        }
     }
 
     .memberListItem {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        height: 10vh;
-        min-height: 70px;
+        max-height: 10vh;
+        overflow-x: auto;
         background-color: #d4d4d4;
         border-radius: 10px;
         margin: 0;
+        margin-left: 1.5vw;
+        margin-right: 1.5vw;
         padding: 0;
         margin-bottom: 1vh;
     }
 
+    .memberListItemSelectAndRemove {
+        display: flex;
+        justify-content: center;
+        align-items: baseline;
+    }
+
     .memberEmail {
-        max-width: 32vw;
+        max-width: 90vw;
         overflow-x: auto;
         margin-top: 2px;
         margin-bottom: 0;
@@ -427,18 +449,19 @@
         cursor: pointer;
         padding-left: 4px;
         margin-top: 0;
+        margin-bottom: 0;
     }
 
     #organizationInfo {
         position: absolute;
-        right: 2vw;
+        left: 2vw;
         top: 15vh;
-        width: 36vw;
+        width: 96vw;
+        height: 43vh;
         overflow-y: scroll;
         text-align: left;
         background-color: #007bff;
         border-radius: 10px;
-        height: 72vh;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -448,18 +471,21 @@
         text-align: center;
         font-size: 4vh;
         font-weight: bold;
-        margin-top: 0;
+        margin: 0;
+        padding: 0;
         color: white;
-        overflow-x: auto;
+        overflow: auto;
         white-space: nowrap;
-        max-width: 36vw;
+        max-width: 96vw;
+        height: 8vh;
     }
 
     #newMember {
         display: flex;
         align-items: center;
         justify-content: space-evenly;
-        width: 31vw;
+        width: 50vw;
+        min-width: 200px;
         height: 7vh;
         background-color: #d4d4d4;
         border-radius: 10px;
@@ -468,7 +494,7 @@
     }
 
     #newMemberInput {
-        width: 18vw;
+        width: 30vw;
         height: 3vh;
         background-color: #d4d4d4;
         border-radius: 10px;
@@ -479,6 +505,7 @@
 
     #newMemberButton {
         width: 10vw;
+        min-width: 50px;
         height: 5vh;
         color: white;
         background-color: #007bff;
@@ -526,36 +553,30 @@
         padding: 0;
     }
 
-    #listTile {
-        display: inline-block;
-        position: absolute;
-        left: 2vw;
-        top: 9vh;
-        font-size: 4vh;
-        font-weight: bold;
-    }
-
     #organizationList {
         position: absolute;
-        left: 2vw;
-        top: 22vh;
+        left: 22vw;
+        top: 1vh;
         width: 55vw;
+        max-height: 13vh;
         overflow-y: auto;
         text-align: left;
         background-color: #007bff;
         border-radius: 10px;
-        max-height: 35vh;
     }
 
     .listItem {
         display: flex;
         align-items: center;
+        justify-content: center;
         margin: 0;
         padding-left: 5px;
         padding-right: 5px;
-        height: 5vh;
+        min-height: 5vh;
+        max-height: 5vh;
         overflow-x: auto;
         overflow-y: hidden;
+        text-align: center;
         cursor: pointer;
         color: white;
         transition: background-color 0.25s ease-in-out;
@@ -570,12 +591,12 @@
         position: absolute;
         left: 2vw;
         top: 60vh;
-        width: 55vw;
+        width: 96vw;
+        height: 29vh;
         overflow-y: auto;
         text-align: left;
         background-color: #007bff;
         border-radius: 10px;
-        max-height: 28vh;
         display: flex;
         flex-wrap: wrap;
         flex-direction: row;
@@ -601,13 +622,29 @@
         margin-right: 2px;
     }
 
+    #organizationTeamListOfTeams {
+        position: absolute;
+        left: 2vw;
+        top: 15vh;
+        width: 92vw;
+        height: 14vh;
+        overflow-y: auto;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+        align-items: stretch;
+    }
+
     .organizationTeamListItem {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         align-content: center;
-        width: 95%;
-        height: 5vh;
+        width: 200px;
+        min-height: 5vh;
         background-color: #d4d4d4;
         border-radius: 10px;
         margin-bottom: 1vh;
@@ -630,7 +667,7 @@
         justify-content: space-evenly;
         align-items: center;
         align-content: center;
-        width: 48vw;
+        width: 56vw;
         height: 7vh;
         background-color: #d4d4d4;
         border-radius: 10px;
@@ -641,7 +678,8 @@
     }
 
     #newTeamInput {
-        width: 18vw;
+        width: 22vw;
+        min-width: 175px;
         height: 3vh;
         background-color: #d4d4d4;
         border-radius: 10px;
