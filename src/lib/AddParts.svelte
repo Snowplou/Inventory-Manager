@@ -125,7 +125,6 @@
                 Object.values(pathChanger)[i]
             );
         }
-        name = name.replaceAll("&", "&amp;");
         return name;
     }
 
