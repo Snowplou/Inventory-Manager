@@ -92,6 +92,7 @@
 
         // Replace the characters that firebase doesn't like
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            product.replace("&amp", "&")
             product = product.replaceAll(
                 Object.keys(pathChanger)[i],
                 Object.values(pathChanger)[i]
