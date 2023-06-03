@@ -86,7 +86,7 @@
         return decodedName;
     }
 
-    function encodeProductName(name){
+    function encodeProductName(name) {
         let encodedName = name;
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
             encodedName = encodedName.replaceAll(
@@ -111,7 +111,7 @@
             elm.target.parentElement.parentElement.children[1].children[0]
                 .innerHTML;
         product = encodeProductName(product);
-        product = product.replaceAll("&amp;", "&")
+        product = product.replaceAll("&amp;", "&");
 
         let productCount =
             $organizations[$organizationSelectionForParts].teams[$teamSelected]
@@ -137,7 +137,7 @@
             let transferTeam = document.getElementById(
                 "transferToTeamSelect"
             ).value;
-            if(!transferTeam){
+            if (!transferTeam) {
                 alert("Please select a team to transfer to.");
                 return;
             }
@@ -309,34 +309,40 @@
 
 {#if $teamSelected == "Inventory"}
     <div id="transferInputs">
-        <p id="transferToTeamText">Transfer to team:</p>
-        <select
-            id="transferToTeamSelect"
-            value="Unselected"
-            on:change={(elm) => (selectedTeamForTransfer = elm.target.value)}
-        >
-            {#each Object.values($organizations[$organizationSelectionForParts].teamList) as team}
-                {#if team != "Unsorted" && team != "Coach" && (team == $userData.organizations[$organizationSelectionForParts].rank || $organizations[$organizationSelectionForParts].owner == $userData.email || $userData.organizations[$organizationSelectionForParts].rank == "Coach")}
-                    <option value={team}>{team}</option>
+        {#if $organizations[$organizationSelectionForParts]}
+            <p id="transferToTeamText">Transfer to team:</p>
+            <select
+                id="transferToTeamSelect"
+                value="Unselected"
+                on:change={(elm) =>
+                    (selectedTeamForTransfer = elm.target.value)}
+            >
+                {#if $organizations[$organizationSelectionForParts]}
+                    {#each Object.values($organizations[$organizationSelectionForParts].teamList) as team}
+                        {#if team != "Unsorted" && team != "Coach" && (team == $userData.organizations[$organizationSelectionForParts].rank || $organizations[$organizationSelectionForParts].owner == $userData.email || $userData.organizations[$organizationSelectionForParts].rank == "Coach")}
+                            <option value={team}>{team}</option>
+                        {/if}
+                    {/each}
                 {/if}
-            {/each}
-        </select>
+            </select>
+        {/if}
     </div>
 {/if}
-
-<input
-    type="text"
-    id="searchBar"
-    placeholder="Search"
-    on:input={(elm) => searchChanged(elm)}
-/>
+{#if $organizations[$organizationSelectionForParts]}
+    <input
+        type="text"
+        id="searchBar"
+        placeholder="Search"
+        on:input={(elm) => searchChanged(elm)}
+    />
+{/if}
 
 {#if $teamSelected == "Inventory"}
     <style>
         .partListButtons {
             display: flex;
             flex-direction: column;
-            justify-content: space-evenly;;
+            justify-content: space-evenly;
             height: 100%;
         }
     </style>
