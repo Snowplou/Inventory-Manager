@@ -19,7 +19,6 @@
     {/if}
     <SignOut />
     {#if $pageState == "home"}
-      <p>User ID: {$userId}</p>
       <div id="linksCenter">
         <PartsLink />
         <OrganizationLink />

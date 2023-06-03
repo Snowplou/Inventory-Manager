@@ -88,6 +88,19 @@
         return decodedName;
     }
 
+    function encodeProductName(name){
+        let encodedName = name;
+        // Add amp
+        encodedName = encodedName.replaceAll("&", "&amp;");
+        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            encodedName = encodedName.replaceAll(
+                Object.keys(pathChanger)[i],
+                Object.values(pathChanger)[i]
+            );
+        }
+        return encodedName;
+    }
+
     function nameToImage(name) {
         name = decodeProductName(name);
         for (let product of Object.values($products)) {
@@ -98,7 +111,10 @@
     }
 
     async function removeProduct(elm, type) {
-        let product = elm.target.parentElement.parentElement.children[1].children[0].innerHTML
+        let product =
+            elm.target.parentElement.parentElement.children[1].children[0]
+                .innerHTML;
+        product = encodeProductName(product);
 
         let productCount =
             $organizations[$organizationSelectionForParts].teams[$teamSelected]
@@ -115,15 +131,19 @@
                     `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
                     productCount - 1
                 );
-                elm.target.parentElement.children[3].innerHTML = "Removed!";
+                elm.target.parentElement.children[0].innerHTML = "Removed!";
                 setTimeout(() => {
-                    elm.target.parentElement.children[3].innerHTML = "Remove";
+                    elm.target.parentElement.children[0].innerHTML = "Remove";
                 }, 500);
             }
         } else {
             let transferTeam = document.getElementById(
                 "transferToTeamSelect"
             ).value;
+            if(!transferTeam){
+                alert("Please select a team to transfer to.");
+                return;
+            }
             let teamCount;
             if (
                 $organizations[$organizationSelectionForParts].teams[
@@ -136,6 +156,7 @@
                     ].products[product];
             }
             if (!teamCount) teamCount = 0;
+            console.log(`organizations/${$organizationSelectionForParts}/teams/${transferTeam}/products/${product}`)
             setToDb(
                 `organizations/${$organizationSelectionForParts}/teams/${transferTeam}/products/${product}`,
                 teamCount + 1
@@ -150,9 +171,9 @@
                     `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
                     productCount - 1
                 );
-                elm.target.parentElement.children[4].innerHTML = "Transferred!";
+                elm.target.parentElement.children[1].innerHTML = "Transferred!";
                 setTimeout(() => {
-                    elm.target.parentElement.children[4].innerHTML = "Transfer";
+                    elm.target.parentElement.children[1].innerHTML = "Transfer";
                 }, 500);
             }
         }
@@ -295,7 +316,7 @@
         <p id="transferToTeamText">Transfer to team:</p>
         <select
             id="transferToTeamSelect"
-            value={selectedTeamForTransfer}
+            value="Unselected"
             on:change={(elm) => (selectedTeamForTransfer = elm.target.value)}
         >
             {#each Object.values($organizations[$organizationSelectionForParts].teamList) as team}
@@ -313,6 +334,26 @@
     placeholder="Search"
     on:input={(elm) => searchChanged(elm)}
 />
+
+{#if $teamSelected == "Inventory"}
+    <style>
+        .partListButtons {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;;
+            height: 100%;
+        }
+    </style>
+{:else}
+    <style>
+        .partListButtons {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+        }
+    </style>
+{/if}
 
 <style>
     select {
@@ -383,13 +424,6 @@
         transition: background-color 0.25s ease-in-out;
     }
 
-    .partListButtons {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 100%;
-    }
-
     .part {
         margin-top: 0.5vh;
         margin-bottom: 3.5vh;
@@ -399,6 +433,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        min-height: 115px;
     }
 
     #noPartsFound {

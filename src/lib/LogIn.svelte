@@ -3,7 +3,7 @@
         signInWithEmailAndPassword,
         createUserWithEmailAndPassword,
     } from "firebase/auth";
-    import { auth, authWritable, userId, setToDb } from "../db";
+    import { auth, authWritable, userId, setToDb, emailChanger } from "../db";
     import { writable } from "svelte/store";
 
     function logIn() {
@@ -34,7 +34,18 @@
         createUserWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 userId.set(userCredential.user.uid);
-                setToDb(`users/${userCredential.user.uid}`, { email: email });
+                setToDb(`users/${userCredential.user.uid}`, {
+                    email: email,
+                });
+                let newEmail = email;
+                for (let i = 0; i < Object.keys(emailChanger).length; i++) {
+                    newEmail = newEmail.replaceAll(
+                        Object.keys(emailChanger)[i],
+                        Object.values(emailChanger)[i]
+                    );
+                }
+                setToDb(`emailToId/${newEmail}`, $userId)
+                authWritable.set(auth);
             })
             .catch((error) => {
                 error = error.code;
@@ -46,7 +57,6 @@
                     alert("An error has occured.");
                 }
             });
-        authWritable.set(auth);
     }
 </script>
 
