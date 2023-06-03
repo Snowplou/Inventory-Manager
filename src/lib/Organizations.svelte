@@ -187,7 +187,6 @@
         let memberKeys = Object.keys($organizationMembers);
         for (let i = 0; i < memberValues.length; i++) {
             if (memberValues[i].rank == team) {
-                console.log(organizationSelected);
                 setToDb(
                     `organizations/${organizationSelected}/members/${memberKeys[i]}/rank`,
                     "Unsorted"
