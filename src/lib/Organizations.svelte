@@ -302,17 +302,17 @@
 
         {#key $organizationMembers}
             <div id="memberList">
+                <div class="memberListItem">
+                    <p class="memberEmail">{$organizationOwner}</p>
+                    <select
+                        on:change={(elm) => ranked(elm)}
+                        value={$organizationOwner}
+                        disabled={true}
+                    >
+                        <option value={$organizationOwner}>Coach</option>
+                    </select>
+                </div>
                 {#if $organizationMembers}
-                    <div class="memberListItem">
-                        <p class="memberEmail">{$organizationOwner}</p>
-                        <select
-                            on:change={(elm) => ranked(elm)}
-                            value={$organizationOwner}
-                            disabled={true}
-                        >
-                            <option value={$organizationOwner}>Coach</option>
-                        </select>
-                    </div>
                     {#each Object.values($organizationMembers) as member}
                         <div class="memberListItem">
                             <p class="memberEmail">{member.email}</p>
