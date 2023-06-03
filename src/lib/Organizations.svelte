@@ -329,13 +329,15 @@
                                     <option value={team}>{team}</option>
                                 {/each}
                             </select>
-                            <p
-                                class="memberRemove"
-                                on:click={(elm) => memberRemove(elm)}
-                                on:keydown={(elm) => memberRemove(elm)}
-                            >
-                                ❌
-                            </p>
+                            {#if $organizations[organizationSelected].owner == $userData.email}
+                                <p
+                                    class="memberRemove"
+                                    on:click={(elm) => memberRemove(elm)}
+                                    on:keydown={(elm) => memberRemove(elm)}
+                                >
+                                    ❌
+                                </p>
+                            {/if}
                         </div>
                     {/each}
                 {/if}
@@ -366,7 +368,7 @@
                 {#each Object.values($organizationTeams) as team}
                     <div class="organizationTeamListItem">
                         <p>{team}</p>
-                        {#if team != "Unsorted" && team != "Coach"}
+                        {#if team != "Unsorted" && team != "Coach" && $organizations[organizationSelected].owner == $userData.email}
                             <p
                                 class="organizationTeamListRemove"
                                 on:click={(elm) =>

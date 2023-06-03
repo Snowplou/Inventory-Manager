@@ -217,7 +217,7 @@
             Inventory
         </p>
         {#each $organizations[$organizationSelectionForParts].teamList as team}
-            {#if team != "Unsorted" && team != "Coach"}
+            {#if team != "Unsorted" && team != "Coach" && (team == $userData.organizations[$organizationSelectionForParts].rank || $organizations[$organizationSelectionForParts].owner == $userData.email || $userData.organizations[$organizationSelectionForParts].rank == "Coach")}
                 <p
                     class="teamListItem"
                     on:click={(elm) => teamClicked(elm)}
@@ -316,7 +316,7 @@
             on:change={(elm) => (selectedTeamForTransfer = elm.target.value)}
         >
             {#each Object.values($organizations[$organizationSelectionForParts].teamList) as team}
-                {#if team != "Unsorted" && team != "Coach"}
+                {#if team != "Unsorted" && team != "Coach" && (team == $userData.organizations[$organizationSelectionForParts].rank || $organizations[$organizationSelectionForParts].owner == $userData.email || $userData.organizations[$organizationSelectionForParts].rank == "Coach")}
                     <option value={team}>{team}</option>
                 {/if}
             {/each}
