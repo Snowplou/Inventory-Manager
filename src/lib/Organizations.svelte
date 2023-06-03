@@ -661,13 +661,24 @@
         cursor: pointer;
     }
 
+    @media screen and (max-width: 700px) {
+        #newTeam {
+            width: 56vw;
+        }
+    }
+    @media screen and (min-width: 700px) {
+        #newTeam {
+            width: 700px;
+        }
+    }
+
     #newTeam {
         display: flex;
         flex-wrap: wrap;
         justify-content: space-evenly;
         align-items: center;
         align-content: center;
-        width: 56vw;
+        /* width: 56vw; */
         height: 7vh;
         background-color: #d4d4d4;
         border-radius: 10px;
