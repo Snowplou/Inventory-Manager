@@ -111,6 +111,7 @@
             elm.target.parentElement.parentElement.children[1].children[0]
                 .innerHTML;
         product = encodeProductName(product);
+        product = product.replaceAll("&amp;", "&")
 
         let productCount =
             $organizations[$organizationSelectionForParts].teams[$teamSelected]
@@ -152,7 +153,6 @@
                     ].products[product];
             }
             if (!teamCount) teamCount = 0;
-            console.log(`organizations/${$organizationSelectionForParts}/teams/${transferTeam}/products/${product}`)
             setToDb(
                 `organizations/${$organizationSelectionForParts}/teams/${transferTeam}/products/${product}`,
                 teamCount + 1

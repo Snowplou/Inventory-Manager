@@ -92,12 +92,12 @@
 
         // Replace the characters that firebase doesn't like
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
-            product.replace("&amp", "&")
             product = product.replaceAll(
                 Object.keys(pathChanger)[i],
                 Object.values(pathChanger)[i]
             );
         }
+        product = product.replaceAll("&amp;", "&")
 
         let teamProducts = await getFromDb(
             `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`
