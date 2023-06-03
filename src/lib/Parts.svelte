@@ -77,8 +77,6 @@
 
     function decodeProductName(name) {
         let decodedName = name;
-        // Remove amp
-        decodedName = decodedName.replaceAll("&amp;", "&");
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
             decodedName = decodedName.replaceAll(
                 Object.values(pathChanger)[i],
@@ -90,8 +88,6 @@
 
     function encodeProductName(name){
         let encodedName = name;
-        // Add amp
-        encodedName = encodedName.replaceAll("&", "&amp;");
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
             encodedName = encodedName.replaceAll(
                 Object.keys(pathChanger)[i],
