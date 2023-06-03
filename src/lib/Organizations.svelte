@@ -1,6 +1,13 @@
 <script>
     import { set, update } from "firebase/database";
-    import { userData, userId, organizations, getFromDb, setToDb, emailChanger } from "../db";
+    import {
+        userData,
+        userId,
+        organizations,
+        getFromDb,
+        setToDb,
+        emailChanger,
+    } from "../db";
     import { writable } from "svelte/store";
     let organizationSelected = "";
     let organizationMembers = writable({});
@@ -17,15 +24,18 @@
         }
     }
 
-    async function emailToUserIdDb(email){
+    async function emailToUserIdDb(email) {
         let temp;
-        for(let i = 0; i < Object.keys(emailChanger).length; i++) {
-            email = email.replaceAll(Object.keys(emailChanger)[i], Object.values(emailChanger)[i])
+        for (let i = 0; i < Object.keys(emailChanger).length; i++) {
+            email = email.replaceAll(
+                Object.keys(emailChanger)[i],
+                Object.values(emailChanger)[i]
+            );
         }
         await getFromDb(`emailToId/${email}`).then((value) => {
-            temp = value
-        })
-        return temp
+            temp = value;
+        });
+        return temp;
     }
 
     async function organizationClicked(name) {
@@ -46,13 +56,16 @@
         if (name == "") {
             return;
         }
-        if (await getFromDb(`organizations/${name}/a`)) {
-            alert("Organization already exists");
-            return;
+        try {
+            await getFromDb(`organizations/${name}`);
+        } catch (err) {
+            if (err == "Error: Permission denied") {
+                alert("Organization already exists");
+                return;
+            }
         }
         let organization = {
             owner: $userData.email,
-            a: true,
             teamList: { 0: "Unsorted", 1: "Coach" },
         };
         setToDb(`organizations/${name}`, organization);
@@ -62,7 +75,7 @@
 
     async function memberButton(elm) {
         let email = elm.target.parentNode.children[0].value;
-        if(email == ""){
+        if (email == "") {
             return;
         }
         let id = await emailToUserIdDb(email);
