@@ -324,10 +324,12 @@
                                     value={$organizationMembers[
                                         emailToUserId(member.email)
                                     ].rank}
-                                    disabled={(member.rank != "Coach" &&
+                                    disabled={(member.rank == "Coach" &&
                                         $organizationOwner !=
                                             $userData.email) ||
-                                        $userData.email == member.email}
+                                        $userData.email == member.email ||
+                                        $userData.organizations[organizationSelected].rank != "Coach"
+                                        }
                                 >
                                     {#each Object.values($organizationTeams) as team}
                                         <option value={team}>{team}</option>
