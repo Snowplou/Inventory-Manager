@@ -89,6 +89,8 @@
 
     async function addProduct(elm) {
         let product = elm.target.parentElement.children[1].innerHTML;
+        let count = Number(elm.target.parentElement.children[3].value)
+        if(!count) count = 1
 
         // Replace the characters that firebase doesn't like
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
@@ -105,17 +107,17 @@
         if (!teamProducts) {
             setToDb(
                 `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
-                1
+                count
             );
         } else {
             setToDb(
                 `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
-                Number(teamProducts) + 1
+                Number(teamProducts) + count
             );
         }
-        elm.target.parentElement.children[3].innerHTML = "Added!";
+        elm.target.parentElement.children[4].innerHTML = "Added!";
         setTimeout(() => {
-            elm.target.parentElement.children[3].innerHTML = "Add";
+            elm.target.parentElement.children[4].innerHTML = "Add";
         }, 500);
     }
 
@@ -199,6 +201,7 @@
                     <p>Count: 0</p>
                 {/if}
 
+                <input type="number" placeholder="1" on:input={(elm) => elm.target.value = Math.abs(elm.target.value)}>
                 <button
                     on:click={(elm) => addProduct(elm)}
                     on:keydown={(elm) => addProduct(elm)}>Add</button
@@ -268,6 +271,10 @@
     .product p {
         margin-top: 0;
         margin-bottom: 2px;
+    }
+
+    .product input {
+        width: 8vw;
     }
 
     .product button {
