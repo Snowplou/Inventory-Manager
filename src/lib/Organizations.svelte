@@ -122,7 +122,7 @@
 
     async function ranked(elm) {
         let team = elm.target.value;
-        let user = elm.target.parentNode.parentNode.children[0].innerHTML
+        let user = elm.target.parentNode.parentNode.children[0].innerHTML;
         let userId = emailToUserId(user);
         setToDb(
             `organizations/${organizationSelected}/members/${userId}/rank`,
@@ -241,6 +241,7 @@
             await getFromDb(`organizations/${organizationSelected}/teamList`)
         );
     }
+
 </script>
 
 {#key $userData}
@@ -290,17 +291,20 @@
     <div id="organizationInfo">
         <p id="organizationTitle">{organizationSelected}</p>
 
-        <div id="newMember">
-            <input
-                type="text"
-                maxlength="100"
-                id="newMemberInput"
-                placeholder="New Member"
-            />
-            <button id="newMemberButton" on:click={(elm) => memberButton(elm)}
-                >Add</button
-            >
-        </div>
+        {#if $userData.organizations[organizationSelected].rank == "Coach" || $userData.organizations[organizationSelected].rank == "Owner"}
+            <div id="newMember">
+                <input
+                    type="text"
+                    maxlength="100"
+                    id="newMemberInput"
+                    placeholder="New Member"
+                />
+                <button
+                    id="newMemberButton"
+                    on:click={(elm) => memberButton(elm)}>Add</button
+                >
+            </div>
+        {/if}
 
         {#key $organizationMembers}
             <div id="memberList">
@@ -328,8 +332,9 @@
                                         $organizationOwner !=
                                             $userData.email) ||
                                         $userData.email == member.email ||
-                                        $userData.organizations[organizationSelected].rank == "Coach"
-                                        }
+                                        $userData.organizations[
+                                            organizationSelected
+                                        ].rank == "Coach"}
                                 >
                                     {#each Object.values($organizationTeams) as team}
                                         <option value={team}>{team}</option>
@@ -359,18 +364,20 @@
             <div id="organizationTeamList">
                 <div id="organizationTeamsTitleAndAdd">
                     <p id="organizationTeamListTitle">Teams</p>
-                    <div id="newTeam">
-                        <input
-                            type="text"
-                            maxlength="100"
-                            id="newTeamInput"
-                            placeholder="New Team"
-                        />
-                        <button
-                            id="newTeamButton"
-                            on:click={(elm) => teamButton(elm)}>Add</button
-                        >
-                    </div>
+                    {#if $userData.organizations[organizationSelected].rank == "Coach" || $userData.organizations[organizationSelected].rank == "Owner"}
+                        <div id="newTeam">
+                            <input
+                                type="text"
+                                maxlength="100"
+                                id="newTeamInput"
+                                placeholder="New Team"
+                            />
+                            <button
+                                id="newTeamButton"
+                                on:click={(elm) => teamButton(elm)}>Add</button
+                            >
+                        </div>
+                    {/if}
                 </div>
                 <div id="organizationTeamListOfTeams">
                     {#each Object.values($organizationTeams) as team}
