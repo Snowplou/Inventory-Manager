@@ -328,7 +328,7 @@
                                         $organizationOwner !=
                                             $userData.email) ||
                                         $userData.email == member.email ||
-                                        $userData.organizations[organizationSelected].rank != "Coach"
+                                        $userData.organizations[organizationSelected].rank == "Coach"
                                         }
                                 >
                                     {#each Object.values($organizationTeams) as team}
