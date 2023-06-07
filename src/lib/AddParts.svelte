@@ -201,7 +201,7 @@
                     <p>Count: 0</p>
                 {/if}
 
-                <input type="number" placeholder="1" on:input={(elm) => elm.target.value = Math.abs(elm.target.value)}>
+                <input type="number" placeholder="1" on:input={(elm) => elm.target.value = Math.abs(Math.round(elm.target.value))}>
                 <button
                     on:click={(elm) => addProduct(elm)}
                     on:keydown={(elm) => addProduct(elm)}>Add</button

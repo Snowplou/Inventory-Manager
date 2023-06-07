@@ -116,9 +116,13 @@
         let productCount =
             $organizations[$organizationSelectionForParts].teams[$teamSelected]
                 .products[product];
+        let amount = Number(elm.target.parentElement.children[2].value);
+        if(!amount) amount = 1
+        if(amount > productCount) amount = productCount
+        console.log(amount);
 
         if (type == "remove") {
-            if (productCount == 1) {
+            if (productCount - amount <= 0) {
                 setToDb(
                     `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
                     null
@@ -126,7 +130,7 @@
             } else {
                 setToDb(
                     `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
-                    productCount - 1
+                    productCount - amount
                 );
                 elm.target.parentElement.children[0].innerHTML = "Removed!";
                 setTimeout(() => {
@@ -155,9 +159,9 @@
             if (!teamCount) teamCount = 0;
             setToDb(
                 `organizations/${$organizationSelectionForParts}/teams/${transferTeam}/products/${product}`,
-                teamCount + 1
+                teamCount + amount
             );
-            if (productCount == 1) {
+            if (productCount - amount <= 0) {
                 setToDb(
                     `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
                     null
@@ -165,7 +169,7 @@
             } else {
                 setToDb(
                     `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
-                    productCount - 1
+                    productCount - amount
                 );
                 elm.target.parentElement.children[1].innerHTML = "Transferred!";
                 setTimeout(() => {
@@ -275,6 +279,7 @@
                                                 removeProduct(elm, "transfer")}
                                             >Transfer</button
                                         >
+                                        <input type="number" placeholder="1" on:input={(elm) => elm.target.value = Math.abs(Math.round(elm.target.value))}>
                                 </div>
                             </div>
                         {/if}
@@ -369,7 +374,14 @@
         display: flex;
         flex-direction: column;
         justify-content: space-evenly;
+        align-items: flex-end;
         height: 100%;
+    }
+
+    input {
+        width: 50%;
+        margin-right: 0;
+        padding-right: 0;
     }
 
     .part img {
