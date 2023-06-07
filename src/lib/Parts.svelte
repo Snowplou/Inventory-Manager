@@ -206,17 +206,7 @@
     </div>
 {:else}
     <div id="teamSelection">
-        <p
-            class="teamListItem"
-            on:click={(elm) => teamClicked(elm)}
-            on:keydown={(elm) => teamClicked(elm)}
-            style="background-color: {'Inventory' == $teamSelected
-                ? '#0056b3'
-                : ''}"
-        >
-            Inventory
-        </p>
-        {#each $organizations[$organizationSelectionForParts].teamList as team}
+        {#each ["Inventory", ...$organizations[$organizationSelectionForParts].teamList] as team}
             {#if team != "Unsorted" && team != "Coach" && (team == $userData.organizations[$organizationSelectionForParts].rank || $organizations[$organizationSelectionForParts].owner == $userData.email || $userData.organizations[$organizationSelectionForParts].rank == "Coach")}
                 <p
                     class="teamListItem"
@@ -249,12 +239,7 @@
     {#key $organizationSelectionForParts}
         {#key $teamSelected}
             {#key search}
-                <div
-                    id="partsList"
-                    style="top: {$teamSelected != 'Inventory'
-                        ? '20vh'
-                        : '24vh'};"
-                >
+                <div id="partsList">
                     {#each Object.values(teamProducts) as productCount, i}
                         {#if searchFilter(Object.keys(teamProducts)[i])}
                             <div class="part">
@@ -283,7 +268,6 @@
                                             removeProduct(elm, "remove")}
                                         >Remove</button
                                     >
-                                    {#if $teamSelected == "Inventory"}
                                         <button
                                             on:click={(elm) =>
                                                 removeProduct(elm, "transfer")}
@@ -291,7 +275,6 @@
                                                 removeProduct(elm, "transfer")}
                                             >Transfer</button
                                         >
-                                    {/if}
                                 </div>
                             </div>
                         {/if}
@@ -307,7 +290,7 @@
     {/key}
 {/if}
 
-{#if $teamSelected == "Inventory"}
+{#key $teamSelected}
     <div id="transferInputs">
         {#if $organizations[$organizationSelectionForParts]}
             <p id="transferToTeamText">Transfer to team:</p>
@@ -318,8 +301,8 @@
                     (selectedTeamForTransfer = elm.target.value)}
             >
                 {#if $organizations[$organizationSelectionForParts]}
-                    {#each Object.values($organizations[$organizationSelectionForParts].teamList) as team}
-                        {#if team != "Unsorted" && team != "Coach" && (team == $userData.organizations[$organizationSelectionForParts].rank || $organizations[$organizationSelectionForParts].owner == $userData.email || $userData.organizations[$organizationSelectionForParts].rank == "Coach")}
+                    {#each ["Inventory", ...Object.values($organizations[$organizationSelectionForParts].teamList)] as team}
+                        {#if team != "Unsorted" && team != "Coach" && (team == $userData.organizations[$organizationSelectionForParts].rank || $organizations[$organizationSelectionForParts].owner == $userData.email || $userData.organizations[$organizationSelectionForParts].rank == "Coach") && team != $teamSelected}
                             <option value={team}>{team}</option>
                         {/if}
                     {/each}
@@ -327,7 +310,8 @@
             </select>
         {/if}
     </div>
-{/if}
+{/key}
+
 {#if $organizations[$organizationSelectionForParts]}
     <input
         type="text"
@@ -335,26 +319,6 @@
         placeholder="Search"
         on:input={(elm) => searchChanged(elm)}
     />
-{/if}
-
-{#if $teamSelected == "Inventory"}
-    <style>
-        .partListButtons {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-evenly;
-            height: 100%;
-        }
-    </style>
-{:else}
-    <style>
-        .partListButtons {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            height: 100%;
-        }
-    </style>
 {/if}
 
 <style>
@@ -390,6 +354,7 @@
     #partsList {
         position: absolute;
         left: 24vw;
+        top: 24vh;
         width: 74vw;
         height: 72vh;
         border-radius: 10px;
@@ -398,6 +363,13 @@
         display: flex;
         /* flex-wrap: wrap; */
         flex-direction: column;
+    }
+
+    .partListButtons {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        height: 100%;
     }
 
     .part img {
