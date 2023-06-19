@@ -99,6 +99,14 @@
 
     function nameToImage(name) {
         name = decodeProductName(name);
+        if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts){
+            if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name]){
+                if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name].image == "none"){
+                    return "https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg";
+                }
+                return $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name].image
+            }
+        }
         for (let product of Object.values($products)) {
             if (product.name == name) {
                 return product.url;
@@ -119,7 +127,6 @@
         let amount = Number(elm.target.parentElement.children[2].value);
         if(!amount) amount = 1
         if(amount > productCount) amount = productCount
-        console.log(amount);
 
         if (type == "remove") {
             if (productCount - amount <= 0) {
@@ -252,6 +259,7 @@
                                     src={nameToImage(
                                         Object.keys(teamProducts)[i]
                                     )}
+                                    onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
                                     alt={decodeProductName(
                                         Object.keys(teamProducts)[i]
                                     )}

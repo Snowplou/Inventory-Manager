@@ -30,13 +30,15 @@
         "Other",
     ];
 
-    let categorySelected = "";
+    let categorySelected = "VRC";
     let vexType = "All";
     let search = "";
     let filteredProducts = [];
+    applyFilter();
 
     async function categoryClicked(elm) {
         categorySelected = elm.target.alt;
+        console.log(categorySelected);
         applyFilter();
     }
 
@@ -89,8 +91,8 @@
 
     async function addProduct(elm) {
         let product = elm.target.parentElement.children[1].innerHTML;
-        let count = Number(elm.target.parentElement.children[3].value)
-        if(!count) count = 1
+        let count = Number(elm.target.parentElement.children[3].value);
+        if (!count) count = 1;
 
         // Replace the characters that firebase doesn't like
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
@@ -99,7 +101,7 @@
                 Object.values(pathChanger)[i]
             );
         }
-        product = product.replaceAll("&amp;", "&")
+        product = product.replaceAll("&amp;", "&");
 
         let teamProducts = await getFromDb(
             `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`
@@ -119,6 +121,114 @@
         setTimeout(() => {
             elm.target.parentElement.children[4].innerHTML = "Add";
         }, 500);
+    }
+
+    async function addCustomProduct(elm) {
+        let product = elm.target.parentElement.parentElement.children[1].innerHTML;
+        let count = Number(elm.target.parentElement.parentElement.children[3].value);
+        if (!count) count = 1;
+
+        // Replace the characters that firebase doesn't like
+        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            product = product.replaceAll(
+                Object.keys(pathChanger)[i],
+                Object.values(pathChanger)[i]
+            );
+        }
+        product = product.replaceAll("&amp;", "&");
+
+        let teamProducts = await getFromDb(
+            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`
+        );
+        if (!teamProducts) {
+            setToDb(
+                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
+                count
+            );
+        } else {
+            setToDb(
+                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
+                Number(teamProducts) + count
+            );
+        }
+        elm.target.innerHTML = "Added!";
+        setTimeout(() => {
+            elm.target.innerHTML = "Add";
+        }, 500);
+    }
+
+    async function createCustomPart() {
+        let partName = prompt(
+            "What is the name of the part you would like to add?"
+        );
+        if (!partName) return;
+        let partCount;
+        while (true) {
+            partCount = Number(prompt("How many of this part do you have?"));
+            if (!partCount && !isNaN(partCount)) return;
+            if (!isNaN(partCount) && partCount >= 1) break;
+        }
+        let partImage = prompt(
+            "What is the image url of the part you would like to add? (optional)\nIf you do not have an image, leave this blank."
+        );
+
+        if (!partImage) partImage = "none";
+
+        // Replace the characters that firebase doesn't like
+        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            partName = partName.replaceAll(
+                Object.keys(pathChanger)[i],
+                Object.values(pathChanger)[i]
+            );
+        }
+        partName = partName.replaceAll("&amp;", "&");
+
+        let teamProducts = await getFromDb(
+            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${partName}`
+        );
+        if (!teamProducts) {
+            setToDb(
+                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${partName}`,
+                partCount
+            );
+        } else {
+            setToDb(
+                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${partName}`,
+                Number(teamProducts) + partCount
+            );
+        }
+        setToDb(
+            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/customParts/${partName}`,
+            { image: partImage }
+        );
+    }
+
+    async function deleteCustomProduct(elm) {
+        let product =
+            elm.target.parentElement.parentElement.children[1].innerHTML;
+
+        // Replace the characters that firebase doesn't like
+        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            product = product.replaceAll(
+                Object.values(pathChanger)[i],
+                Object.keys(pathChanger)[i]
+            );
+        }
+        product = product.replaceAll("&amp;", "&");
+
+        let confirm = window.confirm(
+            `Are you sure you want to delete ${product}? Doing so will permanently delete it, making it impossible to undo.`
+        );
+        if (!confirm) return;
+
+        setToDb(
+            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/customParts/${product}`,
+            null
+        );
+        setToDb(
+            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
+            null
+        );
     }
 
     function encode(name) {
@@ -142,6 +252,18 @@
             return count;
         }
     }
+
+    function nameToImage(productName) {
+        if (
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .customParts[productName].image == "none"
+        ) {
+            return "https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg";
+        }
+        return $organizations[$organizationSelectionForParts].teams[
+            $teamSelected
+        ].customParts[productName].image;
+    }
 </script>
 
 <button
@@ -149,8 +271,15 @@
     on:click={backButtonPressed}
     on:keydown={backButtonPressed}>Done Adding Parts</button
 >
+<buton
+    id="createCustomPart"
+    on:click={() => createCustomPart()}
+    on:keydown={() => createCustomPart()}
+>
+    Create Custom Part
+</buton>
 
-<div id="categorySelect">
+<!-- <div id="categorySelect">
     {#each Object.values(vexCategories) as category, i}
         <img
             class="categoryImage"
@@ -160,7 +289,7 @@
             on:keydown={(elm) => categoryClicked(elm)}
         />
     {/each}
-</div>
+</div> -->
 
 <select id="partFilter" on:change={(elm) => partTypeSelected(elm)}>
     <option value="All">All</option>
@@ -171,6 +300,62 @@
 
 {#key categorySelected}
     <div id="productList">
+        {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
+            {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts}
+                {#each Object.keys($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts) as product, i}
+                    <div class="product">
+                        <img
+                            class="productImage"
+                            src={nameToImage(product)}
+                            onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
+                            alt={product}
+                        />
+                        <p>{product}</p>
+
+                        {#if $organizations[$organizationSelectionForParts].teams}
+                            {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
+                                {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product)]}
+                                    <p>
+                                        Count: {$organizations[
+                                            $organizationSelectionForParts
+                                        ].teams[$teamSelected].products[
+                                            encode(product)
+                                        ]}
+                                    </p>
+                                {:else}
+                                    <p>Count: 0</p>
+                                {/if}
+                            {:else}
+                                <p>Count: 0</p>
+                            {/if}
+                        {:else}
+                            <p>Count: 0</p>
+                        {/if}
+
+                        <input
+                            type="number"
+                            placeholder="1"
+                            on:input={(elm) =>
+                                (elm.target.value = Math.abs(
+                                    Math.round(elm.target.value)
+                                ))}
+                        />
+                        <div class="addAndDelete">
+                            <button
+                                on:click={(elm) => addCustomProduct(elm)}
+                                on:keydown={(elm) => addCustomProduct(elm)}
+                                >Add</button
+                            >
+                            <button
+                                on:click={(elm) => deleteCustomProduct(elm)}
+                                on:keydown={(elm) => deleteCustomProduct(elm)}
+                                >Delete</button
+                            >
+                        </div>
+                    </div>
+                {/each}
+            {/if}
+        {/if}
         {#each filteredProducts as product, i}
             <div class="product">
                 <img
@@ -201,7 +386,14 @@
                     <p>Count: 0</p>
                 {/if}
 
-                <input type="number" placeholder="1" on:input={(elm) => elm.target.value = Math.abs(Math.round(elm.target.value))}>
+                <input
+                    type="number"
+                    placeholder="1"
+                    on:input={(elm) =>
+                        (elm.target.value = Math.abs(
+                            Math.round(elm.target.value)
+                        ))}
+                />
                 <button
                     on:click={(elm) => addProduct(elm)}
                     on:keydown={(elm) => addProduct(elm)}>Add</button
@@ -233,7 +425,7 @@
 
     #partFilter {
         position: absolute;
-        top: 19vh;
+        top: 14vh;
         left: 20vw;
         width: 60vw;
         height: 6vh;
@@ -296,21 +488,27 @@
     #productList {
         position: absolute;
         left: 1vw;
-        top: 34vh;
+        top: 31vh;
         width: 98vw;
-        height: 64vh;
+        height: 67vh;
+        border-radius: 10px;
         background-color: gray;
         overflow-y: auto;
         display: flex;
         flex-wrap: wrap;
-        border-radius: 10px;
+        justify-content: center;
         align-items: center;
+    }
+
+    .addAndDelete {
+        display: flex;
+        justify-content: space-evenly;
     }
 
     #searchBar {
         position: absolute;
         left: 25vw;
-        top: 26vh;
+        top: 22vh;
         width: 50vw;
         height: 6vh;
         text-align: center;
@@ -320,7 +518,7 @@
     #backToPartList {
         position: absolute;
         top: 0;
-        right: 40vw;
+        right: 52.5vw;
         color: white;
         background-color: #007bff;
         border-radius: 10px;
@@ -337,6 +535,31 @@
     }
 
     #backToPartList:hover {
+        background-color: #0069d9;
+        transition: background-color 0.25s ease-in-out;
+    }
+
+    #createCustomPart {
+        position: absolute;
+        top: 0;
+        right: 27.5vw;
+        color: white;
+        background-color: #007bff;
+        border-radius: 10px;
+        margin-top: 1vh;
+        margin-right: 1vw;
+        font-size: calc(1.5vh + 1vw);
+        width: 20vw;
+        height: 10vh;
+        cursor: pointer;
+        /* Vertically align text */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background-color 0.25s ease-in-out;
+    }
+
+    #createCustomPart:hover {
         background-color: #0069d9;
         transition: background-color 0.25s ease-in-out;
     }
