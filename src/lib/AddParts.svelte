@@ -124,8 +124,11 @@
     }
 
     async function addCustomProduct(elm) {
-        let product = elm.target.parentElement.parentElement.children[1].innerHTML;
-        let count = Number(elm.target.parentElement.parentElement.children[3].value);
+        let product =
+            elm.target.parentElement.parentElement.children[1].innerHTML;
+        let count = Number(
+            elm.target.parentElement.parentElement.children[3].value
+        );
         if (!count) count = 1;
 
         // Replace the characters that firebase doesn't like
@@ -300,60 +303,62 @@
 
 {#key categorySelected}
     <div id="productList">
-        {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
-            {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts}
-                {#each Object.keys($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts) as product, i}
-                    <div class="product">
-                        <img
-                            class="productImage"
-                            src={nameToImage(product)}
-                            onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
-                            alt={product}
-                        />
-                        <p>{product}</p>
+        {#if $organizations[$organizationSelectionForParts].teams}
+            {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
+                {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts}
+                    {#each Object.keys($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts) as product, i}
+                        <div class="product">
+                            <img
+                                class="productImage"
+                                src={nameToImage(product)}
+                                onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
+                                alt={product}
+                            />
+                            <p>{product}</p>
 
-                        {#if $organizations[$organizationSelectionForParts].teams}
-                            {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
-                                {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product)]}
-                                    <p>
-                                        Count: {$organizations[
-                                            $organizationSelectionForParts
-                                        ].teams[$teamSelected].products[
-                                            encode(product)
-                                        ]}
-                                    </p>
+                            {#if $organizations[$organizationSelectionForParts].teams}
+                                {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
+                                    {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product)]}
+                                        <p>
+                                            Count: {$organizations[
+                                                $organizationSelectionForParts
+                                            ].teams[$teamSelected].products[
+                                                encode(product)
+                                            ]}
+                                        </p>
+                                    {:else}
+                                        <p>Count: 0</p>
+                                    {/if}
                                 {:else}
                                     <p>Count: 0</p>
                                 {/if}
                             {:else}
                                 <p>Count: 0</p>
                             {/if}
-                        {:else}
-                            <p>Count: 0</p>
-                        {/if}
 
-                        <input
-                            type="number"
-                            placeholder="1"
-                            on:input={(elm) =>
-                                (elm.target.value = Math.abs(
-                                    Math.round(elm.target.value)
-                                ))}
-                        />
-                        <div class="addAndDelete">
-                            <button
-                                on:click={(elm) => addCustomProduct(elm)}
-                                on:keydown={(elm) => addCustomProduct(elm)}
-                                >Add</button
-                            >
-                            <button
-                                on:click={(elm) => deleteCustomProduct(elm)}
-                                on:keydown={(elm) => deleteCustomProduct(elm)}
-                                >Delete</button
-                            >
+                            <input
+                                type="number"
+                                placeholder="1"
+                                on:input={(elm) =>
+                                    (elm.target.value = Math.abs(
+                                        Math.round(elm.target.value)
+                                    ))}
+                            />
+                            <div class="addAndDelete">
+                                <button
+                                    on:click={(elm) => addCustomProduct(elm)}
+                                    on:keydown={(elm) => addCustomProduct(elm)}
+                                    >Add</button
+                                >
+                                <button
+                                    on:click={(elm) => deleteCustomProduct(elm)}
+                                    on:keydown={(elm) =>
+                                        deleteCustomProduct(elm)}>Delete</button
+                                >
+                            </div>
                         </div>
-                    </div>
-                {/each}
+                    {/each}
+                {/if}
             {/if}
         {/if}
         {#each filteredProducts as product, i}
