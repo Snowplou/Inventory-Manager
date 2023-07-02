@@ -98,7 +98,22 @@
     }
 
     function nameToImage(name) {
+        if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts){
+            if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name]){
+                if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name].image == "none"){
+                    return "https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg";
+                }
+                return $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name].image
+            }
+        }
+        for (let product of Object.values($products)) {
+            if (product.name == name) {
+                return product.url;
+            }
+        }
+
         name = decodeProductName(name);
+
         if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts){
             if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name]){
                 if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name].image == "none"){

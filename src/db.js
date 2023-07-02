@@ -44,6 +44,7 @@ export let pathChanger = {
     "$": "ab19a7ba18a",
     "[": "auba189a9na1",
     "]": "aab2723na81n",
+    "/": "au198amab19a"
 };
 export let emailChanger = {
     ".": "unahuh18ab1z",

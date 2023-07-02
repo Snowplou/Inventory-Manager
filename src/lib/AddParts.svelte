@@ -267,6 +267,16 @@
             $teamSelected
         ].customParts[productName].image;
     }
+
+    function productDecode(productName) {
+        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            productName = productName.replaceAll(
+                Object.values(pathChanger)[i],
+                Object.keys(pathChanger)[i]
+            );
+        }
+        return productName;
+    }
 </script>
 
 <button
@@ -312,9 +322,9 @@
                                 class="productImage"
                                 src={nameToImage(product)}
                                 onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
-                                alt={product}
+                                alt={productDecode(product)}
                             />
-                            <p>{product}</p>
+                            <p>{productDecode(product)}</p>
 
                             {#if $organizations[$organizationSelectionForParts].teams}
                                 {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
