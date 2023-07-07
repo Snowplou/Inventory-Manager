@@ -47,6 +47,7 @@
                 !product.name
                     .toLowerCase()
                     .includes(searchTerms[i].toLowerCase())
+                && !product.sku.toLowerCase().includes(searchTerms[i].toLowerCase())
             ) {
                 return false;
             }
@@ -54,8 +55,33 @@
         return true;
     }
 
+    function decodeProductName(name) {
+        let decodedName = name;
+        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            decodedName = decodedName.replaceAll(
+                Object.values(pathChanger)[i],
+                Object.keys(pathChanger)[i]
+            );
+        }
+        return decodedName;
+    }
+
     async function applyFilter() {
         filteredProducts = [];
+
+        // Do the same thing but for custom parts
+        let customParts = $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .customParts
+        let customPartsKeys = Object.keys(customParts)
+        let customPartsValues = Object.values(customParts)
+        for (let i = 0; i < Object.keys(customParts).length; i++) {
+            let temp = {name: decodeProductName(customPartsKeys[i]), sku: customPartsValues[i].sku ? customPartsValues[i].sku : "SKU Not Found", url: customPartsValues[i].image}
+            if (searchFilter(temp)) {
+                filteredProducts.push(temp);
+            }
+        }
+
+        // Do the same thing but for vex parts
         for (let i = 0; i < Object.keys($products).length; i++) {
             if (vexType == "All") {
                 if (searchFilter($products[i])) {
@@ -284,7 +310,7 @@
 </select>
 
 <div id="productList">
-    {#if $organizations[$organizationSelectionForParts].teams}
+    <!-- {#if $organizations[$organizationSelectionForParts].teams}
         {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
             {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts}
                 {#each Object.keys($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts) as product, i}
@@ -295,10 +321,10 @@
                             onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
                             alt={productDecode(product)}
                         />
-                        <p>{productDecode(product)}</p>
+                        <p>{productDecode(product)}</p> -->
                         <!-- <p>{product.sku ? product.sku : "SKU Not Found"}</p> -->
 
-                        {#if $organizations[$organizationSelectionForParts].teams}
+                        <!-- {#if $organizations[$organizationSelectionForParts].teams}
                             {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
                                 {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product)]}
                                     <p>
@@ -342,10 +368,12 @@
                 {/each}
             {/if}
         {/if}
-    {/if}
+    {/if} -->
     {#each filteredProducts as product, i}
         <div class="product">
-            <img class="productImage" src={product.url} alt={product.name} />
+            <img class="productImage" src={product.url} alt={product.name}
+            onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
+            />
             <p>{product.name}</p>
             <p>{product.sku}</p>
 
