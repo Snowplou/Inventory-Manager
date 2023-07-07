@@ -86,6 +86,17 @@
         return decodedName;
     }
 
+    function getSKU(name){
+        name = decodeProductName(name);
+        // Find the product in the products list
+        for (let product of Object.values($products)) {
+            if (product.name == name) {
+                return product.sku;
+            }
+        }
+        return "SKU Not Found";
+    }
+
     function encodeProductName(name) {
         let encodedName = name;
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
@@ -207,8 +218,11 @@
 
     function searchFilter(product) {
         let searchTerms = search.split(" ");
+        let productName = decodeProductName(product);
+        let productSKU = getSKU(product);
+
         for (let i = 0; i < searchTerms.length; i++) {
-            if (!product.toLowerCase().includes(searchTerms[i].toLowerCase())) {
+            if (!product.toLowerCase().includes(searchTerms[i].toLowerCase()) && !productSKU.toLowerCase().includes(searchTerms[i].toLowerCase())) {
                 return false;
             }
         }
@@ -285,6 +299,7 @@
                                             Object.keys(teamProducts)[i]
                                         )}
                                     </p>
+                                    <p>{getSKU(Object.keys(teamProducts)[i])}</p>
                                     <p>Count: {productCount}</p>
                                 </div>
                                 <div class="partListButtons">
@@ -366,6 +381,10 @@
 
     #transferToTeamText {
         font-size: 3vw;
+    }
+
+    .partPList {
+        width: 100%;
     }
 
     #transferInputs {

@@ -10,7 +10,7 @@
   import AddParts from "./lib/AddParts.svelte";
 </script>
 
-<!-- {#key $authWritable.currentUser}
+{#key $authWritable.currentUser}
   {#if !$authWritable.currentUser}
     <LogIn />
   {:else}
@@ -31,12 +31,13 @@
       <AddParts />
     {/if}
   {/if}
-{/key} -->
-<p>
+{/key}
+
+<!-- <p>
 The website is currently closed for maintenance. Please check back later.<br>
 Reason For Maintenance: SKUs are being added to the products.<br><br>
 <i>Note: The ability to add SKUs to custom parts and edit custom parts will be added at a later time.</i>
-</p>
+</p> -->
 
 <style>
   #linksCenter {

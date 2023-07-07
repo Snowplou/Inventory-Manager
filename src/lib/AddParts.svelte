@@ -14,11 +14,6 @@
         pageState.set("parts");
     }
 
-    let vexCategories = {
-        VIQC: "https://www.vexrobotics.com/static/version1685052342/frontend/Ifi/vexrobotics/en_US/Magento_Catalog/images/product/product-line-icons/iq.svg",
-        VRC: "https://www.vexrobotics.com/static/version1685052342/frontend/Ifi/vexrobotics/en_US/Magento_Catalog/images/product/product-line-icons/v5.svg",
-    };
-
     let partTypes = [
         "Game Elements",
         "Structure",
@@ -30,17 +25,10 @@
         "Other",
     ];
 
-    let categorySelected = "VRC";
     let vexType = "All";
     let search = "";
     let filteredProducts = [];
     applyFilter();
-
-    async function categoryClicked(elm) {
-        categorySelected = elm.target.alt;
-        console.log(categorySelected);
-        applyFilter();
-    }
 
     async function partTypeSelected(elm) {
         vexType = elm.target.value;
@@ -69,19 +57,15 @@
     async function applyFilter() {
         filteredProducts = [];
         for (let i = 0; i < Object.keys($products).length; i++) {
-            if ($products[i].category) {
-                if ($products[i].category.includes(categorySelected)) {
-                    if (vexType == "All") {
+            if (vexType == "All") {
+                if (searchFilter($products[i])) {
+                    filteredProducts.push($products[i]);
+                }
+            } else if ($products[i].type) {
+                for (let j = 0; j < $products[i].type.length; j++) {
+                    if ($products[i].type[j].includes(vexType)) {
                         if (searchFilter($products[i])) {
                             filteredProducts.push($products[i]);
-                        }
-                    } else if ($products[i].type) {
-                        for (let j = 0; j < $products[i].type.length; j++) {
-                            if ($products[i].type[j].includes(vexType)) {
-                                if (searchFilter($products[i])) {
-                                    filteredProducts.push($products[i]);
-                                }
-                            }
                         }
                     }
                 }
@@ -292,18 +276,6 @@
     Create Custom Part
 </buton>
 
-<!-- <div id="categorySelect">
-    {#each Object.values(vexCategories) as category, i}
-        <img
-            class="categoryImage"
-            src={category}
-            alt={Object.keys(vexCategories)[i]}
-            on:click={(elm) => categoryClicked(elm)}
-            on:keydown={(elm) => categoryClicked(elm)}
-        />
-    {/each}
-</div> -->
-
 <select id="partFilter" on:change={(elm) => partTypeSelected(elm)}>
     <option value="All">All</option>
     {#each partTypes as partType}
@@ -311,114 +283,105 @@
     {/each}
 </select>
 
-{#key categorySelected}
-    <div id="productList">
-        {#if $organizations[$organizationSelectionForParts].teams}
-            {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
-                {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts}
-                    {#each Object.keys($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts) as product, i}
-                        <div class="product">
-                            <img
-                                class="productImage"
-                                src={nameToImage(product)}
-                                onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
-                                alt={productDecode(product)}
-                            />
-                            <p>{productDecode(product)}</p>
+<div id="productList">
+    {#if $organizations[$organizationSelectionForParts].teams}
+        {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
+            {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts}
+                {#each Object.keys($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts) as product, i}
+                    <div class="product">
+                        <img
+                            class="productImage"
+                            src={nameToImage(product)}
+                            onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
+                            alt={productDecode(product)}
+                        />
+                        <p>{productDecode(product)}</p>
+                        <!-- <p>{product.sku ? product.sku : "SKU Not Found"}</p> -->
 
-                            {#if $organizations[$organizationSelectionForParts].teams}
-                                {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
-                                    {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product)]}
-                                        <p>
-                                            Count: {$organizations[
-                                                $organizationSelectionForParts
-                                            ].teams[$teamSelected].products[
-                                                encode(product)
-                                            ]}
-                                        </p>
-                                    {:else}
-                                        <p>Count: 0</p>
-                                    {/if}
+                        {#if $organizations[$organizationSelectionForParts].teams}
+                            {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
+                                {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product)]}
+                                    <p>
+                                        Count: {$organizations[
+                                            $organizationSelectionForParts
+                                        ].teams[$teamSelected].products[
+                                            encode(product)
+                                        ]}
+                                    </p>
                                 {:else}
                                     <p>Count: 0</p>
                                 {/if}
                             {:else}
                                 <p>Count: 0</p>
                             {/if}
-
-                            <input
-                                type="number"
-                                placeholder="1"
-                                on:input={(elm) =>
-                                    (elm.target.value = Math.abs(
-                                        Math.round(elm.target.value)
-                                    ))}
-                            />
-                            <div class="addAndDelete">
-                                <button
-                                    on:click={(elm) => addCustomProduct(elm)}
-                                    on:keydown={(elm) => addCustomProduct(elm)}
-                                    >Add</button
-                                >
-                                <button
-                                    on:click={(elm) => deleteCustomProduct(elm)}
-                                    on:keydown={(elm) =>
-                                        deleteCustomProduct(elm)}>Delete</button
-                                >
-                            </div>
-                        </div>
-                    {/each}
-                {/if}
-            {/if}
-        {/if}
-        {#each filteredProducts as product, i}
-            <div class="product">
-                <img
-                    class="productImage"
-                    src={product.url}
-                    alt={product.name}
-                />
-                <p>{product.name}</p>
-                <!-- <p>${product.price}</p> -->
-
-                {#if $organizations[$organizationSelectionForParts].teams}
-                    {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
-                        {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product.name)]}
-                            <p>
-                                Count: {$organizations[
-                                    $organizationSelectionForParts
-                                ].teams[$teamSelected].products[
-                                    encode(product.name)
-                                ]}
-                            </p>
                         {:else}
                             <p>Count: 0</p>
                         {/if}
+
+                        <input
+                            type="number"
+                            placeholder="1"
+                            on:input={(elm) =>
+                                (elm.target.value = Math.abs(
+                                    Math.round(elm.target.value)
+                                ))}
+                        />
+                        <div class="addAndDelete">
+                            <button
+                                on:click={(elm) => addCustomProduct(elm)}
+                                on:keydown={(elm) => addCustomProduct(elm)}
+                                >Add</button
+                            >
+                            <button
+                                on:click={(elm) => deleteCustomProduct(elm)}
+                                on:keydown={(elm) => deleteCustomProduct(elm)}
+                                >Delete</button
+                            >
+                        </div>
+                    </div>
+                {/each}
+            {/if}
+        {/if}
+    {/if}
+    {#each filteredProducts as product, i}
+        <div class="product">
+            <img class="productImage" src={product.url} alt={product.name} />
+            <p>{product.name}</p>
+            <p>{product.sku}</p>
+
+            {#if $organizations[$organizationSelectionForParts].teams}
+                {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
+                    {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product.name)]}
+                        <p>
+                            Count: {$organizations[
+                                $organizationSelectionForParts
+                            ].teams[$teamSelected].products[
+                                encode(product.name)
+                            ]}
+                        </p>
                     {:else}
                         <p>Count: 0</p>
                     {/if}
                 {:else}
                     <p>Count: 0</p>
                 {/if}
+            {:else}
+                <p>Count: 0</p>
+            {/if}
 
-                <input
-                    type="number"
-                    placeholder="1"
-                    on:input={(elm) =>
-                        (elm.target.value = Math.abs(
-                            Math.round(elm.target.value)
-                        ))}
-                />
-                <button
-                    on:click={(elm) => addProduct(elm)}
-                    on:keydown={(elm) => addProduct(elm)}>Add</button
-                >
-            </div>
-        {:else}
-            <p id="noCategorySelected">Please select either IQ or V5.</p>
-        {/each}
-    </div>
-{/key}
+            <input
+                type="number"
+                placeholder="1"
+                on:input={(elm) =>
+                    (elm.target.value = Math.abs(Math.round(elm.target.value)))}
+            />
+            <button
+                on:click={(elm) => addProduct(elm)}
+                on:keydown={(elm) => addProduct(elm)}>Add</button
+            >
+        </div>
+    {/each}
+</div>
 
 <input
     type="text"
@@ -428,16 +391,6 @@
 />
 
 <style>
-    #noCategorySelected {
-        display: flex;
-        align-items: center;
-        margin-left: auto;
-        margin-right: auto;
-        color: white;
-        font-size: 8vmin;
-        font-weight: bold;
-    }
-
     #partFilter {
         position: absolute;
         top: 14vh;
@@ -451,20 +404,6 @@
         border-radius: 10px;
         text-align: center;
         font-size: 6vmin;
-    }
-
-    #categorySelect {
-        position: absolute;
-        left: 0;
-        top: 13vh;
-        width: 100%;
-        height: 5vh;
-        margin: 0;
-        padding: 0;
-        background-color: gray;
-        display: flex;
-        align-items: center;
-        justify-content: space-evenly;
     }
 
     .product img {
@@ -577,12 +516,5 @@
     #createCustomPart:hover {
         background-color: #0069d9;
         transition: background-color 0.25s ease-in-out;
-    }
-
-    .categoryImage {
-        width: 8vh;
-        margin: 0;
-        padding: 0;
-        cursor: pointer;
     }
 </style>
