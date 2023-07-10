@@ -23,6 +23,18 @@
             $organizations[$organizationSelectionForParts].teamList[2];
     });
 
+    function canEditCustomPartsFunc(){
+        if(!$organizationSelectionForParts) return false
+        if(!$teamSelected) return false
+        return $userData.organizations[$organizationSelectionForParts].rank == "Owner" || $userData.organizations[$organizationSelectionForParts].rank == "Coach" || $userData.organizations[$organizationSelectionForParts].rank == $teamSelected
+    }
+
+    let canEditCustomParts = canEditCustomPartsFunc()
+    teamSelected.subscribe(() => {
+        canEditCustomParts = canEditCustomPartsFunc()
+        console.log(canEditCustomParts)
+    });
+
     function updateParts() {
         if (!$organizationSelectionForParts) return;
         if (!$teamSelected) {
@@ -247,7 +259,7 @@
 {:else}
     <div id="teamSelection">
         {#each ["Inventory", ...$organizations[$organizationSelectionForParts].teamList] as team}
-            {#if team != "Unsorted" && team != "Coach" && (team == $userData.organizations[$organizationSelectionForParts].rank || $organizations[$organizationSelectionForParts].owner == $userData.email || $userData.organizations[$organizationSelectionForParts].rank == "Coach")}
+            {#if (team != "Unsorted" && team != "Coach" && (team == $userData.organizations[$organizationSelectionForParts].rank || $organizations[$organizationSelectionForParts].owner == $userData.email || $userData.organizations[$organizationSelectionForParts].rank == "Coach")) || team == "Inventory"}
                 <p
                     class="teamListItem"
                     on:click={(elm) => teamClicked(elm)}

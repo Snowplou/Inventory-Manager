@@ -46,8 +46,10 @@
             if (
                 !product.name
                     .toLowerCase()
+                    .includes(searchTerms[i].toLowerCase()) &&
+                !product.sku
+                    .toLowerCase()
                     .includes(searchTerms[i].toLowerCase())
-                && !product.sku.toLowerCase().includes(searchTerms[i].toLowerCase())
             ) {
                 return false;
             }
@@ -70,14 +72,27 @@
         filteredProducts = [];
 
         // Do the same thing but for custom parts
-        let customParts = $organizations[$organizationSelectionForParts].teams[$teamSelected]
-                .customParts
-        let customPartsKeys = Object.keys(customParts)
-        let customPartsValues = Object.values(customParts)
-        for (let i = 0; i < Object.keys(customParts).length; i++) {
-            let temp = {name: decodeProductName(customPartsKeys[i]), sku: customPartsValues[i].sku ? customPartsValues[i].sku : "SKU Not Found", url: customPartsValues[i].image}
-            if (searchFilter(temp)) {
-                filteredProducts.push(temp);
+        let customParts =
+            $organizations[$organizationSelectionForParts].teams[$teamSelected];
+        if (customParts) {
+            customParts = customParts.customParts;
+            if(!customParts){
+                customParts = {};
+            }
+
+            let customPartsKeys = Object.keys(customParts);
+            let customPartsValues = Object.values(customParts);
+            for (let i = 0; i < Object.keys(customParts).length; i++) {
+                let temp = {
+                    name: decodeProductName(customPartsKeys[i]),
+                    sku: customPartsValues[i].sku
+                        ? customPartsValues[i].sku
+                        : "SKU Not Found",
+                    url: customPartsValues[i].image,
+                };
+                if (searchFilter(temp)) {
+                    filteredProducts.push(temp);
+                }
             }
         }
 
@@ -322,9 +337,9 @@
                             alt={productDecode(product)}
                         />
                         <p>{productDecode(product)}</p> -->
-                        <!-- <p>{product.sku ? product.sku : "SKU Not Found"}</p> -->
+    <!-- <p>{product.sku ? product.sku : "SKU Not Found"}</p> -->
 
-                        <!-- {#if $organizations[$organizationSelectionForParts].teams}
+    <!-- {#if $organizations[$organizationSelectionForParts].teams}
                             {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
                                 {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product)]}
                                     <p>
@@ -371,8 +386,11 @@
     {/if} -->
     {#each filteredProducts as product, i}
         <div class="product">
-            <img class="productImage" src={product.url} alt={product.name}
-            onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
+            <img
+                class="productImage"
+                src={product.url}
+                alt={product.name}
+                onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
             />
             <p>{product.name}</p>
             <p>{product.sku}</p>
