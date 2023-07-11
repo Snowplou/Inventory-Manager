@@ -87,7 +87,8 @@
         )
 
         
-        document.getElementById("name").innerHTML = decodeProductName(name);
+        elm.target.parentElement.children[0].innerHTML = decodeProductName(name);
+        // ("name").innerHTML = decodeProductName(name);
         customPartSelected.set(name);
     }
 
