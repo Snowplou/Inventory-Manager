@@ -131,6 +131,34 @@
         }
         return url;
     }
+
+    async function deleteCustomProduct() {
+        let product = $customPartSelected
+
+        // Replace the characters that firebase doesn't like
+        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            product = product.replaceAll(
+                Object.values(pathChanger)[i],
+                Object.keys(pathChanger)[i]
+            );
+        }
+        product = product.replaceAll("&amp;", "&");
+
+        let confirm = window.confirm(
+            `Are you sure you want to delete ${product}? Doing so will permanently delete it, making it impossible to undo.`
+        );
+        if (!confirm) return;
+
+        customPartSelected.set("");
+        setToDb(
+            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/customParts/${encodeProductName(product)}`,
+            null
+        );
+        setToDb(
+            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${encodeProductName(product)}`,
+            null
+        );
+    }
 </script>
 
 <button id="backToPartList" on:click={() => {
@@ -152,6 +180,7 @@
         />
         <input type="url" value={getImageUrl()} on:change={(elm) => updateImage(elm)} />
     </div>
+    <button id="deleteProduct" on:click={() => deleteCustomProduct()} on:keydown={() => deleteCustomProduct()}>Delete</button>
 </div>
 
 <style>

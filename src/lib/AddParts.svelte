@@ -231,34 +231,6 @@
         );
     }
 
-    async function deleteCustomProduct(elm) {
-        let product =
-            elm.target.parentElement.parentElement.children[1].innerHTML;
-
-        // Replace the characters that firebase doesn't like
-        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
-            product = product.replaceAll(
-                Object.values(pathChanger)[i],
-                Object.keys(pathChanger)[i]
-            );
-        }
-        product = product.replaceAll("&amp;", "&");
-
-        let confirm = window.confirm(
-            `Are you sure you want to delete ${product}? Doing so will permanently delete it, making it impossible to undo.`
-        );
-        if (!confirm) return;
-
-        setToDb(
-            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/customParts/${product}`,
-            null
-        );
-        setToDb(
-            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
-            null
-        );
-    }
-
     function encode(name) {
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
             name = name.replaceAll(
@@ -325,65 +297,6 @@
 </select>
 
 <div id="productList">
-    <!-- {#if $organizations[$organizationSelectionForParts].teams}
-        {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
-            {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts}
-                {#each Object.keys($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts) as product, i}
-                    <div class="product">
-                        <img
-                            class="productImage"
-                            src={nameToImage(product)}
-                            onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
-                            alt={productDecode(product)}
-                        />
-                        <p>{productDecode(product)}</p> -->
-    <!-- <p>{product.sku ? product.sku : "SKU Not Found"}</p> -->
-
-    <!-- {#if $organizations[$organizationSelectionForParts].teams}
-                            {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
-                                {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product)]}
-                                    <p>
-                                        Count: {$organizations[
-                                            $organizationSelectionForParts
-                                        ].teams[$teamSelected].products[
-                                            encode(product)
-                                        ]}
-                                    </p>
-                                {:else}
-                                    <p>Count: 0</p>
-                                {/if}
-                            {:else}
-                                <p>Count: 0</p>
-                            {/if}
-                        {:else}
-                            <p>Count: 0</p>
-                        {/if}
-
-                        <input
-                            type="number"
-                            placeholder="1"
-                            on:input={(elm) =>
-                                (elm.target.value = Math.abs(
-                                    Math.round(elm.target.value)
-                                ))}
-                        />
-                        <div class="addAndDelete">
-                            <button
-                                on:click={(elm) => addCustomProduct(elm)}
-                                on:keydown={(elm) => addCustomProduct(elm)}
-                                >Add</button
-                            >
-                            <button
-                                on:click={(elm) => deleteCustomProduct(elm)}
-                                on:keydown={(elm) => deleteCustomProduct(elm)}
-                                >Delete</button
-                            >
-                        </div>
-                    </div>
-                {/each}
-            {/if}
-        {/if}
-    {/if} -->
     {#each filteredProducts as product, i}
         <div class="product">
             <img
