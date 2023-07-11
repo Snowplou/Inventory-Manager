@@ -90,21 +90,67 @@
         document.getElementById("name").innerHTML = decodeProductName(name);
         customPartSelected.set(name);
     }
+
+    function updateSku(elm){
+        let sku = elm.target.value;
+        setToDb(
+            "organizations/" +
+                $organizationSelectionForParts +
+                "/teams/" +
+                $teamSelected +
+                "/customParts/" +
+                $customPartSelected +
+                "/sku",
+            sku
+        )
+    }
+
+    function updateImage(elm){
+        let image = elm.target.value;
+        setToDb(
+            "organizations/" +
+                $organizationSelectionForParts +
+                "/teams/" +
+                $teamSelected +
+                "/customParts/" +
+                $customPartSelected +
+                "/image",
+            image
+        )
+    }
+
+    function getImageUrl(){
+        let url = $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[$customPartSelected].image;
+        if(url == null || url == "" || url == undefined || url == "none"){
+            url = "https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg";
+        }
+        return url;
+    }
 </script>
 
 <button id="backToPartList" on:click={() => {
     customPartSelected.set("");
 }}>Back to Part List</button>
 
-<div>
-    <p id="name">{decodeProductName($customPartSelected)}</p>
-    <input type="text" id="nameChange" value={decodeProductName($customPartSelected)} on:change={(elm) => updateName(elm)}/>
-
-    <p>The ability to edit part number (SKU) and image url will be added soon.</p>
+<div id="list">
+    <div class="item">
+        <p>{decodeProductName($customPartSelected)}</p>
+        <input type="text" id="nameChange" value={decodeProductName($customPartSelected)} on:change={(elm) => updateName(elm)}/>
+    </div>
+    <div class="item">
+        <p>{$organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[$customPartSelected].sku || "SKU Not Found"}</p>
+        <input type="text" id="partNumber" value={$organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[$customPartSelected].sku || "SKU Not Found"} on:change={(elm) => updateSku(elm)}/>
+    </div>
+    <div class="item">
+        <img src={$organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[$customPartSelected].image} alt="Custom Part"
+        onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
+        />
+        <input type="url" value={getImageUrl()} on:change={(elm) => updateImage(elm)} />
+    </div>
 </div>
 
 <style>
-    div {
+    #list {
         position: absolute;
         top: 14.5vh;
         left: 10vw;
@@ -112,9 +158,14 @@
         height: 80vh;
         background-color: #007bff;
         border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        align-items: center;
+        
     }
 
-    #nameChange {
+    input {
         text-align: center;
         width: 50vw;
         scale: 1.5;
@@ -122,16 +173,19 @@
         border-radius: 10px;
     }
 
-    #name {
+    p {
         background-color: #007bff;
         border: none;
         width: 95%;
-        margin-top: 1vh;
-        margin-bottom: 2vh;
         margin-left: 0;
         margin-right: 0;
         text-align: center;
         font-size: 150%;
+    }
+
+    img {
+        width: 32vw;
+        height: 32vw;
     }
 
     #backToPartList {
