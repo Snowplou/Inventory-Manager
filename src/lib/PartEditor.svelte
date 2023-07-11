@@ -38,6 +38,11 @@
         let name = elm.target.value;
         name = encodeProductName(name);
 
+        if(!name){
+            alert("Name cannot be empty");
+            return;
+        }
+
         if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name]) {
             alert("Part with that name already exists");
             return;
