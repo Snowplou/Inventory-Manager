@@ -76,7 +76,7 @@
             $organizations[$organizationSelectionForParts].teams[$teamSelected];
         if (customParts) {
             customParts = customParts.customParts;
-            if(!customParts){
+            if (!customParts) {
                 customParts = {};
             }
 
@@ -397,14 +397,18 @@
 
             {#if $organizations[$organizationSelectionForParts].teams}
                 {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
-                    {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product.name)]}
-                        <p>
-                            Count: {$organizations[
-                                $organizationSelectionForParts
-                            ].teams[$teamSelected].products[
-                                encode(product.name)
-                            ]}
-                        </p>
+                    {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].products}
+                        {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encode(product.name)]}
+                            <p>
+                                Count: {$organizations[
+                                    $organizationSelectionForParts
+                                ].teams[$teamSelected].products[
+                                    encode(product.name)
+                                ]}
+                            </p>
+                        {:else}
+                            <p>Count: 0</p>
+                        {/if}
                     {:else}
                         <p>Count: 0</p>
                     {/if}
