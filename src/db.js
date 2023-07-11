@@ -38,6 +38,7 @@ export function logEventToFirebase(event) {
 onAuthStateChanged(auth, (user) => {
     authWritable.set(auth);
     setUserId(analytics, user.uid);
+    logEventToFirebase("login");
 });
 
 export let pageState = writable("home");
