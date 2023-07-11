@@ -1,5 +1,5 @@
 <script>
-  import { authWritable, pageState, userId } from "./db";
+  import { authWritable, pageState, userId, customPartSelected } from "./db";
   import HomeLink from "./lib/HomeLink.svelte";
   import LogIn from "./lib/LogIn.svelte";
   import OrganizationLink from "./lib/OrganizationLink.svelte";
@@ -8,6 +8,7 @@
   import SignOut from "./lib/SignOut.svelte";
   import Parts from "./lib/Parts.svelte";
   import AddParts from "./lib/AddParts.svelte";
+    import PartEditor from "./lib/PartEditor.svelte";
 </script>
 
 {#key $authWritable.currentUser}
@@ -24,7 +25,11 @@
         <OrganizationLink />
       </div>
     {:else if $pageState == "parts"}
-      <Parts />
+      {#if $customPartSelected == ""}
+        <Parts />
+      {:else}
+        <PartEditor />
+      {/if}
     {:else if $pageState == "organizations"}
       <Organizations />
     {:else if $pageState == "addParts"}

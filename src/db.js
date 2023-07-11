@@ -51,6 +51,7 @@ export let emailChanger = {
     "@": "89236taban19",
 }
 export let teamSelected = writable("");
+export let customPartSelected = writable("");
 
 export let products = writable({});
 (async () => {

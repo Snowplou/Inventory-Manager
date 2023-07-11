@@ -11,6 +11,7 @@
         organizations,
         pathChanger,
         products,
+        customPartSelected
     } from "../db";
     import { writable } from "svelte/store";
     let parts = {};
@@ -32,8 +33,20 @@
     let canEditCustomParts = canEditCustomPartsFunc()
     teamSelected.subscribe(() => {
         canEditCustomParts = canEditCustomPartsFunc()
-        console.log(canEditCustomParts)
     });
+
+    // Determine if the part is a custom part
+    function isCustomPart(name) {
+        if ($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts) {
+            if (
+                $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                    .customParts[name]
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     function updateParts() {
         if (!$organizationSelectionForParts) return;
@@ -304,6 +317,17 @@
                                     alt={decodeProductName(
                                         Object.keys(teamProducts)[i]
                                     )}
+                                    style={(canEditCustomParts && isCustomPart(Object.keys(teamProducts)[i])) ? "cursor: pointer;" : "cursor: hover;"}
+                                    on:click={() => {
+                                        if(canEditCustomParts && isCustomPart(Object.keys(teamProducts)[i])) {
+                                            customPartSelected.set(Object.keys(teamProducts)[i])
+                                        }
+                                    }}
+                                    on:keydown={() => {
+                                        if(canEditCustomParts && isCustomPart(Object.keys(teamProducts)[i])) {
+                                            customPartSelected.set(Object.keys(teamProducts)[i])
+                                        }
+                                    }}
                                 />
                                 <div class="partPList">
                                     <p>
