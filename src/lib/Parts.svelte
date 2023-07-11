@@ -112,13 +112,24 @@
     }
 
     function getSKU(name){
-        name = decodeProductName(name);
         // Find the product in the products list
+        name = decodeProductName(name);
         for (let product of Object.values($products)) {
             if (product.name == name) {
                 return product.sku;
             }
         }
+
+        // Find the product in the custom parts list
+        name = encodeProductName(name);
+        if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts){
+            if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name]){
+                if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name].sku){
+                    return $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name].sku
+                }
+            }
+        }
+
         return "SKU Not Found";
     }
 

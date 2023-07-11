@@ -88,7 +88,6 @@
 
         
         elm.target.parentElement.children[0].innerHTML = decodeProductName(name);
-        // ("name").innerHTML = decodeProductName(name);
         customPartSelected.set(name);
     }
 
@@ -162,8 +161,13 @@
         display: flex;
         flex-direction: column;
         justify-content: space-around;
+        align-items: center; 
+    }
+
+    .item {
+        display: flex;
+        flex-direction: column;
         align-items: center;
-        
     }
 
     input {
@@ -185,8 +189,9 @@
     }
 
     img {
-        width: 32vw;
-        height: 32vw;
+        width: 20vh;
+        height: 20vh;
+        margin-bottom: 3.5vh;
     }
 
     #backToPartList {
