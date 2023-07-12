@@ -56,6 +56,15 @@
         if (name == "") {
             return;
         }
+
+        let bannedChars = ["#", "$", "[", "]", "/", "\\", "."];
+        for(let char of bannedChars) {
+            if(name.includes(char)) {
+                alert("Organization name cannot contain:  " + char);
+                return;
+            }
+        }
+
         try {
             await getFromDb(`organizations/${name}`);
         } catch (err) {
@@ -69,7 +78,7 @@
             teamList: { 0: "Unsorted", 1: "Coach" },
         };
         setToDb(`organizations/${name}`, organization);
-        let organization2 = { rank: "Unsorted" };
+        let organization2 = { rank: "Owner" };
         setToDb(`users/${$userId}/organizations/${name}`, organization2);
     }
 
@@ -166,6 +175,15 @@
         if (team == "") {
             return;
         }
+
+        let bannedChars = ["#", "$", "[", "]", "/", "\\", "."];
+        for(let char of bannedChars) {
+            if(team.includes(char)) {
+                alert("Team name cannot contain:  " + char);
+                return;
+            }
+        }
+
         let org = await getFromDb(`organizations/${organizationSelected}`);
         if (org.teamList) {
             if (Object.values(org.teamList).includes(team)) {
