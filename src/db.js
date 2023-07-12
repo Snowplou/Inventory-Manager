@@ -3,7 +3,6 @@ import { initializeApp } from "firebase/app";
 import { getDatabase, ref, onValue, child, get, set } from "firebase/database";
 import { writable } from "svelte/store";
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "firebase/auth";
-import { getAnalytics, logEvent, setUserId } from "firebase/analytics";
 import { get as writeableGet } from "svelte/store";
 import { compute_slots } from "svelte/internal";
 
@@ -28,17 +27,9 @@ setPersistence(auth, browserLocalPersistence);
 
 export let authWritable = writable(auth);
 
-// Initialize Analytics and get a reference to the service
-const analytics = getAnalytics(app);
-export function logEventToFirebase(event) {
-    logEvent(analytics, event);
-}
-
 // Run when auth state changes
 onAuthStateChanged(auth, (user) => {
     authWritable.set(auth);
-    setUserId(analytics, user.uid);
-    logEventToFirebase("login");
 });
 
 export let pageState = writable("home");
@@ -61,6 +52,14 @@ export let emailChanger = {
 }
 export let teamSelected = writable("");
 export let customPartSelected = writable("");
+
+export async function logEvent(organization, eventDetails){
+    let time = new Date().getTime();
+    eventDetails.userEmail = writeableGet(userData).email
+    eventDetails.userId = writeableGet(userId)
+    eventDetails.organization = organization
+    setToDb(`logs/${organization}/${time}`, eventDetails)
+}
 
 export let products = writable({});
 (async () => {

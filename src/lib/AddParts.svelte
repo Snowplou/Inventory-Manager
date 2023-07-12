@@ -8,6 +8,7 @@
         products,
         teamSelected,
         pathChanger,
+        logEvent,
     } from "../db";
 
     async function backButtonPressed() {
@@ -146,6 +147,13 @@
         setTimeout(() => {
             elm.target.parentElement.children[4].innerHTML = "Add";
         }, 500);
+
+        logEvent($organizationSelectionForParts, {
+            type: "add part",
+            part: product,
+            count: count,
+            team: $teamSelected,
+        })
     }
 
     async function addCustomProduct(elm) {
@@ -229,6 +237,14 @@
             `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/customParts/${partName}`,
             { image: partImage }
         );
+
+        logEvent($organizationSelectionForParts, {
+            type: "create custom part",
+            part: partName,
+            count: partCount,
+            image: partImage,
+            team: $teamSelected,
+        })
     }
 
     function encode(name) {

@@ -9,8 +9,11 @@
         organizations,
         pathChanger,
         products,
-        customPartSelected
+        customPartSelected,
+        logEvent
+
     } from "../db";
+    import LogIn from "./LogIn.svelte";
 
     function decodeProductName(name) {
         let decodedName = name;
@@ -91,13 +94,19 @@
             null
         )
 
-        
+        logEvent($organizationSelectionForParts, {
+            type: "edit custom part name",
+            name: $customPartSelected,
+            newName: name,
+            team: $teamSelected,
+        })
         elm.target.parentElement.children[0].innerHTML = decodeProductName(name);
         customPartSelected.set(name);
     }
 
     function updateSku(elm){
         let sku = elm.target.value;
+        let originalSku = elm.target.parentElement.children[0].innerHTML;
         setToDb(
             "organizations/" +
                 $organizationSelectionForParts +
@@ -108,10 +117,19 @@
                 "/sku",
             sku
         )
+
+        logEvent($organizationSelectionForParts, {
+            type: "edit custom part sku",
+            name: $customPartSelected,
+            sku: originalSku,
+            newSku: sku,
+            team: $teamSelected,
+        })
     }
 
     function updateImage(elm){
         let image = elm.target.value;
+        let originalImage = elm.target.parentElement.children[0].src;
         setToDb(
             "organizations/" +
                 $organizationSelectionForParts +
@@ -122,6 +140,14 @@
                 "/image",
             image
         )
+        
+        logEvent($organizationSelectionForParts, {
+            type: "edit custom part image",
+            name: $customPartSelected,
+            image: originalImage,
+            newImage: image,
+            team: $teamSelected,
+        })
     }
 
     function getImageUrl(){
@@ -158,6 +184,12 @@
             `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${encodeProductName(product)}`,
             null
         );
+
+        logEvent($organizationSelectionForParts, {
+            type: "delete custom part",
+            name: product,
+            team: $teamSelected,
+        });
     }
 </script>
 

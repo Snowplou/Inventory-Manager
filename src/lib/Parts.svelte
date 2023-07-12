@@ -11,7 +11,8 @@
         organizations,
         pathChanger,
         products,
-        customPartSelected
+        customPartSelected,
+        logEvent,
     } from "../db";
     import { writable } from "svelte/store";
     let parts = {};
@@ -24,23 +25,34 @@
             $organizations[$organizationSelectionForParts].teamList[2];
     });
 
-    function canEditCustomPartsFunc(){
-        if(!$organizationSelectionForParts) return false
-        if(!$teamSelected) return false
-        return $userData.organizations[$organizationSelectionForParts].rank == "Owner" || $userData.organizations[$organizationSelectionForParts].rank == "Coach" || $userData.organizations[$organizationSelectionForParts].rank == $teamSelected
+    function canEditCustomPartsFunc() {
+        if (!$organizationSelectionForParts) return false;
+        if (!$teamSelected) return false;
+        return (
+            $userData.organizations[$organizationSelectionForParts].rank ==
+                "Owner" ||
+            $userData.organizations[$organizationSelectionForParts].rank ==
+                "Coach" ||
+            $userData.organizations[$organizationSelectionForParts].rank ==
+                $teamSelected
+        );
     }
 
-    let canEditCustomParts = canEditCustomPartsFunc()
+    let canEditCustomParts = canEditCustomPartsFunc();
     teamSelected.subscribe(() => {
-        canEditCustomParts = canEditCustomPartsFunc()
+        canEditCustomParts = canEditCustomPartsFunc();
     });
 
     // Determine if the part is a custom part
     function isCustomPart(name) {
-        if ($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts) {
+        if (
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .customParts
+        ) {
             if (
-                $organizations[$organizationSelectionForParts].teams[$teamSelected]
-                    .customParts[name]
+                $organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ].customParts[name]
             ) {
                 return true;
             }
@@ -111,7 +123,7 @@
         return decodedName;
     }
 
-    function getSKU(name){
+    function getSKU(name) {
         // Find the product in the products list
         name = decodeProductName(name);
         for (let product of Object.values($products)) {
@@ -122,10 +134,23 @@
 
         // Find the product in the custom parts list
         name = encodeProductName(name);
-        if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts){
-            if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name]){
-                if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name].sku){
-                    return $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name].sku
+        if (
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .customParts
+        ) {
+            if (
+                $organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ].customParts[name]
+            ) {
+                if (
+                    $organizations[$organizationSelectionForParts].teams[
+                        $teamSelected
+                    ].customParts[name].sku
+                ) {
+                    return $organizations[$organizationSelectionForParts].teams[
+                        $teamSelected
+                    ].customParts[name].sku;
                 }
             }
         }
@@ -145,12 +170,25 @@
     }
 
     function nameToImage(name) {
-        if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts){
-            if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name]){
-                if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name].image == "none"){
+        if (
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .customParts
+        ) {
+            if (
+                $organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ].customParts[name]
+            ) {
+                if (
+                    $organizations[$organizationSelectionForParts].teams[
+                        $teamSelected
+                    ].customParts[name].image == "none"
+                ) {
                     return "https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg";
                 }
-                return $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name].image
+                return $organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ].customParts[name].image;
             }
         }
         for (let product of Object.values($products)) {
@@ -161,12 +199,25 @@
 
         name = decodeProductName(name);
 
-        if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts){
-            if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name]){
-                if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name].image == "none"){
+        if (
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .customParts
+        ) {
+            if (
+                $organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ].customParts[name]
+            ) {
+                if (
+                    $organizations[$organizationSelectionForParts].teams[
+                        $teamSelected
+                    ].customParts[name].image == "none"
+                ) {
                     return "https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg";
                 }
-                return $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name].image
+                return $organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ].customParts[name].image;
             }
         }
         for (let product of Object.values($products)) {
@@ -187,8 +238,8 @@
             $organizations[$organizationSelectionForParts].teams[$teamSelected]
                 .products[product];
         let amount = Number(elm.target.parentElement.children[2].value);
-        if(!amount) amount = 1
-        if(amount > productCount) amount = productCount
+        if (!amount) amount = 1;
+        if (amount > productCount) amount = productCount;
 
         if (type == "remove") {
             if (productCount - amount <= 0) {
@@ -206,6 +257,13 @@
                     elm.target.parentElement.children[0].innerHTML = "Remove";
                 }, 500);
             }
+
+            logEvent($organizationSelectionForParts, {
+                type: "remove product",
+                part: product,
+                count: amount,
+                team: $teamSelected,
+            });
         } else {
             let transferTeam = document.getElementById(
                 "transferToTeamSelect"
@@ -245,6 +303,14 @@
                     elm.target.parentElement.children[1].innerHTML = "Transfer";
                 }, 500);
             }
+
+            logEvent($organizationSelectionForParts, {
+                type: "transfer product",
+                part: product,
+                count: amount,
+                team: $teamSelected,
+                newTeam: transferTeam,
+            });
         }
     }
 
@@ -258,7 +324,10 @@
         let productSKU = getSKU(product);
 
         for (let i = 0; i < searchTerms.length; i++) {
-            if (!product.toLowerCase().includes(searchTerms[i].toLowerCase()) && !productSKU.toLowerCase().includes(searchTerms[i].toLowerCase())) {
+            if (
+                !product.toLowerCase().includes(searchTerms[i].toLowerCase()) &&
+                !productSKU.toLowerCase().includes(searchTerms[i].toLowerCase())
+            ) {
                 return false;
             }
         }
@@ -328,15 +397,32 @@
                                     alt={decodeProductName(
                                         Object.keys(teamProducts)[i]
                                     )}
-                                    style={(canEditCustomParts && isCustomPart(Object.keys(teamProducts)[i])) ? "cursor: pointer;" : "cursor: hover;"}
+                                    style={canEditCustomParts &&
+                                    isCustomPart(Object.keys(teamProducts)[i])
+                                        ? "cursor: pointer;"
+                                        : "cursor: hover;"}
                                     on:click={() => {
-                                        if(canEditCustomParts && isCustomPart(Object.keys(teamProducts)[i])) {
-                                            customPartSelected.set(Object.keys(teamProducts)[i])
+                                        if (
+                                            canEditCustomParts &&
+                                            isCustomPart(
+                                                Object.keys(teamProducts)[i]
+                                            )
+                                        ) {
+                                            customPartSelected.set(
+                                                Object.keys(teamProducts)[i]
+                                            );
                                         }
                                     }}
                                     on:keydown={() => {
-                                        if(canEditCustomParts && isCustomPart(Object.keys(teamProducts)[i])) {
-                                            customPartSelected.set(Object.keys(teamProducts)[i])
+                                        if (
+                                            canEditCustomParts &&
+                                            isCustomPart(
+                                                Object.keys(teamProducts)[i]
+                                            )
+                                        ) {
+                                            customPartSelected.set(
+                                                Object.keys(teamProducts)[i]
+                                            );
                                         }
                                     }}
                                 />
@@ -346,7 +432,9 @@
                                             Object.keys(teamProducts)[i]
                                         )}
                                     </p>
-                                    <p>{getSKU(Object.keys(teamProducts)[i])}</p>
+                                    <p>
+                                        {getSKU(Object.keys(teamProducts)[i])}
+                                    </p>
                                     <p>Count: {productCount}</p>
                                 </div>
                                 <div class="partListButtons">
@@ -357,14 +445,21 @@
                                             removeProduct(elm, "remove")}
                                         >Remove</button
                                     >
-                                        <button
-                                            on:click={(elm) =>
-                                                removeProduct(elm, "transfer")}
-                                            on:keydown={(elm) =>
-                                                removeProduct(elm, "transfer")}
-                                            >Transfer</button
-                                        >
-                                        <input type="number" placeholder="1" on:input={(elm) => elm.target.value = Math.abs(Math.round(elm.target.value))}>
+                                    <button
+                                        on:click={(elm) =>
+                                            removeProduct(elm, "transfer")}
+                                        on:keydown={(elm) =>
+                                            removeProduct(elm, "transfer")}
+                                        >Transfer</button
+                                    >
+                                    <input
+                                        type="number"
+                                        placeholder="1"
+                                        on:input={(elm) =>
+                                            (elm.target.value = Math.abs(
+                                                Math.round(elm.target.value)
+                                            ))}
+                                    />
                                 </div>
                             </div>
                         {/if}
