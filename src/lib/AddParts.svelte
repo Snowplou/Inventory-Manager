@@ -119,7 +119,7 @@
 
     async function addProduct(elm) {
         let product = elm.target.parentElement.children[1].innerHTML;
-        let count = Number(elm.target.parentElement.children[3].value);
+        let count = Number(elm.target.parentElement.children[4].value);
         if (!count) count = 1;
 
         // Replace the characters that firebase doesn't like

@@ -241,6 +241,8 @@
         if (!amount) amount = 1;
         if (amount > productCount) amount = productCount;
 
+        let createdNewCustomPart = false; // Used for logging
+
         if (type == "remove") {
             if (productCount - amount <= 0) {
                 setToDb(
@@ -302,6 +304,34 @@
                 setTimeout(() => {
                     elm.target.parentElement.children[1].innerHTML = "Transfer";
                 }, 500);
+
+                // Create a duplicate custom product for the other team if needed
+                if(isCustomPart(product)){
+                let skipProductCreation = false;
+                if (
+                    $organizations[$organizationSelectionForParts].teams[
+                        transferTeam
+                    ].customParts
+                ) {
+                    if (
+                        $organizations[$organizationSelectionForParts].teams[
+                            transferTeam
+                        ].customParts[product]
+                    ) {
+                        skipProductCreation = true;
+                    }
+                }
+
+                if(!skipProductCreation){
+                    let productData = $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[product];
+                    setToDb(
+                        `organizations/${$organizationSelectionForParts}/teams/${transferTeam}/customParts/${product}`,
+                        productData
+                    );
+                    createdNewCustomPart = true;
+                }
+
+            }
             }
 
             logEvent($organizationSelectionForParts, {
@@ -310,6 +340,7 @@
                 count: amount,
                 team: $teamSelected,
                 newTeam: transferTeam,
+                createdNewCustomPart: createdNewCustomPart,
             });
         }
     }
@@ -389,7 +420,10 @@
                         {#if searchFilter(Object.keys(teamProducts)[i])}
                             <div class="part">
                                 <img
-                                class={canEditCustomParts && isCustomPart(Object.keys(teamProducts)[i]) ? "customPart" : "notCustomPart"}
+                                    class={canEditCustomParts &&
+                                    isCustomPart(Object.keys(teamProducts)[i])
+                                        ? "customPart"
+                                        : "notCustomPart"}
                                     src={nameToImage(
                                         Object.keys(teamProducts)[i]
                                     )}
@@ -582,7 +616,7 @@
         filter: brightness(80%);
 
         cursor: pointer;
-        
+
         /* Transition */
         transition: filter 0.25s ease-in-out;
     }
