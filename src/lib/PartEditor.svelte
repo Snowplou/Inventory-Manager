@@ -10,8 +10,7 @@
         pathChanger,
         products,
         customPartSelected,
-        logEvent
-
+        logEvent,
     } from "../db";
     import LogIn from "./LogIn.svelte";
 
@@ -41,19 +40,24 @@
         let name = elm.target.value;
         name = encodeProductName(name);
 
-        if(!name){
+        if (!name) {
             alert("Name cannot be empty");
             return;
         }
 
-        if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[name]) {
+        if (
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .customParts[name]
+        ) {
             alert("Part with that name already exists");
             return;
         }
-        
+
         // If the team doesn't have a custom part, then they shouldn't have access to this page. This means that this shouldn't try to access null with a key.
-        let part = $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[$customPartSelected];
-        
+        let part =
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .customParts[$customPartSelected];
+
         setToDb(
             "organizations/" +
                 $organizationSelectionForParts +
@@ -62,7 +66,7 @@
                 "/customParts/" +
                 name,
             part
-        )
+        );
 
         setToDb(
             "organizations/" +
@@ -72,17 +76,30 @@
                 "/customParts/" +
                 $customPartSelected,
             null
-        )
+        );
 
-        setToDb(
-            "organizations/" +
-                $organizationSelectionForParts +
-                "/teams/" +
-                $teamSelected +
-                "/products/" +
-                name,
-            $organizations[$organizationSelectionForParts].teams[$teamSelected].products[$customPartSelected]
-        )
+        if (
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .products
+        ) {
+            if (
+                $organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ].products[$customPartSelected]
+            ) {
+                setToDb(
+                    "organizations/" +
+                        $organizationSelectionForParts +
+                        "/teams/" +
+                        $teamSelected +
+                        "/products/" +
+                        name,
+                    $organizations[$organizationSelectionForParts].teams[
+                        $teamSelected
+                    ].products[$customPartSelected]
+                );
+            }
+        }
 
         setToDb(
             "organizations/" +
@@ -92,19 +109,20 @@
                 "/products/" +
                 $customPartSelected,
             null
-        )
+        );
 
         logEvent($organizationSelectionForParts, {
             type: "edit custom part name",
             name: $customPartSelected,
             newName: name,
             team: $teamSelected,
-        })
-        elm.target.parentElement.children[0].innerHTML = decodeProductName(name);
+        });
+        elm.target.parentElement.children[0].innerHTML =
+            decodeProductName(name);
         customPartSelected.set(name);
     }
 
-    function updateSku(elm){
+    function updateSku(elm) {
         let sku = elm.target.value;
         let originalSku = elm.target.parentElement.children[0].innerHTML;
         setToDb(
@@ -116,7 +134,7 @@
                 $customPartSelected +
                 "/sku",
             sku
-        )
+        );
 
         logEvent($organizationSelectionForParts, {
             type: "edit custom part sku",
@@ -124,10 +142,10 @@
             sku: originalSku,
             newSku: sku,
             team: $teamSelected,
-        })
+        });
     }
 
-    function updateImage(elm){
+    function updateImage(elm) {
         let image = elm.target.value;
         let originalImage = elm.target.parentElement.children[0].src;
         setToDb(
@@ -139,27 +157,30 @@
                 $customPartSelected +
                 "/image",
             image
-        )
-        
+        );
+
         logEvent($organizationSelectionForParts, {
             type: "edit custom part image",
             name: $customPartSelected,
             image: originalImage,
             newImage: image,
             team: $teamSelected,
-        })
+        });
     }
 
-    function getImageUrl(){
-        let url = $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[$customPartSelected].image;
-        if(url == null || url == "" || url == undefined || url == "none"){
-            url = "https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg";
+    function getImageUrl() {
+        let url =
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .customParts[$customPartSelected].image;
+        if (url == null || url == "" || url == undefined || url == "none") {
+            url =
+                "https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg";
         }
         return url;
     }
 
     async function deleteCustomProduct() {
-        let product = $customPartSelected
+        let product = $customPartSelected;
 
         // Replace the characters that firebase doesn't like
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
@@ -177,11 +198,15 @@
 
         customPartSelected.set("");
         setToDb(
-            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/customParts/${encodeProductName(product)}`,
+            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/customParts/${encodeProductName(
+                product
+            )}`,
             null
         );
         setToDb(
-            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${encodeProductName(product)}`,
+            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${encodeProductName(
+                product
+            )}`,
             null
         );
 
@@ -193,26 +218,56 @@
     }
 </script>
 
-<button id="backToPartList" on:click={() => {
-    customPartSelected.set("");
-}}>Back to Part List</button>
+<button
+    id="backToPartList"
+    on:click={() => {
+        customPartSelected.set("");
+    }}>Back to Part List</button
+>
 
 <div id="list">
     <div class="item">
         <p>{decodeProductName($customPartSelected)}</p>
-        <input type="text" id="nameChange" value={decodeProductName($customPartSelected)} on:change={(elm) => updateName(elm)}/>
-    </div>
-    <div class="item">
-        <p>{$organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[$customPartSelected].sku || "SKU Not Found"}</p>
-        <input type="text" id="partNumber" value={$organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[$customPartSelected].sku || "SKU Not Found"} on:change={(elm) => updateSku(elm)}/>
-    </div>
-    <div class="item">
-        <img src={$organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[$customPartSelected].image} alt="Custom Part"
-        onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
+        <input
+            type="text"
+            id="nameChange"
+            value={decodeProductName($customPartSelected)}
+            on:change={(elm) => updateName(elm)}
         />
-        <input type="url" value={getImageUrl()} on:change={(elm) => updateImage(elm)} />
     </div>
-    <button id="deleteProduct" on:click={() => deleteCustomProduct()} on:keydown={() => deleteCustomProduct()}>Delete</button>
+    <div class="item">
+        <p>
+            {$organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .customParts[$customPartSelected].sku || "SKU Not Found"}
+        </p>
+        <input
+            type="text"
+            id="partNumber"
+            value={$organizations[$organizationSelectionForParts].teams[
+                $teamSelected
+            ].customParts[$customPartSelected].sku || "SKU Not Found"}
+            on:change={(elm) => updateSku(elm)}
+        />
+    </div>
+    <div class="item">
+        <img
+            src={$organizations[$organizationSelectionForParts].teams[
+                $teamSelected
+            ].customParts[$customPartSelected].image}
+            alt="Custom Part"
+            onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
+        />
+        <input
+            type="url"
+            value={getImageUrl()}
+            on:change={(elm) => updateImage(elm)}
+        />
+    </div>
+    <button
+        id="deleteProduct"
+        on:click={() => deleteCustomProduct()}
+        on:keydown={() => deleteCustomProduct()}>Delete</button
+    >
 </div>
 
 <style>
@@ -227,7 +282,7 @@
         display: flex;
         flex-direction: column;
         justify-content: space-around;
-        align-items: center; 
+        align-items: center;
     }
 
     .item {

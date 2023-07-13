@@ -9,6 +9,8 @@
         teamSelected,
         pathChanger,
         logEvent,
+        customPartSelected,
+        userData
     } from "../db";
 
     async function backButtonPressed() {
@@ -194,57 +196,19 @@
     }
 
     async function createCustomPart() {
-        let partName = prompt(
-            "What is the name of the part you would like to add?"
-        );
-        if (!partName) return;
-        let partCount;
-        while (true) {
-            partCount = Number(prompt("How many of this part do you have?"));
-            if (!partCount && !isNaN(partCount)) return;
-            if (!isNaN(partCount) && partCount >= 1) break;
-        }
-        let partImage = prompt(
-            "What is the image url of the part you would like to add? (optional)\nIf you do not have an image, leave this blank."
-        );
 
-        if (!partImage) partImage = "none";
-
-        // Replace the characters that firebase doesn't like
-        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
-            partName = partName.replaceAll(
-                Object.keys(pathChanger)[i],
-                Object.values(pathChanger)[i]
-            );
-        }
-        partName = partName.replaceAll("&amp;", "&");
-
-        let teamProducts = await getFromDb(
-            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${partName}`
-        );
-        if (!teamProducts) {
-            setToDb(
-                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${partName}`,
-                partCount
-            );
-        } else {
-            setToDb(
-                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${partName}`,
-                Number(teamProducts) + partCount
-            );
-        }
+        let partCount = $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts
+        if(!partCount) partCount = 1
+        else partCount = Object.keys(partCount).length + 1
+        
         setToDb(
-            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/customParts/${partName}`,
-            { image: partImage }
+            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/customParts/Custom Part ${partCount}`,
+            {
+                image: "none",
+            }
         );
 
-        logEvent($organizationSelectionForParts, {
-            type: "create custom part",
-            part: partName,
-            count: partCount,
-            image: partImage,
-            team: $teamSelected,
-        })
+        customPartSelected.set(`Custom Part ${partCount}`)
     }
 
     function encode(name) {
@@ -290,6 +254,42 @@
         }
         return productName;
     }
+
+    function canEditCustomPartsFunc() {
+        if (!$organizationSelectionForParts) return false;
+        if (!$teamSelected) return false;
+        return (
+            $userData.organizations[$organizationSelectionForParts].rank ==
+                "Owner" ||
+            $userData.organizations[$organizationSelectionForParts].rank ==
+                "Coach" ||
+            $userData.organizations[$organizationSelectionForParts].rank ==
+                $teamSelected
+        );
+    }
+
+    let canEditCustomParts = canEditCustomPartsFunc();
+    teamSelected.subscribe(() => {
+        canEditCustomParts = canEditCustomPartsFunc();
+    });
+
+    // Determine if the part is a custom part
+    function isCustomPart(name) {
+        name = encode(name);
+        if (
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .customParts
+        ) {
+            if (
+                $organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ].customParts[name]
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
 </script>
 
 <button
@@ -316,10 +316,34 @@
     {#each filteredProducts as product, i}
         <div class="product">
             <img
-                class="productImage"
+                class={canEditCustomParts && isCustomPart(product.name) ? "customPart" : "notCustomPart"}
                 src={product.url}
                 alt={product.name}
                 onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
+                    on:click={() => {
+                        if (
+                            canEditCustomParts &&
+                            isCustomPart(
+                                product.name
+                            )
+                        ) {
+                            customPartSelected.set(
+                                encode(product.name)
+                            );
+                        }
+                    }}
+                    on:keydown={() => {
+                        if (
+                            canEditCustomParts &&
+                            isCustomPart(
+                                product.name
+                            )
+                        ) {
+                            customPartSelected.set(
+                                encode(product.name)
+                            );
+                        }
+                    }}
             />
             <p>{product.name}</p>
             <p>{product.sku}</p>
@@ -391,6 +415,19 @@
         height: auto;
         object-fit: contain;
         border-radius: 10px;
+
+        /* Transition */
+        transition: filter 0.25s ease-in-out;
+    }
+
+    .customPart:hover {
+        /* Fade into a slight gray */
+        filter: brightness(80%);
+
+        cursor: pointer;
+        
+        /* Transition */
+        transition: filter 0.25s ease-in-out;
     }
 
     .product p {

@@ -8,7 +8,7 @@
   import SignOut from "./lib/SignOut.svelte";
   import Parts from "./lib/Parts.svelte";
   import AddParts from "./lib/AddParts.svelte";
-    import PartEditor from "./lib/PartEditor.svelte";
+  import PartEditor from "./lib/PartEditor.svelte";
 </script>
 
 {#key $authWritable.currentUser}
@@ -24,12 +24,10 @@
         <PartsLink />
         <OrganizationLink />
       </div>
+    {:else if $customPartSelected != ""}
+      <PartEditor />
     {:else if $pageState == "parts"}
-      {#if $customPartSelected == ""}
-        <Parts />
-      {:else}
-        <PartEditor />
-      {/if}
+      <Parts />
     {:else if $pageState == "organizations"}
       <Organizations />
     {:else if $pageState == "addParts"}

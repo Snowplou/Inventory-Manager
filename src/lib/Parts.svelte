@@ -389,7 +389,7 @@
                         {#if searchFilter(Object.keys(teamProducts)[i])}
                             <div class="part">
                                 <img
-                                    class="productImage"
+                                class={canEditCustomParts && isCustomPart(Object.keys(teamProducts)[i]) ? "customPart" : "notCustomPart"}
                                     src={nameToImage(
                                         Object.keys(teamProducts)[i]
                                     )}
@@ -397,10 +397,6 @@
                                     alt={decodeProductName(
                                         Object.keys(teamProducts)[i]
                                     )}
-                                    style={canEditCustomParts &&
-                                    isCustomPart(Object.keys(teamProducts)[i])
-                                        ? "cursor: pointer;"
-                                        : "cursor: hover;"}
                                     on:click={() => {
                                         if (
                                             canEditCustomParts &&
@@ -576,6 +572,19 @@
         height: 10vh;
         object-fit: contain;
         border-radius: 10px;
+
+        /* Transition */
+        transition: filter 0.25s ease-in-out;
+    }
+
+    .customPart:hover {
+        /* Fade into a slight gray */
+        filter: brightness(80%);
+
+        cursor: pointer;
+        
+        /* Transition */
+        transition: filter 0.25s ease-in-out;
     }
 
     .part p {
