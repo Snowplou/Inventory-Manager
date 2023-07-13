@@ -7,6 +7,7 @@
         getFromDb,
         setToDb,
         emailChanger,
+        logEvent,
     } from "../db";
     import { writable } from "svelte/store";
     let organizationSelected = "";
@@ -80,6 +81,10 @@
         setToDb(`organizations/${name}`, organization);
         let organization2 = { rank: "Owner" };
         setToDb(`users/${$userId}/organizations/${name}`, organization2);
+
+        logEvent(name, {
+            type: "organization creation"
+        })
     }
 
     async function memberButton(elm) {
@@ -126,6 +131,10 @@
             await getFromDb(`organizations/${organizationSelected}/teamList`)
         );
 
+        logEvent(organizationSelected, {
+            type: "member added",
+            member: chosenUserEmail
+        })
         elm.target.parentNode.children[0].value = "";
     }
 
@@ -141,6 +150,12 @@
             `users/${userId}/organizations/${organizationSelected}/rank`,
             team
         );
+
+        logEvent(organizationSelected, {
+            type: "member ranked",
+            member: user,
+            rank: team
+        })
     }
 
     async function memberRemove(elm) {
@@ -155,6 +170,13 @@
         }
 
         let userId = emailToUserId(user);
+
+        logEvent(organizationSelected, {
+            type: "member removed",
+            member: user,
+            rank: $organizationMembers[userId].rank
+        })
+
         setToDb(
             `organizations/${organizationSelected}/members/${userId}`,
             null
@@ -208,6 +230,11 @@
             else teams[0] = team;
             return teams;
         });
+
+        logEvent(organizationSelected, {
+            type: "team added",
+            team: team
+        })
     }
 
     async function organizationTeamListRemove(elm) {
@@ -258,6 +285,11 @@
         organizationTeams.set(
             await getFromDb(`organizations/${organizationSelected}/teamList`)
         );
+
+        logEvent(organizationSelected, {
+            type: "team removed",
+            team: team
+        })
     }
 
 </script>
