@@ -32,7 +32,7 @@ async function embedSentences(sentences) {
     return embeddingsDimensions;
 }
 
-let embeds = await fetch("embeds.json").then(async (res) => {
+let embeds = await fetch("public/embeds.json").then(async (res) => {
     return await res.json()
 })
 console.log(embeds)
