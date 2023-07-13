@@ -55,6 +55,10 @@ export let customPartSelected = writable("");
 
 export async function logEvent(organization, eventDetails){
     let time = new Date().getTime();
+    // Create a local time string. Include date, time, and timezone.
+    let localTime = new Date().toLocaleString("en-US", {timeZoneName: "short"}).split(", ")
+    let localTimeStr = localTime[0] + ", " + localTime[1]
+    eventDetails.time = localTimeStr
     eventDetails.userEmail = writeableGet(userData).email
     eventDetails.userId = writeableGet(userId)
     eventDetails.organization = organization
