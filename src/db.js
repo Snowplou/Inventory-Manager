@@ -6,25 +6,36 @@ import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } 
 import { get as writeableGet } from "svelte/store";
 import { compute_slots } from "svelte/internal";
 
-// // Load use model
+// Load use model
 // let model;
 // await use.load().then(val => {
 //     model = val;
 // })
 
-// function sentenceDistance(dim1, dim2){
-//     let distance = 0;
-//     for (let i = 0; i < dim1.length; i++) {
-//         distance += Math.pow(dim1[i] - dim2[i], 2);
-//     }
-//     return Math.sqrt(distance);
-// }
+function sentenceDistance(dim1, dim2){
+    let distance = 0;
+    for (let i = 0; i < dim1.length; i++) {
+        distance += Math.pow(dim1[i] - dim2[i], 2);
+    }
+    return Math.sqrt(distance);
+}
 
-// async function embedSentence(sentence) {
-//     let embeddings = await model.embed([sentence]);
-//     let embeddingsDimensions = (await embeddings.array())[0]
-//     return embeddingsDimensions;
-// }
+async function embedSentence(sentence) {
+    let embeddings = await model.embed([sentence]);
+    let embeddingsDimensions = (await embeddings.array())[0]
+    return embeddingsDimensions;
+}
+
+async function embedSentences(sentences) {
+    let embeddings = await model.embed(sentences);
+    let embeddingsDimensions = await embeddings.array()
+    return embeddingsDimensions;
+}
+
+let embeds = await fetch("embeds.json").then(async (res) => {
+    return await res.json()
+})
+console.log(embeds)
 
 // let sentence1 = await embedSentence("1x5x35 c-channel");
 // let sentence2 = await embedSentence("inertial sensor");
