@@ -510,9 +510,9 @@
     #searchBar {
         position: absolute;
         left: 25vw;
-        top: 12vh;
+        top: 13vh;
         width: 65vw;
-        height: 6vh;
+        height: 4vh;
         text-align: center;
         font-size: 4vmin;
     }

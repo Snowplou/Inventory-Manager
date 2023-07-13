@@ -23,6 +23,7 @@
       <div id="linksCenter">
         <PartsLink />
         <OrganizationLink />
+        <p id="supportEmail">Do you need help or have any questions?<br>If so, email 15442C@gmail.com!</p>
       </div>
     {:else if $customPartSelected != ""}
       <PartEditor />
@@ -50,5 +51,12 @@ Reason For Maintenance: SKUs are being added to the products.<br><br>
     align-content: center;
     justify-content: center;
     align-items: center;
+  }
+
+  #supportEmail {
+    text-align: center;
+    font-size: 150%;
+    position: absolute;
+    top: 80vh;
   }
 </style>
