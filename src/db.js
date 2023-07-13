@@ -6,6 +6,59 @@ import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } 
 import { get as writeableGet } from "svelte/store";
 import { compute_slots } from "svelte/internal";
 
+// // Load use model
+// let model;
+// await use.load().then(val => {
+//     model = val;
+// })
+
+// function sentenceDistance(dim1, dim2){
+//     let distance = 0;
+//     for (let i = 0; i < dim1.length; i++) {
+//         distance += Math.pow(dim1[i] - dim2[i], 2);
+//     }
+//     return Math.sqrt(distance);
+// }
+
+// async function embedSentence(sentence) {
+//     let embeddings = await model.embed([sentence]);
+//     let embeddingsDimensions = (await embeddings.array())[0]
+//     return embeddingsDimensions;
+// }
+
+// let sentence1 = await embedSentence("1x5x35 c-channel");
+// let sentence2 = await embedSentence("inertial sensor");
+
+// let sentence3 = await embedSentence("1x15x35 u-channel");
+// console.log(sentenceDistance(sentence3, sentence1));
+// console.log(sentenceDistance(sentence3, sentence2));
+
+// embedSentence("Hello, how are you?").then(embeddings => {
+//     console.log(embeddings);
+// });
+
+// async function embedSentence(sentence) {
+//     let embeddings = await model.embed(sentence);
+//     console.log(embeddings);
+// }
+
+// console.log("Hello, how are you?")
+// embedSentence("Hello, how are you?")
+
+// use.load().then(model => {
+//     // Embed an array of sentences.
+//     const sentences = [
+//       'Hello.',
+//       'How are you?'
+//     ];
+//     model.embed(sentences).then(embeddings => {
+//       // `embeddings` is a 2D tensor consisting of the 512-dimensional embeddings for each sentence.
+//       // So in this example `embeddings` has the shape [2, 512].
+//       embeddings.print(true /* verbose */);
+//     });
+//   });
+
+
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
@@ -53,10 +106,10 @@ export let emailChanger = {
 export let teamSelected = writable("");
 export let customPartSelected = writable("");
 
-export async function logEvent(organization, eventDetails){
+export async function logEvent(organization, eventDetails) {
     let time = new Date().getTime();
     // Create a local time string. Include date, time, and timezone.
-    let localTime = new Date().toLocaleString("en-US", {timeZoneName: "short"}).split(", ")
+    let localTime = new Date().toLocaleString("en-US", { timeZoneName: "short" }).split(", ")
     let localTimeStr = localTime[0] + ", " + localTime[1]
     eventDetails.time = localTimeStr
     eventDetails.userEmail = writeableGet(userData).email
