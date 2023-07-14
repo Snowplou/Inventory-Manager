@@ -21,18 +21,6 @@
         pageState.set("parts");
     }
 
-    let partTypes = [
-        "Game Elements",
-        "Structure",
-        "Motion",
-        "Electronics",
-        "Hardware",
-        "Motors",
-        "Pneumatics",
-        "Other",
-    ];
-
-    let vexType = "All";
     let search = "";
     let filteredProducts = [];
 
@@ -67,11 +55,6 @@
 
     let sortedProducts = [];
     applyFilter();
-
-    async function partTypeSelected(elm) {
-        vexType = elm.target.value;
-        applyFilter();
-    }
 
     async function searchChanged(elm) {
         search = elm.target.value;
@@ -170,9 +153,9 @@
                 Number(teamProducts) + count
             );
         }
-        elm.target.parentElement.children[4].innerHTML = "Added!";
+        elm.target.parentElement.children[5].innerHTML = "Added!";
         setTimeout(() => {
-            elm.target.parentElement.children[4].innerHTML = "Add";
+            elm.target.parentElement.children[5].innerHTML = "Add";
         }, 500);
 
         logEvent($organizationSelectionForParts, {
@@ -181,43 +164,6 @@
             count: count,
             team: $teamSelected,
         });
-    }
-
-    async function addCustomProduct(elm) {
-        let product =
-            elm.target.parentElement.parentElement.children[1].innerHTML;
-        let count = Number(
-            elm.target.parentElement.parentElement.children[3].value
-        );
-        if (!count) count = 1;
-
-        // Replace the characters that firebase doesn't like
-        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
-            product = product.replaceAll(
-                Object.keys(pathChanger)[i],
-                Object.values(pathChanger)[i]
-            );
-        }
-        product = product.replaceAll("&amp;", "&");
-
-        let teamProducts = await getFromDb(
-            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`
-        );
-        if (!teamProducts) {
-            setToDb(
-                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
-                count
-            );
-        } else {
-            setToDb(
-                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
-                Number(teamProducts) + count
-            );
-        }
-        elm.target.innerHTML = "Added!";
-        setTimeout(() => {
-            elm.target.innerHTML = "Add";
-        }, 500);
     }
 
     async function createCustomPart() {
@@ -245,40 +191,6 @@
             );
         }
         return name;
-    }
-
-    function getCount(productName) {
-        productName = encode(productName);
-        let count =
-            $organizations[$organizationSelectionForParts].teams[$teamSelected]
-                .products[productName];
-        if (!count) {
-            return 0;
-        } else {
-            return count;
-        }
-    }
-
-    function nameToImage(productName) {
-        if (
-            $organizations[$organizationSelectionForParts].teams[$teamSelected]
-                .customParts[productName].image == "none"
-        ) {
-            return "https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg";
-        }
-        return $organizations[$organizationSelectionForParts].teams[
-            $teamSelected
-        ].customParts[productName].image;
-    }
-
-    function productDecode(productName) {
-        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
-            productName = productName.replaceAll(
-                Object.values(pathChanger)[i],
-                Object.keys(pathChanger)[i]
-            );
-        }
-        return productName;
     }
 
     function canEditCustomPartsFunc() {
@@ -330,13 +242,6 @@
 >
     Create Custom Part
 </buton>
-
-<select id="partFilter" on:change={(elm) => partTypeSelected(elm)}>
-    <option value="All">All</option>
-    {#each partTypes as partType}
-        <option value={partType}>{partType}</option>
-    {/each}
-</select>
 
 <div id="productList">
     {#each sortedProducts as product, i}
@@ -408,21 +313,6 @@
 />
 
 <style>
-    #partFilter {
-        position: absolute;
-        top: 14vh;
-        left: 20vw;
-        width: 60vw;
-        height: 6vh;
-        margin: 0;
-        padding: 0;
-        background-color: #007bff;
-        color: white;
-        border-radius: 10px;
-        text-align: center;
-        font-size: 6vmin;
-    }
-
     .product img {
         margin-top: 5px;
         width: 50%;
@@ -472,9 +362,9 @@
     #productList {
         position: absolute;
         left: 1vw;
-        top: 31vh;
+        top: 23vh;
         width: 98vw;
-        height: 67vh;
+        height: 75vh;
         border-radius: 10px;
         background-color: gray;
         overflow-y: auto;
@@ -484,15 +374,10 @@
         align-items: center;
     }
 
-    .addAndDelete {
-        display: flex;
-        justify-content: space-evenly;
-    }
-
     #searchBar {
         position: absolute;
         left: 25vw;
-        top: 22vh;
+        top: 14vh;
         width: 50vw;
         height: 6vh;
         text-align: center;

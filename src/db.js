@@ -182,10 +182,3 @@ teamSelected.subscribe(async (val) => {
         }
     }
 })
-
-productEmbeds.subscribe(async (val) => {
-    console.log("product: " + val.length)
-})
-customPartEmbeds.subscribe(async (val) => {
-    console.log("custom: " + val.length)
-})
