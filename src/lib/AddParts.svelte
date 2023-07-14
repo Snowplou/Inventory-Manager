@@ -12,8 +12,9 @@
         customPartSelected,
         userData,
         embedSentence,
-        embedSentences,
         sentenceDistance,
+        productEmbeds,
+        customPartEmbeds,
     } from "../db";
 
     async function backButtonPressed() {
@@ -34,6 +35,36 @@
     let vexType = "All";
     let search = "";
     let filteredProducts = [];
+
+    // Do the same thing but for custom parts
+    let customParts =
+        $organizations[$organizationSelectionForParts].teams[$teamSelected];
+    if (customParts) {
+        customParts = customParts.customParts;
+        if (!customParts) {
+            customParts = {};
+        }
+
+        let customPartsKeys = Object.keys(customParts);
+        let customPartsValues = Object.values(customParts);
+        for (let i = 0; i < Object.keys(customParts).length; i++) {
+            let temp = {
+                name: decodeProductName(customPartsKeys[i]),
+                sku: customPartsValues[i].sku
+                    ? customPartsValues[i].sku
+                    : "SKU Not Found",
+                url: customPartsValues[i].image,
+            };
+                filteredProducts.push(temp);
+        }
+    }
+
+    // Do the same thing but for vex parts
+    for (let i = 0; i < Object.keys($products).length; i++) {
+        filteredProducts.push($products[i]);
+    }
+    let originalProducts = [...filteredProducts];
+
     let sortedProducts = [];
     applyFilter();
 
@@ -51,52 +82,36 @@
         }
 
         let searchEmbed = await embedSentence(search);
-        let productNames = [];
-        for (let product of filteredProducts) {
-            productNames.push(product.name);
-        }
-        let prouctEmbeds = await embedSentences(productNames);
+        let allProductEmbeds = [...$productEmbeds, ...$customPartEmbeds];
         let searchTerms = search.split(" ");
         for (let i in filteredProducts) {
             filteredProducts[i].distance = sentenceDistance(
-                prouctEmbeds[i],
+                allProductEmbeds[i],
                 searchEmbed
             );
-            filteredProducts[i].index = Number(i)
+            filteredProducts[i].index = Number(i);
             for (let term of searchTerms) {
                 filteredProducts[i].distance -= filteredProducts[i].name
                     .toLowerCase()
                     .includes(term.toLowerCase())
                     ? 0.25
                     : 0;
-                filteredProducts[i].distance -= filteredProducts[i].sku.toLowerCase().includes(term.toLowerCase())
-                    ? 0.25
-                    : 0;
-                filteredProducts[i].distance -= filteredProducts[i].sku
-                    .toLowerCase() == term.toLowerCase()
-                    ? 100
-                    : 0;
+                if (
+                    filteredProducts[i].sku
+                        .toLowerCase()
+                        .includes(term.toLowerCase()) && filteredProducts[i].sku != "No SKU Available"
+                ) {
+                    filteredProducts[i].distance -= 0.25;
+                }
+                if (
+                    filteredProducts[i].sku.toLowerCase() == term.toLowerCase() && filteredProducts[i].sku != "No SKU Available"
+                ) {
+                    filteredProducts[i].distance -= 100;
+                }
             }
         }
 
         applyFilter();
-    }
-
-    function searchFilter(product) {
-        let searchTerms = search.split(" ");
-        for (let i = 0; i < searchTerms.length; i++) {
-            if (
-                !product.name
-                    .toLowerCase()
-                    .includes(searchTerms[i].toLowerCase()) &&
-                !product.sku
-                    .toLowerCase()
-                    .includes(searchTerms[i].toLowerCase())
-            ) {
-                return false;
-            }
-        }
-        return true;
     }
 
     function decodeProductName(name) {
@@ -111,51 +126,19 @@
     }
 
     async function applyFilter() {
-        filteredProducts = [];
-
-        // Do the same thing but for custom parts
-        let customParts =
-            $organizations[$organizationSelectionForParts].teams[$teamSelected];
-        if (customParts) {
-            customParts = customParts.customParts;
-            if (!customParts) {
-                customParts = {};
-            }
-
-            let customPartsKeys = Object.keys(customParts);
-            let customPartsValues = Object.values(customParts);
-            for (let i = 0; i < Object.keys(customParts).length; i++) {
-                let temp = {
-                    name: decodeProductName(customPartsKeys[i]),
-                    sku: customPartsValues[i].sku
-                        ? customPartsValues[i].sku
-                        : "SKU Not Found",
-                    url: customPartsValues[i].image,
-                };
-                if (searchFilter(temp)) {
-                    filteredProducts.push(temp);
-                }
-            }
-        }
-
-        // Do the same thing but for vex parts
-        for (let i = 0; i < Object.keys($products).length; i++) {
-            filteredProducts.push($products[i]);
-        }
-
-        if(search){
+        if (search) {
             // Sort the products by distance
-            sortedProducts = [...filteredProducts]
+            sortedProducts = [...filteredProducts];
             sortedProducts.sort((a, b) => {
                 return a.distance - b.distance;
             });
-        }
-        else {
+        } else {
             // Sort the products by index
-            sortedProducts = [...filteredProducts]
-            sortedProducts.sort((a, b) => {
-                return a.index - b.index;
-            });
+            sortedProducts = [...originalProducts]
+            // sortedProducts = [...filteredProducts];
+            // sortedProducts.sort((a, b) => {
+            //     return a.index - b.index;
+            // });
         }
     }
 
@@ -421,7 +404,7 @@
     type="text"
     id="searchBar"
     placeholder="Search"
-    on:change={(elm) => searchChanged(elm)}
+    on:input={(elm) => searchChanged(elm)}
 />
 
 <style>

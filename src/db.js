@@ -11,9 +11,10 @@ let model;
 await use.load().then(async val => {
     model = val;
     await embedSentence("a") // Warm up model
+    await embedSentence("b") // Warm up model
 })
 
-export function sentenceDistance(dim1, dim2){
+export function sentenceDistance(dim1, dim2) {
     let distance = 0;
     for (let i = 0; i < dim1.length; i++) {
         distance += Math.pow(dim1[i] - dim2[i], 2);
@@ -32,32 +33,6 @@ export async function embedSentences(sentences) {
     let embeddingsDimensions = await embeddings.array()
     return embeddingsDimensions;
 }
-
-// embedSentence("Hello, how are you?").then(embeddings => {
-//     console.log(embeddings);
-// });
-
-// async function embedSentence(sentence) {
-//     let embeddings = await model.embed(sentence);
-//     console.log(embeddings);
-// }
-
-// console.log("Hello, how are you?")
-// embedSentence("Hello, how are you?")
-
-// use.load().then(model => {
-//     // Embed an array of sentences.
-//     const sentences = [
-//       'Hello.',
-//       'How are you?'
-//     ];
-//     model.embed(sentences).then(embeddings => {
-//       // `embeddings` is a 2D tensor consisting of the 512-dimensional embeddings for each sentence.
-//       // So in this example `embeddings` has the shape [2, 512].
-//       embeddings.print(true /* verbose */);
-//     });
-//   });
-
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -168,3 +143,49 @@ export async function getFromDb(path) {
 export function setToDb(path, data) {
     set(ref(db, path), data);
 }
+
+function decodeProductName(name) {
+    let decodedName = name;
+    for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+        decodedName = decodedName.replaceAll(
+            Object.values(pathChanger)[i],
+            Object.keys(pathChanger)[i]
+        );
+    }
+    return decodedName;
+}
+
+// Get product embeds
+export let productEmbeds = writable([]);
+export let customPartEmbeds = writable([]);
+products.subscribe(async (val) => {
+    // @ts-ignore
+    if (!val.length) return;
+
+    let productNames = [];
+    // @ts-ignore
+    for (let product of val) {
+        productNames.push(product.name);
+    }
+    productEmbeds.set(await embedSentences(productNames))
+})
+teamSelected.subscribe(async (val) => {
+    if (!val) return;
+
+    let productNames = [];
+    if (writeableGet(organizations)[writeableGet(organizationSelectionForParts)].teams[writeableGet(teamSelected)]) {
+        if (writeableGet(organizations)[writeableGet(organizationSelectionForParts)].teams[writeableGet(teamSelected)].customParts) {
+            for (let product of Object.keys(writeableGet(organizations)[writeableGet(organizationSelectionForParts)].teams[writeableGet(teamSelected)].customParts)) {
+                productNames.push(decodeProductName(product));
+            }
+            customPartEmbeds.set(await embedSentences(productNames))
+        }
+    }
+})
+
+productEmbeds.subscribe(async (val) => {
+    console.log("product: " + val.length)
+})
+customPartEmbeds.subscribe(async (val) => {
+    console.log("custom: " + val.length)
+})
