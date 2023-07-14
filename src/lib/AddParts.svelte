@@ -309,7 +309,7 @@
     type="text"
     id="searchBar"
     placeholder="Search"
-    on:input={(elm) => searchChanged(elm)}
+    on:change={(elm) => searchChanged(elm)}
 />
 
 <style>

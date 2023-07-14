@@ -6,14 +6,6 @@ import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } 
 import { get as writeableGet } from "svelte/store";
 import { compute_slots } from "svelte/internal";
 
-// Load use model
-let model;
-await use.load().then(async val => {
-    model = val;
-    await embedSentence("a") // Warm up model
-    await embedSentence("b") // Warm up model
-})
-
 export function sentenceDistance(dim1, dim2) {
     let distance = 0;
     for (let i = 0; i < dim1.length; i++) {
@@ -158,27 +150,39 @@ function decodeProductName(name) {
 // Get product embeds
 export let productEmbeds = writable([]);
 export let customPartEmbeds = writable([]);
-products.subscribe(async (val) => {
-    // @ts-ignore
-    if (!val.length) return;
 
-    let productNames = [];
-    // @ts-ignore
-    for (let product of val) {
-        productNames.push(product.name);
-    }
-    productEmbeds.set(await embedSentences(productNames))
-})
-teamSelected.subscribe(async (val) => {
-    if (!val) return;
+// Load use model
+let model;
+(async () => {
+    await use.load().then(async val => {
+        model = val;
+        await embedSentence("a") // Warm up model
+        await embedSentence("b") // Warm up model
+    });
 
-    let productNames = [];
-    if (writeableGet(organizations)[writeableGet(organizationSelectionForParts)].teams[writeableGet(teamSelected)]) {
-        if (writeableGet(organizations)[writeableGet(organizationSelectionForParts)].teams[writeableGet(teamSelected)].customParts) {
-            for (let product of Object.keys(writeableGet(organizations)[writeableGet(organizationSelectionForParts)].teams[writeableGet(teamSelected)].customParts)) {
-                productNames.push(decodeProductName(product));
-            }
-            customPartEmbeds.set(await embedSentences(productNames))
+    products.subscribe(async (val) => {
+        // @ts-ignore
+        if (!val.length) return;
+    
+        let productNames = [];
+        // @ts-ignore
+        for (let product of val) {
+            productNames.push(product.name);
         }
-    }
-})
+        productEmbeds.set(await embedSentences(productNames))
+    })
+    teamSelected.subscribe(async (val) => {
+        if (!val) return;
+    
+        let productNames = [];
+        if (writeableGet(organizations)[writeableGet(organizationSelectionForParts)].teams[writeableGet(teamSelected)]) {
+            if (writeableGet(organizations)[writeableGet(organizationSelectionForParts)].teams[writeableGet(teamSelected)].customParts) {
+                for (let product of Object.keys(writeableGet(organizations)[writeableGet(organizationSelectionForParts)].teams[writeableGet(teamSelected)].customParts)) {
+                    productNames.push(decodeProductName(product));
+                }
+                customPartEmbeds.set(await embedSentences(productNames))
+            }
+        }
+    })
+
+})();
