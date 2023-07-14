@@ -10,7 +10,10 @@
         pathChanger,
         logEvent,
         customPartSelected,
-        userData
+        userData,
+        embedSentence,
+        embedSentences,
+        sentenceDistance,
     } from "../db";
 
     async function backButtonPressed() {
@@ -31,6 +34,7 @@
     let vexType = "All";
     let search = "";
     let filteredProducts = [];
+    let sortedProducts = [];
     applyFilter();
 
     async function partTypeSelected(elm) {
@@ -38,8 +42,43 @@
         applyFilter();
     }
 
-    function searchChanged(elm) {
+    async function searchChanged(elm) {
         search = elm.target.value;
+
+        if (!search) {
+            applyFilter();
+            return;
+        }
+
+        let searchEmbed = await embedSentence(search);
+        let productNames = [];
+        for (let product of filteredProducts) {
+            productNames.push(product.name);
+        }
+        let prouctEmbeds = await embedSentences(productNames);
+        let searchTerms = search.split(" ");
+        for (let i in filteredProducts) {
+            filteredProducts[i].distance = sentenceDistance(
+                prouctEmbeds[i],
+                searchEmbed
+            );
+            filteredProducts[i].index = Number(i)
+            for (let term of searchTerms) {
+                filteredProducts[i].distance -= filteredProducts[i].name
+                    .toLowerCase()
+                    .includes(term.toLowerCase())
+                    ? 0.25
+                    : 0;
+                filteredProducts[i].distance -= filteredProducts[i].sku.toLowerCase().includes(term.toLowerCase())
+                    ? 0.25
+                    : 0;
+                filteredProducts[i].distance -= filteredProducts[i].sku
+                    .toLowerCase() == term.toLowerCase()
+                    ? 100
+                    : 0;
+            }
+        }
+
         applyFilter();
     }
 
@@ -101,19 +140,22 @@
 
         // Do the same thing but for vex parts
         for (let i = 0; i < Object.keys($products).length; i++) {
-            if (vexType == "All") {
-                if (searchFilter($products[i])) {
-                    filteredProducts.push($products[i]);
-                }
-            } else if ($products[i].type) {
-                for (let j = 0; j < $products[i].type.length; j++) {
-                    if ($products[i].type[j].includes(vexType)) {
-                        if (searchFilter($products[i])) {
-                            filteredProducts.push($products[i]);
-                        }
-                    }
-                }
-            }
+            filteredProducts.push($products[i]);
+        }
+
+        if(search){
+            // Sort the products by distance
+            sortedProducts = [...filteredProducts]
+            sortedProducts.sort((a, b) => {
+                return a.distance - b.distance;
+            });
+        }
+        else {
+            // Sort the products by index
+            sortedProducts = [...filteredProducts]
+            sortedProducts.sort((a, b) => {
+                return a.index - b.index;
+            });
         }
     }
 
@@ -155,7 +197,7 @@
             part: product,
             count: count,
             team: $teamSelected,
-        })
+        });
     }
 
     async function addCustomProduct(elm) {
@@ -196,11 +238,12 @@
     }
 
     async function createCustomPart() {
+        let partCount =
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .customParts;
+        if (!partCount) partCount = 1;
+        else partCount = Object.keys(partCount).length + 1;
 
-        let partCount = $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts
-        if(!partCount) partCount = 1
-        else partCount = Object.keys(partCount).length + 1
-        
         setToDb(
             `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/customParts/Custom Part ${partCount}`,
             {
@@ -208,7 +251,7 @@
             }
         );
 
-        customPartSelected.set(`Custom Part ${partCount}`)
+        customPartSelected.set(`Custom Part ${partCount}`);
     }
 
     function encode(name) {
@@ -313,37 +356,25 @@
 </select>
 
 <div id="productList">
-    {#each filteredProducts as product, i}
+    {#each sortedProducts as product, i}
         <div class="product">
             <img
-                class={canEditCustomParts && isCustomPart(product.name) ? "customPart" : "notCustomPart"}
+                class={canEditCustomParts && isCustomPart(product.name)
+                    ? "customPart"
+                    : "notCustomPart"}
                 src={product.url}
                 alt={product.name}
                 onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
-                    on:click={() => {
-                        if (
-                            canEditCustomParts &&
-                            isCustomPart(
-                                product.name
-                            )
-                        ) {
-                            customPartSelected.set(
-                                encode(product.name)
-                            );
-                        }
-                    }}
-                    on:keydown={() => {
-                        if (
-                            canEditCustomParts &&
-                            isCustomPart(
-                                product.name
-                            )
-                        ) {
-                            customPartSelected.set(
-                                encode(product.name)
-                            );
-                        }
-                    }}
+                on:click={() => {
+                    if (canEditCustomParts && isCustomPart(product.name)) {
+                        customPartSelected.set(encode(product.name));
+                    }
+                }}
+                on:keydown={() => {
+                    if (canEditCustomParts && isCustomPart(product.name)) {
+                        customPartSelected.set(encode(product.name));
+                    }
+                }}
             />
             <p>{product.name}</p>
             <p>{product.sku}</p>
@@ -390,7 +421,7 @@
     type="text"
     id="searchBar"
     placeholder="Search"
-    on:input={(elm) => searchChanged(elm)}
+    on:change={(elm) => searchChanged(elm)}
 />
 
 <style>
@@ -425,7 +456,7 @@
         filter: brightness(80%);
 
         cursor: pointer;
-        
+
         /* Transition */
         transition: filter 0.25s ease-in-out;
     }

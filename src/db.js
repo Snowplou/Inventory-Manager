@@ -7,42 +7,31 @@ import { get as writeableGet } from "svelte/store";
 import { compute_slots } from "svelte/internal";
 
 // Load use model
-// let model;
-// await use.load().then(val => {
-//     model = val;
-// })
+let model;
+await use.load().then(async val => {
+    model = val;
+    await embedSentence("a") // Warm up model
+})
 
-// function sentenceDistance(dim1, dim2){
-//     let distance = 0;
-//     for (let i = 0; i < dim1.length; i++) {
-//         distance += Math.pow(dim1[i] - dim2[i], 2);
-//     }
-//     return Math.sqrt(distance);
-// }
+export function sentenceDistance(dim1, dim2){
+    let distance = 0;
+    for (let i = 0; i < dim1.length; i++) {
+        distance += Math.pow(dim1[i] - dim2[i], 2);
+    }
+    return Math.sqrt(distance);
+}
 
-// async function embedSentence(sentence) {
-//     let embeddings = await model.embed([sentence]);
-//     let embeddingsDimensions = (await embeddings.array())[0]
-//     return embeddingsDimensions;
-// }
+export async function embedSentence(sentence) {
+    let embeddings = await model.embed([sentence]);
+    let embeddingsDimensions = (await embeddings.array())[0]
+    return embeddingsDimensions;
+}
 
-// async function embedSentences(sentences) {
-//     let embeddings = await model.embed(sentences);
-//     let embeddingsDimensions = await embeddings.array()
-//     return embeddingsDimensions;
-// }
-
-// let embeds = await fetch("public/embeds.json").then(async (res) => {
-//     return await res.json()
-// })
-// console.log(embeds)
-
-// let sentence1 = await embedSentence("1x5x35 c-channel");
-// let sentence2 = await embedSentence("inertial sensor");
-
-// let sentence3 = await embedSentence("1x15x35 u-channel");
-// console.log(sentenceDistance(sentence3, sentence1));
-// console.log(sentenceDistance(sentence3, sentence2));
+export async function embedSentences(sentences) {
+    let embeddings = await model.embed(sentences);
+    let embeddingsDimensions = await embeddings.array()
+    return embeddingsDimensions;
+}
 
 // embedSentence("Hello, how are you?").then(embeddings => {
 //     console.log(embeddings);
