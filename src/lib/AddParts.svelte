@@ -1,4 +1,5 @@
 <script>
+    import Fuse from "fuse.js";
     import {
         organizationSelectionForParts,
         getFromDb,
@@ -10,7 +11,7 @@
         pathChanger,
         logEvent,
         customPartSelected,
-        userData
+        userData,
     } from "../db";
 
     async function backButtonPressed() {
@@ -28,15 +29,9 @@
         "Other",
     ];
 
-    let vexType = "All";
     let search = "";
     let filteredProducts = [];
     applyFilter();
-
-    async function partTypeSelected(elm) {
-        vexType = elm.target.value;
-        applyFilter();
-    }
 
     function searchChanged(elm) {
         search = elm.target.value;
@@ -101,16 +96,10 @@
 
         // Do the same thing but for vex parts
         for (let i = 0; i < Object.keys($products).length; i++) {
-            if (vexType == "All") {
-                if (searchFilter($products[i])) {
-                    filteredProducts.push($products[i]);
-                }
-            } else if ($products[i].type) {
+            if ($products[i].type) {
                 for (let j = 0; j < $products[i].type.length; j++) {
-                    if ($products[i].type[j].includes(vexType)) {
-                        if (searchFilter($products[i])) {
-                            filteredProducts.push($products[i]);
-                        }
+                    if (searchFilter($products[i])) {
+                        filteredProducts.push($products[i]);
                     }
                 }
             }
@@ -155,7 +144,7 @@
             part: product,
             count: count,
             team: $teamSelected,
-        })
+        });
     }
 
     async function addCustomProduct(elm) {
@@ -196,11 +185,12 @@
     }
 
     async function createCustomPart() {
+        let partCount =
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .customParts;
+        if (!partCount) partCount = 1;
+        else partCount = Object.keys(partCount).length + 1;
 
-        let partCount = $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts
-        if(!partCount) partCount = 1
-        else partCount = Object.keys(partCount).length + 1
-        
         setToDb(
             `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/customParts/Custom Part ${partCount}`,
             {
@@ -208,7 +198,7 @@
             }
         );
 
-        customPartSelected.set(`Custom Part ${partCount}`)
+        customPartSelected.set(`Custom Part ${partCount}`);
     }
 
     function encode(name) {
@@ -305,45 +295,26 @@
     Create Custom Part
 </buton>
 
-<select id="partFilter" on:change={(elm) => partTypeSelected(elm)}>
-    <option value="All">All</option>
-    {#each partTypes as partType}
-        <option value={partType}>{partType}</option>
-    {/each}
-</select>
-
 <div id="productList">
     {#each filteredProducts as product, i}
         <div class="product">
             <img
-                class={canEditCustomParts && isCustomPart(product.name) ? "customPart" : "notCustomPart"}
+                class={canEditCustomParts && isCustomPart(product.name)
+                    ? "customPart"
+                    : "notCustomPart"}
                 src={product.url}
                 alt={product.name}
                 onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
-                    on:click={() => {
-                        if (
-                            canEditCustomParts &&
-                            isCustomPart(
-                                product.name
-                            )
-                        ) {
-                            customPartSelected.set(
-                                encode(product.name)
-                            );
-                        }
-                    }}
-                    on:keydown={() => {
-                        if (
-                            canEditCustomParts &&
-                            isCustomPart(
-                                product.name
-                            )
-                        ) {
-                            customPartSelected.set(
-                                encode(product.name)
-                            );
-                        }
-                    }}
+                on:click={() => {
+                    if (canEditCustomParts && isCustomPart(product.name)) {
+                        customPartSelected.set(encode(product.name));
+                    }
+                }}
+                on:keydown={() => {
+                    if (canEditCustomParts && isCustomPart(product.name)) {
+                        customPartSelected.set(encode(product.name));
+                    }
+                }}
             />
             <p>{product.name}</p>
             <p>{product.sku}</p>
@@ -394,21 +365,6 @@
 />
 
 <style>
-    #partFilter {
-        position: absolute;
-        top: 14vh;
-        left: 20vw;
-        width: 60vw;
-        height: 6vh;
-        margin: 0;
-        padding: 0;
-        background-color: #007bff;
-        color: white;
-        border-radius: 10px;
-        text-align: center;
-        font-size: 6vmin;
-    }
-
     .product img {
         margin-top: 5px;
         width: 50%;
@@ -425,7 +381,7 @@
         filter: brightness(80%);
 
         cursor: pointer;
-        
+
         /* Transition */
         transition: filter 0.25s ease-in-out;
     }
@@ -458,9 +414,9 @@
     #productList {
         position: absolute;
         left: 1vw;
-        top: 31vh;
+        top: 23vh;
         width: 98vw;
-        height: 67vh;
+        height: 75vh;
         border-radius: 10px;
         background-color: gray;
         overflow-y: auto;
@@ -470,15 +426,10 @@
         align-items: center;
     }
 
-    .addAndDelete {
-        display: flex;
-        justify-content: space-evenly;
-    }
-
     #searchBar {
         position: absolute;
         left: 25vw;
-        top: 22vh;
+        top: 14vh;
         width: 50vw;
         height: 6vh;
         text-align: center;
