@@ -6,26 +6,6 @@ import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } 
 import { get as writeableGet } from "svelte/store";
 import { compute_slots } from "svelte/internal";
 
-export function sentenceDistance(dim1, dim2) {
-    let distance = 0;
-    for (let i = 0; i < dim1.length; i++) {
-        distance += Math.pow(dim1[i] - dim2[i], 2);
-    }
-    return Math.sqrt(distance);
-}
-
-export async function embedSentence(sentence) {
-    let embeddings = await model.embed([sentence]);
-    let embeddingsDimensions = (await embeddings.array())[0]
-    return embeddingsDimensions;
-}
-
-export async function embedSentences(sentences) {
-    let embeddings = await model.embed(sentences);
-    let embeddingsDimensions = await embeddings.array()
-    return embeddingsDimensions;
-}
-
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
@@ -73,10 +53,10 @@ export let emailChanger = {
 export let teamSelected = writable("");
 export let customPartSelected = writable("");
 
-export async function logEvent(organization, eventDetails) {
+export async function logEvent(organization, eventDetails){
     let time = new Date().getTime();
     // Create a local time string. Include date, time, and timezone.
-    let localTime = new Date().toLocaleString("en-US", { timeZoneName: "short" }).split(", ")
+    let localTime = new Date().toLocaleString("en-US", {timeZoneName: "short"}).split(", ")
     let localTimeStr = localTime[0] + ", " + localTime[1]
     eventDetails.time = localTimeStr
     eventDetails.userEmail = writeableGet(userData).email
@@ -135,54 +115,3 @@ export async function getFromDb(path) {
 export function setToDb(path, data) {
     set(ref(db, path), data);
 }
-
-function decodeProductName(name) {
-    let decodedName = name;
-    for (let i = 0; i < Object.keys(pathChanger).length; i++) {
-        decodedName = decodedName.replaceAll(
-            Object.values(pathChanger)[i],
-            Object.keys(pathChanger)[i]
-        );
-    }
-    return decodedName;
-}
-
-// Get product embeds
-export let productEmbeds = writable([]);
-export let customPartEmbeds = writable([]);
-
-// Load use model
-let model;
-(async () => {
-    await use.load().then(async val => {
-        model = val;
-        await embedSentence("a") // Warm up model
-        await embedSentence("b") // Warm up model
-    });
-
-    products.subscribe(async (val) => {
-        // @ts-ignore
-        if (!val.length) return;
-    
-        let productNames = [];
-        // @ts-ignore
-        for (let product of val) {
-            productNames.push(product.name);
-        }
-        productEmbeds.set(await embedSentences(productNames))
-    })
-    teamSelected.subscribe(async (val) => {
-        if (!val) return;
-    
-        let productNames = [];
-        if (writeableGet(organizations)[writeableGet(organizationSelectionForParts)].teams[writeableGet(teamSelected)]) {
-            if (writeableGet(organizations)[writeableGet(organizationSelectionForParts)].teams[writeableGet(teamSelected)].customParts) {
-                for (let product of Object.keys(writeableGet(organizations)[writeableGet(organizationSelectionForParts)].teams[writeableGet(teamSelected)].customParts)) {
-                    productNames.push(decodeProductName(product));
-                }
-                customPartEmbeds.set(await embedSentences(productNames))
-            }
-        }
-    })
-
-})();

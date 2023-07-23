@@ -10,91 +10,54 @@
         pathChanger,
         logEvent,
         customPartSelected,
-        userData,
-        embedSentence,
-        sentenceDistance,
-        productEmbeds,
-        customPartEmbeds,
+        userData
     } from "../db";
 
     async function backButtonPressed() {
         pageState.set("parts");
     }
 
+    let partTypes = [
+        "Game Elements",
+        "Structure",
+        "Motion",
+        "Electronics",
+        "Hardware",
+        "Motors",
+        "Pneumatics",
+        "Other",
+    ];
+
+    let vexType = "All";
     let search = "";
     let filteredProducts = [];
-
-    // Do the same thing but for custom parts
-    let customParts =
-        $organizations[$organizationSelectionForParts].teams[$teamSelected];
-    if (customParts) {
-        customParts = customParts.customParts;
-        if (!customParts) {
-            customParts = {};
-        }
-
-        let customPartsKeys = Object.keys(customParts);
-        let customPartsValues = Object.values(customParts);
-        for (let i = 0; i < Object.keys(customParts).length; i++) {
-            let temp = {
-                name: decodeProductName(customPartsKeys[i]),
-                sku: customPartsValues[i].sku
-                    ? customPartsValues[i].sku
-                    : "SKU Not Found",
-                url: customPartsValues[i].image,
-            };
-                filteredProducts.push(temp);
-        }
-    }
-
-    // Do the same thing but for vex parts
-    for (let i = 0; i < Object.keys($products).length; i++) {
-        filteredProducts.push($products[i]);
-    }
-    let originalProducts = [...filteredProducts];
-
-    let sortedProducts = [];
     applyFilter();
 
-    async function searchChanged(elm) {
+    async function partTypeSelected(elm) {
+        vexType = elm.target.value;
+        applyFilter();
+    }
+
+    function searchChanged(elm) {
         search = elm.target.value;
+        applyFilter();
+    }
 
-        if (!search) {
-            applyFilter();
-            return;
-        }
-
-        let searchEmbed = await embedSentence(search);
-        let allProductEmbeds = [...$productEmbeds, ...$customPartEmbeds];
+    function searchFilter(product) {
         let searchTerms = search.split(" ");
-        for (let i in filteredProducts) {
-            filteredProducts[i].distance = sentenceDistance(
-                allProductEmbeds[i],
-                searchEmbed
-            );
-            filteredProducts[i].index = Number(i);
-            for (let term of searchTerms) {
-                filteredProducts[i].distance -= filteredProducts[i].name
+        for (let i = 0; i < searchTerms.length; i++) {
+            if (
+                !product.name
                     .toLowerCase()
-                    .includes(term.toLowerCase())
-                    ? 0.25
-                    : 0;
-                if (
-                    filteredProducts[i].sku
-                        .toLowerCase()
-                        .includes(term.toLowerCase()) && filteredProducts[i].sku != "No SKU Available"
-                ) {
-                    filteredProducts[i].distance -= 0.25;
-                }
-                if (
-                    filteredProducts[i].sku.toLowerCase() == term.toLowerCase() && filteredProducts[i].sku != "No SKU Available"
-                ) {
-                    filteredProducts[i].distance -= 100;
-                }
+                    .includes(searchTerms[i].toLowerCase()) &&
+                !product.sku
+                    .toLowerCase()
+                    .includes(searchTerms[i].toLowerCase())
+            ) {
+                return false;
             }
         }
-
-        applyFilter();
+        return true;
     }
 
     function decodeProductName(name) {
@@ -109,19 +72,48 @@
     }
 
     async function applyFilter() {
-        if (search) {
-            // Sort the products by distance
-            sortedProducts = [...filteredProducts];
-            sortedProducts.sort((a, b) => {
-                return a.distance - b.distance;
-            });
-        } else {
-            // Sort the products by index
-            sortedProducts = [...originalProducts]
-            // sortedProducts = [...filteredProducts];
-            // sortedProducts.sort((a, b) => {
-            //     return a.index - b.index;
-            // });
+        filteredProducts = [];
+
+        // Do the same thing but for custom parts
+        let customParts =
+            $organizations[$organizationSelectionForParts].teams[$teamSelected];
+        if (customParts) {
+            customParts = customParts.customParts;
+            if (!customParts) {
+                customParts = {};
+            }
+
+            let customPartsKeys = Object.keys(customParts);
+            let customPartsValues = Object.values(customParts);
+            for (let i = 0; i < Object.keys(customParts).length; i++) {
+                let temp = {
+                    name: decodeProductName(customPartsKeys[i]),
+                    sku: customPartsValues[i].sku
+                        ? customPartsValues[i].sku
+                        : "SKU Not Found",
+                    url: customPartsValues[i].image,
+                };
+                if (searchFilter(temp)) {
+                    filteredProducts.push(temp);
+                }
+            }
+        }
+
+        // Do the same thing but for vex parts
+        for (let i = 0; i < Object.keys($products).length; i++) {
+            if (vexType == "All") {
+                if (searchFilter($products[i])) {
+                    filteredProducts.push($products[i]);
+                }
+            } else if ($products[i].type) {
+                for (let j = 0; j < $products[i].type.length; j++) {
+                    if ($products[i].type[j].includes(vexType)) {
+                        if (searchFilter($products[i])) {
+                            filteredProducts.push($products[i]);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -153,9 +145,9 @@
                 Number(teamProducts) + count
             );
         }
-        elm.target.parentElement.children[5].innerHTML = "Added!";
+        elm.target.parentElement.children[4].innerHTML = "Added!";
         setTimeout(() => {
-            elm.target.parentElement.children[5].innerHTML = "Add";
+            elm.target.parentElement.children[4].innerHTML = "Add";
         }, 500);
 
         logEvent($organizationSelectionForParts, {
@@ -163,16 +155,52 @@
             part: product,
             count: count,
             team: $teamSelected,
-        });
+        })
+    }
+
+    async function addCustomProduct(elm) {
+        let product =
+            elm.target.parentElement.parentElement.children[1].innerHTML;
+        let count = Number(
+            elm.target.parentElement.parentElement.children[3].value
+        );
+        if (!count) count = 1;
+
+        // Replace the characters that firebase doesn't like
+        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            product = product.replaceAll(
+                Object.keys(pathChanger)[i],
+                Object.values(pathChanger)[i]
+            );
+        }
+        product = product.replaceAll("&amp;", "&");
+
+        let teamProducts = await getFromDb(
+            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`
+        );
+        if (!teamProducts) {
+            setToDb(
+                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
+                count
+            );
+        } else {
+            setToDb(
+                `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
+                Number(teamProducts) + count
+            );
+        }
+        elm.target.innerHTML = "Added!";
+        setTimeout(() => {
+            elm.target.innerHTML = "Add";
+        }, 500);
     }
 
     async function createCustomPart() {
-        let partCount =
-            $organizations[$organizationSelectionForParts].teams[$teamSelected]
-                .customParts;
-        if (!partCount) partCount = 1;
-        else partCount = Object.keys(partCount).length + 1;
 
+        let partCount = $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts
+        if(!partCount) partCount = 1
+        else partCount = Object.keys(partCount).length + 1
+        
         setToDb(
             `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/customParts/Custom Part ${partCount}`,
             {
@@ -180,7 +208,7 @@
             }
         );
 
-        customPartSelected.set(`Custom Part ${partCount}`);
+        customPartSelected.set(`Custom Part ${partCount}`)
     }
 
     function encode(name) {
@@ -191,6 +219,40 @@
             );
         }
         return name;
+    }
+
+    function getCount(productName) {
+        productName = encode(productName);
+        let count =
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .products[productName];
+        if (!count) {
+            return 0;
+        } else {
+            return count;
+        }
+    }
+
+    function nameToImage(productName) {
+        if (
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .customParts[productName].image == "none"
+        ) {
+            return "https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg";
+        }
+        return $organizations[$organizationSelectionForParts].teams[
+            $teamSelected
+        ].customParts[productName].image;
+    }
+
+    function productDecode(productName) {
+        for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            productName = productName.replaceAll(
+                Object.values(pathChanger)[i],
+                Object.keys(pathChanger)[i]
+            );
+        }
+        return productName;
     }
 
     function canEditCustomPartsFunc() {
@@ -243,26 +305,45 @@
     Create Custom Part
 </buton>
 
+<select id="partFilter" on:change={(elm) => partTypeSelected(elm)}>
+    <option value="All">All</option>
+    {#each partTypes as partType}
+        <option value={partType}>{partType}</option>
+    {/each}
+</select>
+
 <div id="productList">
-    {#each sortedProducts as product, i}
+    {#each filteredProducts as product, i}
         <div class="product">
             <img
-                class={canEditCustomParts && isCustomPart(product.name)
-                    ? "customPart"
-                    : "notCustomPart"}
+                class={canEditCustomParts && isCustomPart(product.name) ? "customPart" : "notCustomPart"}
                 src={product.url}
                 alt={product.name}
                 onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
-                on:click={() => {
-                    if (canEditCustomParts && isCustomPart(product.name)) {
-                        customPartSelected.set(encode(product.name));
-                    }
-                }}
-                on:keydown={() => {
-                    if (canEditCustomParts && isCustomPart(product.name)) {
-                        customPartSelected.set(encode(product.name));
-                    }
-                }}
+                    on:click={() => {
+                        if (
+                            canEditCustomParts &&
+                            isCustomPart(
+                                product.name
+                            )
+                        ) {
+                            customPartSelected.set(
+                                encode(product.name)
+                            );
+                        }
+                    }}
+                    on:keydown={() => {
+                        if (
+                            canEditCustomParts &&
+                            isCustomPart(
+                                product.name
+                            )
+                        ) {
+                            customPartSelected.set(
+                                encode(product.name)
+                            );
+                        }
+                    }}
             />
             <p>{product.name}</p>
             <p>{product.sku}</p>
@@ -309,10 +390,25 @@
     type="text"
     id="searchBar"
     placeholder="Search"
-    on:change={(elm) => searchChanged(elm)}
+    on:input={(elm) => searchChanged(elm)}
 />
 
 <style>
+    #partFilter {
+        position: absolute;
+        top: 14vh;
+        left: 20vw;
+        width: 60vw;
+        height: 6vh;
+        margin: 0;
+        padding: 0;
+        background-color: #007bff;
+        color: white;
+        border-radius: 10px;
+        text-align: center;
+        font-size: 6vmin;
+    }
+
     .product img {
         margin-top: 5px;
         width: 50%;
@@ -329,7 +425,7 @@
         filter: brightness(80%);
 
         cursor: pointer;
-
+        
         /* Transition */
         transition: filter 0.25s ease-in-out;
     }
@@ -362,9 +458,9 @@
     #productList {
         position: absolute;
         left: 1vw;
-        top: 23vh;
+        top: 31vh;
         width: 98vw;
-        height: 75vh;
+        height: 67vh;
         border-radius: 10px;
         background-color: gray;
         overflow-y: auto;
@@ -374,10 +470,15 @@
         align-items: center;
     }
 
+    .addAndDelete {
+        display: flex;
+        justify-content: space-evenly;
+    }
+
     #searchBar {
         position: absolute;
         left: 25vw;
-        top: 14vh;
+        top: 22vh;
         width: 50vw;
         height: 6vh;
         text-align: center;
