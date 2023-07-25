@@ -270,7 +270,7 @@
             else{
                 setTimeout(() => {
                     updatedName = false;
-                }, 3000);
+                }, 1500);
             }
         }
     });
