@@ -151,9 +151,10 @@
                 Number(teamProducts) + count
             );
         }
-        elm.target.parentElement.children[4].innerHTML = "Added!";
+
+        elm.target.parentElement.children[5].innerHTML = "Added!";
         setTimeout(() => {
-            elm.target.parentElement.children[4].innerHTML = "Add";
+            elm.target.parentElement.children[5].innerHTML = "Add";
         }, 500);
 
         logEvent($organizationSelectionForParts, {

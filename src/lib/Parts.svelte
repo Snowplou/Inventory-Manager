@@ -15,6 +15,7 @@
         customPartSelected,
         logEvent,
     } from "../db";
+    import { append } from 'svelte/internal';
     let teamProducts = {};
     let selectedTeamForTransfer = "";
     let search = "";
@@ -258,7 +259,7 @@
                 setToDb(
                     `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
                     productCount - amount
-                );
+                )
                 elm.target.parentElement.children[0].innerHTML = "Removed!";
                 setTimeout(() => {
                     elm.target.parentElement.children[0].innerHTML = "Remove";
@@ -504,7 +505,7 @@
                                     <p>
                                         {productValues.sku}
                                     </p>
-                                    <p>Count: {productValues.count}</p>
+                                    <p>Count: {$organizations[$organizationSelectionForParts].teams[$teamSelected].products[encodeProductName(productValues.name)]}</p>
                                 </div>
                                 <div class="partListButtons">
                                     <button

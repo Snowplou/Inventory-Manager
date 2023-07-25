@@ -216,6 +216,44 @@
             team: $teamSelected,
         });
     }
+
+    function updateCount(elm) {
+        let count = elm.target.value;
+        let originalCount = $organizations[$organizationSelectionForParts].teams[
+            $teamSelected
+        ].products[$customPartSelected];
+
+        if(count != 0) {
+        setToDb(
+            "organizations/" +
+                $organizationSelectionForParts +
+                "/teams/" +
+                $teamSelected +
+                "/products/" +
+                $customPartSelected,
+            Number(count)
+        );
+        }
+        else {
+            setToDb(
+                "organizations/" +
+                    $organizationSelectionForParts +
+                    "/teams/" +
+                    $teamSelected +
+                    "/products/" +
+                    $customPartSelected,
+                null
+            );
+        }
+
+        logEvent($organizationSelectionForParts, {
+            type: "edit custom part count",
+            name: $customPartSelected,
+            count: originalCount || 0,
+            newCount: Number(count),
+            team: $teamSelected,
+        });
+    }
 </script>
 
 <button
@@ -263,6 +301,12 @@
             on:change={(elm) => updateImage(elm)}
         />
     </div>
+    <div class="item">
+        <p id="countEditor">
+            Count: {$organizations[$organizationSelectionForParts].teams[$teamSelected].products[$customPartSelected] || 0}
+        </p>
+        <input type="number" value={$organizations[$organizationSelectionForParts].teams[$teamSelected].products[$customPartSelected] || 0} on:change={(elm) => updateCount(elm)}/>
+    </div>
     <button
         id="deleteProduct"
         on:click={() => deleteCustomProduct()}
@@ -283,6 +327,12 @@
         flex-direction: column;
         justify-content: space-around;
         align-items: center;
+    }
+
+    #countEditor {
+        width: 100%;
+        margin-top: 1vh;
+        margin-bottom: 1vh;
     }
 
     .item {
