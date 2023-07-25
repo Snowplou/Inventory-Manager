@@ -382,9 +382,9 @@
                                         $organizationOwner !=
                                             $userData.email) ||
                                         $userData.email == member.email ||
-                                        $userData.organizations[
+                                        ($userData.organizations[
                                             organizationSelected
-                                        ].rank == "Coach"}
+                                        ].rank != "Coach" && $organizationOwner != $userData.email)}
                                 >
                                     {#each Object.values($organizationTeams) as team}
                                         <option value={team}>{team}</option>
