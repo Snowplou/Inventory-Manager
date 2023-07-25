@@ -1,5 +1,5 @@
 <script>
-    import Fuse from "fuse.js";
+    import MiniSearch from 'minisearch'
     import {
         organizationSelectionForParts,
         getFromDb,
@@ -30,12 +30,12 @@
     ];
 
     let search = "";
-    let filteredProducts = [];
-    applyFilter();
+    let sortedProducts = [];
+    applySearch();
 
     function searchChanged(elm) {
         search = elm.target.value;
-        applyFilter();
+        applySearch();
     }
 
     function searchFilter(product) {
@@ -66,8 +66,8 @@
         return decodedName;
     }
 
-    async function applyFilter() {
-        filteredProducts = [];
+    async function applySearch() {
+        sortedProducts = [];
 
         // Do the same thing but for custom parts
         let customParts =
@@ -80,7 +80,7 @@
 
             let customPartsKeys = Object.keys(customParts);
             let customPartsValues = Object.values(customParts);
-            for (let i = 0; i < Object.keys(customParts).length; i++) {
+            for (let i = 0; i < customPartsKeys.length; i++) {
                 let temp = {
                     name: decodeProductName(customPartsKeys[i]),
                     sku: customPartsValues[i].sku
@@ -88,21 +88,38 @@
                         : "SKU Not Found",
                     url: customPartsValues[i].image,
                 };
-                if (searchFilter(temp)) {
-                    filteredProducts.push(temp);
-                }
+                sortedProducts.push(temp);
             }
         }
 
         // Do the same thing but for vex parts
         for (let i = 0; i < Object.keys($products).length; i++) {
-            if ($products[i].type) {
-                for (let j = 0; j < $products[i].type.length; j++) {
-                    if (searchFilter($products[i])) {
-                        filteredProducts.push($products[i]);
-                    }
-                }
+            sortedProducts.push($products[i]);
+        }
+
+        // If there are search terms
+        if (search) {
+            // Use minisearch to search for the products by name and sku with a threshold of 0 (include everything)
+            let miniSearch = new MiniSearch({
+                fields: ["name", "sku"],
+                storeFields: ["name", "sku", "url"],
+                searchOptions: {
+                    boost: { name: 2 },
+                    prefix: true,
+                    fuzzy: 0.1,
+                },
+            });
+
+            // Add ids to the products
+            for (let i = 0; i < sortedProducts.length; i++) {
+                sortedProducts[i].id = i;
             }
+
+            // Add the products to the minisearch
+            miniSearch.addAll(sortedProducts);
+
+            // Search for the products
+            sortedProducts = miniSearch.search(search);
         }
     }
 
@@ -296,7 +313,7 @@
 </buton>
 
 <div id="productList">
-    {#each filteredProducts as product, i}
+    {#each sortedProducts as product, i}
         <div class="product">
             <img
                 class={canEditCustomParts && isCustomPart(product.name)

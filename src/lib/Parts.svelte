@@ -1,6 +1,6 @@
 <script>
     // @ts-nocheck
-    import Fuse from "fuse.js";
+    import MiniSearch from 'minisearch'
 
     import {
         organizationSelectionForParts,
@@ -15,8 +15,6 @@
         customPartSelected,
         logEvent,
     } from "../db";
-    import { writable } from "svelte/store";
-    let parts = {};
     let teamProducts = {};
     let selectedTeamForTransfer = "";
     let search = "";
@@ -25,6 +23,9 @@
         selectedTeamForTransfer =
             $organizations[$organizationSelectionForParts].teamList[2];
     });
+
+    let sortedParts = [];
+    applySearch();
     
     function canEditCustomPartsFunc() {
         if (!$organizationSelectionForParts) return false;
@@ -107,6 +108,7 @@
 
     async function teamClicked(elm) {
         teamSelected.set(elm.target.innerHTML);
+        applySearch();
     }
 
     async function addPartsClicked() {
@@ -116,6 +118,7 @@
     function decodeProductName(name) {
         let decodedName = name;
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            if(!decodedName) continue
             decodedName = decodedName.replaceAll(
                 Object.values(pathChanger)[i],
                 Object.keys(pathChanger)[i]
@@ -162,6 +165,7 @@
     function encodeProductName(name) {
         let encodedName = name;
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
+            if(!encodedName) continue
             encodedName = encodedName.replaceAll(
                 Object.keys(pathChanger)[i],
                 Object.values(pathChanger)[i]
@@ -348,6 +352,45 @@
 
     function searchChanged(elm) {
         search = elm.target.value;
+        applySearch();
+    }
+
+    function applySearch(){
+        sortedParts = []
+        if(!$organizationSelectionForParts) return
+        if(!$teamSelected) return
+        if(!$organizations[$organizationSelectionForParts].teams) return
+        if(!$organizations[$organizationSelectionForParts].teams[$teamSelected]) return
+        if(!$organizations[$organizationSelectionForParts].teams[$teamSelected].products) return
+
+        let keys = Object.keys($organizations[$organizationSelectionForParts].teams[$teamSelected].products)
+        let values = Object.values($organizations[$organizationSelectionForParts].teams[$teamSelected].products)
+        for(let i = 0; i < keys.length; i++){
+            let key = keys[i]
+            key = decodeProductName(key)
+            let value = values[i]
+            sortedParts.push({name: key, count: value, sku: getSKU(key), id: i})
+        }
+
+        if(search){
+            // Use minisearch to search for the products by name and sku with a threshold of 0 (include everything)
+            let miniSearch = new MiniSearch({
+                fields: ["name", "sku"],
+                storeFields: ["name", "sku", "count"],
+                searchOptions: {
+                    prefix: true,
+                    fuzzy: 0.1,
+                },
+            });
+
+            // Add all the parts to the search
+            miniSearch.addAll(sortedParts);
+
+            // Search for the parts
+            sortedParts = miniSearch.search(search);
+        }
+
+        
     }
 
     function searchFilter(product) {
@@ -415,32 +458,29 @@
 
     {#key $organizationSelectionForParts}
         {#key $teamSelected}
-            {#key search}
+            {#key sortedParts}
                 <div id="partsList">
-                    {#each Object.values(teamProducts) as productCount, i}
-                        {#if searchFilter(Object.keys(teamProducts)[i])}
+                    {#each Object.values(sortedParts) as productValues, i}
                             <div class="part">
                                 <img
                                     class={canEditCustomParts &&
-                                    isCustomPart(Object.keys(teamProducts)[i])
+                                    isCustomPart(encodeProductName(productValues.name))
                                         ? "customPart"
                                         : "notCustomPart"}
                                     src={nameToImage(
-                                        Object.keys(teamProducts)[i]
+                                        encodeProductName(productValues.name)
                                     )}
                                     onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
-                                    alt={decodeProductName(
-                                        Object.keys(teamProducts)[i]
-                                    )}
+                                    alt={productValues.name}
                                     on:click={() => {
                                         if (
                                             canEditCustomParts &&
                                             isCustomPart(
-                                                Object.keys(teamProducts)[i]
+                                                encodeProductName(productValues.name)
                                             )
                                         ) {
                                             customPartSelected.set(
-                                                Object.keys(teamProducts)[i]
+                                                encodeProductName(productValues.name)
                                             );
                                         }
                                     }}
@@ -448,25 +488,23 @@
                                         if (
                                             canEditCustomParts &&
                                             isCustomPart(
-                                                Object.keys(teamProducts)[i]
+                                                encodeProductName(productValues.name)
                                             )
                                         ) {
                                             customPartSelected.set(
-                                                Object.keys(teamProducts)[i]
+                                                encodeProductName(productValues.name)
                                             );
                                         }
                                     }}
                                 />
                                 <div class="partPList">
                                     <p>
-                                        {decodeProductName(
-                                            Object.keys(teamProducts)[i]
-                                        )}
+                                        {productValues.name}
                                     </p>
                                     <p>
-                                        {getSKU(Object.keys(teamProducts)[i])}
+                                        {productValues.sku}
                                     </p>
-                                    <p>Count: {productCount}</p>
+                                    <p>Count: {productValues.count}</p>
                                 </div>
                                 <div class="partListButtons">
                                     <button
@@ -493,7 +531,6 @@
                                     />
                                 </div>
                             </div>
-                        {/if}
                     {:else}
                         <p id="noPartsFound">
                             No parts found.<br />You need to add parts to this
