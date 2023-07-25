@@ -36,6 +36,7 @@
         return encodedName;
     }
 
+    let updatedName = false;
     function updateName(elm) {
         let name = elm.target.value;
         name = encodeProductName(name);
@@ -52,6 +53,8 @@
             alert("Part with that name already exists");
             return;
         }
+
+        updatedName = true;
 
         // If the team doesn't have a custom part, then they shouldn't have access to this page. This means that this shouldn't try to access null with a key.
         let part =
@@ -219,29 +222,29 @@
 
     function updateCount(elm) {
         let count = elm.target.value;
-        let originalCount = $organizations[$organizationSelectionForParts].teams[
-            $teamSelected
-        ].products[$customPartSelected];
+        let originalCount =
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .products[$customPartSelected];
+        let partName = encodeProductName($customPartSelected);
 
-        if(count != 0) {
-        setToDb(
-            "organizations/" +
-                $organizationSelectionForParts +
-                "/teams/" +
-                $teamSelected +
-                "/products/" +
-                $customPartSelected,
-            Number(count)
-        );
-        }
-        else {
+        if (count != 0) {
             setToDb(
                 "organizations/" +
                     $organizationSelectionForParts +
                     "/teams/" +
                     $teamSelected +
                     "/products/" +
-                    $customPartSelected,
+                    partName,
+                Number(count)
+            );
+        } else {
+            setToDb(
+                "organizations/" +
+                    $organizationSelectionForParts +
+                    "/teams/" +
+                    $teamSelected +
+                    "/products/" +
+                    partName,
                 null
             );
         }
@@ -254,6 +257,23 @@
             team: $teamSelected,
         });
     }
+
+    organizations.subscribe(() => {
+        let currentState =
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .customParts[$customPartSelected];
+
+        if (!currentState) {
+            if (!updatedName) {
+                window.location.reload();
+            }
+            else{
+                setTimeout(() => {
+                    updatedName = false;
+                }, 3000);
+            }
+        }
+    });
 </script>
 
 <button
@@ -262,7 +282,6 @@
         customPartSelected.set("");
     }}>Back to Part List</button
 >
-
 <div id="list">
     <div class="item">
         <p>{decodeProductName($customPartSelected)}</p>
@@ -303,9 +322,17 @@
     </div>
     <div class="item">
         <p id="countEditor">
-            Count: {$organizations[$organizationSelectionForParts].teams[$teamSelected].products[$customPartSelected] || 0}
+            Count: {$organizations[$organizationSelectionForParts].teams[
+                $teamSelected
+            ].products[$customPartSelected] || 0}
         </p>
-        <input type="number" value={$organizations[$organizationSelectionForParts].teams[$teamSelected].products[$customPartSelected] || 0} on:change={(elm) => updateCount(elm)}/>
+        <input
+            type="number"
+            value={$organizations[$organizationSelectionForParts].teams[
+                $teamSelected
+            ].products[$customPartSelected] || 0}
+            on:change={(elm) => updateCount(elm)}
+        />
     </div>
     <button
         id="deleteProduct"
