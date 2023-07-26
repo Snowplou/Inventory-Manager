@@ -285,10 +285,42 @@
     let partSelectedForMenu = "";
 
     // hiding the menu on click to the document
-    function hideCustomContextMenu() {
+    function hideCustomContextMenu(event) {
         // Don't set style to none if it doesn't exist
         if (document.getElementById("customContextMenu"))
             document.getElementById("customContextMenu").style.display = "none";
+        // If the event element type is not li and it is not an input with type number and it is not a select or option element
+        if (
+            event.target.tagName != "LI" &&
+            event.target.type != "number" &&
+            event.target.tagName != "SELECT" &&
+            event.target.tagName != "OPTION"
+        ) {
+            partSelectedForMenu = "";
+
+            // Hide the elements with the addMenu class
+            if (document.getElementsByClassName("addMenu")) {
+                for (let elm of document.getElementsByClassName("addMenu")) {
+                    elm.style.display = "none";
+                }
+            }
+
+            // Hide the elements with the removeMenu class
+            if (document.getElementsByClassName("removeMenu")) {
+                for (let elm of document.getElementsByClassName("removeMenu")) {
+                    elm.style.display = "none";
+                }
+            }
+
+            // Hide the elements with the transferMenu class
+            if (document.getElementsByClassName("transferMenu")) {
+                for (let elm of document.getElementsByClassName(
+                    "transferMenu"
+                )) {
+                    elm.style.display = "none";
+                }
+            }
+        }
     }
 
     // toggling the menu on right click to the page
@@ -306,6 +338,20 @@
             }
         }
 
+        // Hide the elements with the removeMenu class
+        if (document.getElementsByClassName("removeMenu")) {
+            for (let elm of document.getElementsByClassName("removeMenu")) {
+                elm.style.display = "none";
+            }
+        }
+
+        // Hide the elements with the transferMenu class
+        if (document.getElementsByClassName("transferMenu")) {
+            for (let elm of document.getElementsByClassName("transferMenu")) {
+                elm.style.display = "none";
+            }
+        }
+
         // Check if the menu would be placed to the right of the screen
         if (event.pageX + myContextMenu.offsetWidth + 25 > window.innerWidth) {
             // Adjust the left position of the menu to keep it on the screen
@@ -314,7 +360,10 @@
         }
 
         // Check if the menu would be placed below the screen
-        if (event.pageY + myContextMenu.offsetHeight + 50 > window.innerHeight) {
+        if (
+            event.pageY + myContextMenu.offsetHeight + 50 >
+            window.innerHeight
+        ) {
             // Adjust the top position of the menu to keep it above the screen
             myContextMenu.style.top =
                 event.pageY - myContextMenu.offsetHeight + "px";
@@ -324,10 +373,7 @@
             event.currentTarget.children[1].children[0].innerHTML;
     }
 
-    function add(elm){
-        // Have a small menu appear asking how much to add. Have a input for typing the number. Below that are two buttons: ok and cancel.
-        // If ok is pressed, add the number to the count of the part. If cancel is pressed, do nothing.
-
+    function add(elm) {
         // Create the menu
         let addMenu = document.createElement("div");
         addMenu.classList = "addMenu";
@@ -339,30 +385,15 @@
         addMenu.style.borderRadius = "10px";
         addMenu.style.width = "200px";
 
-        // // Set the left and top position of the menu and adjust if needed. When doing the calculations, remember to account for the width and height of the menu and that it is in vw/vh instead of px.
-        // let left = elm.pageX;
-        // let top = elm.pageY;
-        // let leftThresh = 160;
-        // let topThresh = 0;
-        // if (elm.pageX + leftThresh > window.innerWidth) {
-        //     left = elm.pageX - leftThresh;
-        // }
-        // if (elm.pageY + topThresh > window.innerHeight) {
-        //     top = elm.pageY - topThresh;
-        // }
-        // addMenu.style.left = left + "px";
-        // addMenu.style.top = top + "px";
-
-
         // Set the left and top position of the menu based on the cursor. If the cursor is on the right side of te screen, use the right corners, otherwise the left corners. If it is on the bottom of the screen, use the bottom corners, otherwise the top corners.
         let left = elm.pageX;
         let top = elm.pageY;
         let leftMiddle = window.innerWidth / 2;
         let topMiddle = window.innerHeight / 2;
-        if(elm.pageX > leftMiddle){
+        if (elm.pageX > leftMiddle) {
             left = elm.pageX - 200;
         }
-        if(elm.pageY > topMiddle){
+        if (elm.pageY > topMiddle) {
             top = elm.pageY - 100;
         }
         addMenu.style.left = left + "px";
@@ -382,14 +413,14 @@
             if (event.target.value < 0) {
                 event.target.value = 0;
             }
-            if(isNaN(event.target.value)){
+            if (isNaN(event.target.value)) {
                 event.target.value = 0;
             }
-            if(!event.target.value){
+            if (!event.target.value) {
                 event.target.value = 0;
             }
-        }
-        
+        };
+
         // Create the ok button
         let addButton = document.createElement("button");
         addButton.innerHTML = "Add";
@@ -411,25 +442,41 @@
         addButton.style.transition = "background-color 0.25s ease-in-out";
         addButton.onmouseover = () => {
             addButton.style.backgroundColor = "lightgray";
-        }
+        };
         addButton.onmouseout = () => {
             addButton.style.backgroundColor = "white";
-        }
+        };
         addButton.onclick = (event) => {
-            let addingCount = Number(event.target.parentElement.children[0].value)
-            if(addingCount == 0){
+            let addingCount = Number(
+                event.target.parentElement.children[0].value
+            );
+            if (addingCount == 0) {
                 document.body.removeChild(addMenu);
                 return;
             }
             let partName = encodeProductName(partSelectedForMenu);
             let currentCount = 0;
-            if($organizations[$organizationSelectionForParts].teams[$teamSelected])
-            if($organizations[$organizationSelectionForParts].teams[$teamSelected].products)
-            if($organizations[$organizationSelectionForParts].teams[$teamSelected].products[partName]){
-                currentCount = $organizations[$organizationSelectionForParts].teams[$teamSelected].products[partName];
-            }
+            if (
+                $organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ]
+            )
+                if (
+                    $organizations[$organizationSelectionForParts].teams[
+                        $teamSelected
+                    ].products
+                )
+                    if (
+                        $organizations[$organizationSelectionForParts].teams[
+                            $teamSelected
+                        ].products[partName]
+                    ) {
+                        currentCount =
+                            $organizations[$organizationSelectionForParts]
+                                .teams[$teamSelected].products[partName];
+                    }
             let newCount = currentCount + addingCount;
-            if(newCount < 0){
+            if (newCount < 0) {
                 newCount = 0;
             }
             setToDb(
@@ -441,8 +488,17 @@
                     partName,
                 newCount
             );
+
+            // Log the event
+            logEvent($organizationSelectionForParts, {
+                type: "add part",
+                part: partName,
+                count: addingCount,
+                team: $teamSelected,
+            });
+
             document.body.removeChild(addMenu);
-        }
+        };
 
         // Create the cancel button
         let cancelButton = document.createElement("button");
@@ -465,13 +521,13 @@
         cancelButton.style.transition = "background-color 0.25s ease-in-out";
         cancelButton.onmouseover = () => {
             cancelButton.style.backgroundColor = "lightgray";
-        }
+        };
         cancelButton.onmouseout = () => {
             cancelButton.style.backgroundColor = "white";
-        }
+        };
         cancelButton.onclick = () => {
             document.body.removeChild(addMenu);
-        }
+        };
 
         // Add the input and buttons to the menu
         addMenu.appendChild(input);
@@ -482,7 +538,462 @@
         document.body.appendChild(addMenu);
     }
 
-    // function remove()
+    function remove(elm) {
+        // Create the menu
+        let removeMenu = document.createElement("div");
+        removeMenu.classList = "addMenu";
+        removeMenu.style.position = "absolute";
+        removeMenu.style.backgroundColor = "#84abb5";
+        removeMenu.style.color = "white";
+        removeMenu.style.textAlign = "center";
+        removeMenu.style.padding = "5px";
+        removeMenu.style.borderRadius = "10px";
+        removeMenu.style.width = "200px";
+
+        // Set the left and top position of the menu based on the cursor. If the cursor is on the right side of te screen, use the right corners, otherwise the left corners. If it is on the bottom of the screen, use the bottom corners, otherwise the top corners.
+        let left = elm.pageX;
+        let top = elm.pageY;
+        let leftMiddle = window.innerWidth / 2;
+        let topMiddle = window.innerHeight / 2;
+        if (elm.pageX > leftMiddle) {
+            left = elm.pageX - 200;
+        }
+        if (elm.pageY > topMiddle) {
+            top = elm.pageY - 100;
+        }
+        removeMenu.style.left = left + "px";
+        removeMenu.style.top = top + "px";
+
+        // Create the input
+        let input = document.createElement("input");
+        input.type = "number";
+        input.id = "removeMenuInput";
+        input.style.width = "50%";
+        input.style.height = "4vh";
+        input.style.fontSize = "125%";
+        input.style.marginRight = "0";
+        input.style.paddingRight = "0";
+        input.onchange = (event) => {
+            // Make sure the input is a number that is greater than or equal to 0
+            if (event.target.value < 0) {
+                event.target.value = 0;
+            }
+            if (isNaN(event.target.value)) {
+                event.target.value = 0;
+            }
+            if (!event.target.value) {
+                event.target.value = 0;
+            }
+        };
+
+        // Create the ok button
+        let removeButton = document.createElement("button");
+        removeButton.innerHTML = "Remove";
+        removeButton.style.backgroundColor = "white";
+        removeButton.style.transition = "background-color 0.25s ease-in-out";
+        removeButton.style.cursor = "pointer";
+        removeButton.style.marginTop = "5px";
+        removeButton.style.marginBottom = "5px";
+        removeButton.style.marginLeft = "5px";
+        removeButton.style.marginRight = "5px";
+        removeButton.style.paddingLeft = "5px";
+        removeButton.style.paddingRight = "5px";
+        removeButton.style.borderRadius = "10px";
+        removeButton.style.border = "none";
+        removeButton.style.outline = "none";
+        removeButton.style.fontSize = "12px";
+        removeButton.style.fontWeight = "bold";
+        removeButton.style.color = "black";
+        removeButton.style.transition = "background-color 0.25s ease-in-out";
+        removeButton.onmouseover = () => {
+            removeButton.style.backgroundColor = "lightgray";
+        };
+        removeButton.onmouseout = () => {
+            removeButton.style.backgroundColor = "white";
+        };
+        removeButton.onclick = (event) => {
+            let removingCount = Number(
+                event.target.parentElement.children[0].value
+            );
+            if (removingCount == 0) {
+                document.body.removeChild(removeMenu);
+                return;
+            }
+            let partName = encodeProductName(partSelectedForMenu);
+            let currentCount = 0;
+            if (
+                $organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ]
+            )
+                if (
+                    $organizations[$organizationSelectionForParts].teams[
+                        $teamSelected
+                    ].products
+                )
+                    if (
+                        $organizations[$organizationSelectionForParts].teams[
+                            $teamSelected
+                        ].products[partName]
+                    ) {
+                        currentCount =
+                            $organizations[$organizationSelectionForParts]
+                                .teams[$teamSelected].products[partName];
+                    }
+            let newCount = currentCount - removingCount;
+            if (newCount <= 0) {
+                setToDb(
+                    "organizations/" +
+                        $organizationSelectionForParts +
+                        "/teams/" +
+                        $teamSelected +
+                        "/products/" +
+                        partName,
+                    null
+                );
+                applySearch();
+            } else {
+                setToDb(
+                    "organizations/" +
+                        $organizationSelectionForParts +
+                        "/teams/" +
+                        $teamSelected +
+                        "/products/" +
+                        partName,
+                    newCount
+                );
+            }
+
+            // Log the event
+            logEvent($organizationSelectionForParts, {
+                type: "remove product",
+                part: partName,
+                count: removingCount,
+                team: $teamSelected,
+            });
+
+            document.body.removeChild(removeMenu);
+        };
+
+        // Create the cancel button
+        let cancelButton = document.createElement("button");
+        cancelButton.innerHTML = "Cancel";
+        cancelButton.style.backgroundColor = "white";
+        cancelButton.style.transition = "background-color 0.25s ease-in-out";
+        cancelButton.style.cursor = "pointer";
+        cancelButton.style.marginTop = "5px";
+        cancelButton.style.marginBottom = "5px";
+        cancelButton.style.marginLeft = "5px";
+        cancelButton.style.marginRight = "5px";
+        cancelButton.style.paddingLeft = "5px";
+        cancelButton.style.paddingRight = "5px";
+        cancelButton.style.borderRadius = "10px";
+        cancelButton.style.border = "none";
+        cancelButton.style.outline = "none";
+        cancelButton.style.fontSize = "12px";
+        cancelButton.style.fontWeight = "bold";
+        cancelButton.style.color = "black";
+        cancelButton.style.transition = "background-color 0.25s ease-in-out";
+        cancelButton.onmouseover = () => {
+            cancelButton.style.backgroundColor = "lightgray";
+        };
+        cancelButton.onmouseout = () => {
+            cancelButton.style.backgroundColor = "white";
+        };
+        cancelButton.onclick = () => {
+            document.body.removeChild(removeMenu);
+        };
+
+        // Add the input and buttons to the menu
+        removeMenu.appendChild(input);
+        removeMenu.appendChild(removeButton);
+        removeMenu.appendChild(cancelButton);
+
+        // Add the menu to the page
+        document.body.appendChild(removeMenu);
+    }
+
+    function transfer(elm) {
+        // Create the menu
+        let transferMenu = document.createElement("div");
+        transferMenu.classList = "addMenu";
+        transferMenu.style.position = "absolute";
+        transferMenu.style.backgroundColor = "#84abb5";
+        transferMenu.style.color = "white";
+        transferMenu.style.textAlign = "center";
+        transferMenu.style.padding = "5px";
+        transferMenu.style.borderRadius = "10px";
+        transferMenu.style.width = "200px";
+
+        // Set the left and top position of the menu based on the cursor. If the cursor is on the right side of te screen, use the right corners, otherwise the left corners. If it is on the bottom of the screen, use the bottom corners, otherwise the top corners.
+        let left = elm.pageX;
+        let top = elm.pageY;
+        let leftMiddle = window.innerWidth / 2;
+        let topMiddle = window.innerHeight / 2;
+        if (elm.pageX > leftMiddle) {
+            left = elm.pageX - 200;
+        }
+        if (elm.pageY > topMiddle) {
+            top = elm.pageY - 100;
+        }
+        transferMenu.style.left = left + "px";
+        transferMenu.style.top = top + "px";
+
+        // Create the input
+        let input = document.createElement("input");
+        input.type = "number";
+        input.id = "transferMenuInput";
+        input.style.width = "50%";
+        input.style.height = "4vh";
+        input.style.fontSize = "125%";
+        input.style.marginRight = "0";
+        input.style.paddingRight = "0";
+        input.onchange = (event) => {
+            // Make sure the input is a number that is greater than or equal to 0
+            if (event.target.value < 0) {
+                event.target.value = 0;
+            }
+            if (isNaN(event.target.value)) {
+                event.target.value = 0;
+            }
+            if (!event.target.value) {
+                event.target.value = 0;
+            }
+        };
+
+        // Create the team selection dropdown
+        let teamSelection = document.createElement("select");
+        teamSelection.id = "teamSelection";
+        teamSelection.style.width = "60%";
+        teamSelection.style.height = "4vh";
+        teamSelection.style.fontSize = "125%";
+        teamSelection.style.marginRight = "0";
+        teamSelection.style.paddingRight = "0";
+        teamSelection.style.marginTop = "5px";
+        teamSelection.style.marginBottom = "5px";
+        teamSelection.style.marginLeft = "5px";
+        teamSelection.style.marginRight = "5px";
+        teamSelection.style.paddingLeft = "5px";
+        teamSelection.style.paddingRight = "5px";
+        teamSelection.style.borderRadius = "10px";
+
+        // Set the options for the dropdown to the teams in the organization except for the current team
+        for (let team of $organizations[$organizationSelectionForParts]
+            .teamList) {
+            if (team == $teamSelected || team == "Coach" || team == "Unsorted")
+                continue;
+            let option = document.createElement("option");
+            option.value = team;
+            option.innerHTML = team;
+            teamSelection.appendChild(option);
+        }
+        let option = document.createElement("option");
+        option.value = "Inventory";
+        option.innerHTML = "Inventory";
+        teamSelection.appendChild(option);
+
+        // Create the ok button
+        let transferButton = document.createElement("button");
+        transferButton.innerHTML = "Transfer";
+        transferButton.style.backgroundColor = "white";
+        transferButton.style.transition = "background-color 0.25s ease-in-out";
+        transferButton.style.cursor = "pointer";
+        transferButton.style.marginTop = "5px";
+        transferButton.style.marginBottom = "5px";
+        transferButton.style.marginLeft = "5px";
+        transferButton.style.marginRight = "5px";
+        transferButton.style.paddingLeft = "5px";
+        transferButton.style.paddingRight = "5px";
+        transferButton.style.borderRadius = "10px";
+        transferButton.style.border = "none";
+        transferButton.style.outline = "none";
+        transferButton.style.fontSize = "12px";
+        transferButton.style.fontWeight = "bold";
+        transferButton.style.color = "black";
+        transferButton.style.transition = "background-color 0.25s ease-in-out";
+        transferButton.onmouseover = () => {
+            transferButton.style.backgroundColor = "lightgray";
+        };
+        transferButton.onmouseout = () => {
+            transferButton.style.backgroundColor = "white";
+        };
+        transferButton.onclick = (event) => {
+            let transferCount = Number(
+                event.target.parentElement.children[0].value
+            );
+            if (transferCount == 0) {
+                document.body.removeChild(transferMenu);
+                return;
+            }
+
+            let partName = encodeProductName(partSelectedForMenu);
+
+            let transferTeam = event.target.parentElement.children[2].value;
+
+            let currentCount = 0;
+            if (
+                $organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ]
+            )
+                if (
+                    $organizations[$organizationSelectionForParts].teams[
+                        $teamSelected
+                    ].products
+                )
+                    if (
+                        $organizations[$organizationSelectionForParts].teams[
+                            $teamSelected
+                        ].products[partName]
+                    ) {
+                        currentCount =
+                            $organizations[$organizationSelectionForParts]
+                                .teams[$teamSelected].products[partName];
+                    }
+
+            let currentCountForTransferTeam = 0;
+            if (
+                $organizations[$organizationSelectionForParts].teams[
+                    transferTeam
+                ]
+            )
+                if (
+                    $organizations[$organizationSelectionForParts].teams[
+                        transferTeam
+                    ].products
+                )
+                    if (
+                        $organizations[$organizationSelectionForParts].teams[
+                            transferTeam
+                        ].products[partName]
+                    ) {
+                        currentCountForTransferTeam =
+                            $organizations[$organizationSelectionForParts]
+                                .teams[transferTeam].products[partName];
+                    }
+
+            let newCount = currentCount - transferCount;
+            let newCountForTransferTeam =
+                currentCountForTransferTeam + transferCount;
+
+            if (newCount < 0) {
+                setToDb(
+                    "organizations/" +
+                        $organizationSelectionForParts +
+                        "/teams/" +
+                        $teamSelected +
+                        "/products/" +
+                        partName,
+                    null
+                );
+            } else {
+                setToDb(
+                    "organizations/" +
+                        $organizationSelectionForParts +
+                        "/teams/" +
+                        $teamSelected +
+                        "/products/" +
+                        partName,
+                    newCount
+                );
+            }
+
+            setToDb(
+                "organizations/" +
+                    $organizationSelectionForParts +
+                    "/teams/" +
+                    transferTeam +
+                    "/products/" +
+                    partName,
+                newCountForTransferTeam
+            );
+
+            let createdNewCustomPart = false;
+            if (isCustomPart(partName)) {
+                let skipProuctCreation = false;
+                if (
+                    $organizations[$organizationSelectionForParts].teams[
+                        transferTeam
+                    ].customParts
+                ) {
+                    if (
+                        $organizations[$organizationSelectionForParts].teams[
+                            transferTeam
+                        ].customParts[partName]
+                    ) {
+                        skipProuctCreation = true;
+                    }
+                }
+
+                if (!skipProuctCreation) {
+                    let productData =
+                        $organizations[$organizationSelectionForParts].teams[
+                            $teamSelected
+                        ].customParts[partName];
+                    setToDb(
+                        "organizations/" +
+                            $organizationSelectionForParts +
+                            "/teams/" +
+                            transferTeam +
+                            "/customParts/" +
+                            partName,
+                        productData
+                    );
+                    createdNewCustomPart = true;
+                }
+            }
+
+            // Log the event
+            logEvent($organizationSelectionForParts, {
+                type: "transfer product",
+                part: partName,
+                count: transferCount,
+                team: $teamSelected,
+                newTeam: transferTeam,
+                createdNewCustomPart: createdNewCustomPart,
+            });
+
+            document.body.removeChild(transferMenu);
+        };
+
+        // Create the cancel button
+        let cancelButton = document.createElement("button");
+        cancelButton.innerHTML = "Cancel";
+        cancelButton.style.backgroundColor = "white";
+        cancelButton.style.transition = "background-color 0.25s ease-in-out";
+        cancelButton.style.cursor = "pointer";
+        cancelButton.style.marginTop = "5px";
+        cancelButton.style.marginBottom = "5px";
+        cancelButton.style.marginLeft = "5px";
+        cancelButton.style.marginRight = "5px";
+        cancelButton.style.paddingLeft = "5px";
+        cancelButton.style.paddingRight = "5px";
+        cancelButton.style.borderRadius = "10px";
+        cancelButton.style.border = "none";
+        cancelButton.style.outline = "none";
+        cancelButton.style.fontSize = "12px";
+        cancelButton.style.fontWeight = "bold";
+        cancelButton.style.color = "black";
+        cancelButton.style.transition = "background-color 0.25s ease-in-out";
+        cancelButton.onmouseover = () => {
+            cancelButton.style.backgroundColor = "lightgray";
+        };
+        cancelButton.onmouseout = () => {
+            cancelButton.style.backgroundColor = "white";
+        };
+        cancelButton.onclick = () => {
+            document.body.removeChild(transferMenu);
+        };
+
+        // Add the input and buttons to the menu
+        transferMenu.appendChild(input);
+        transferMenu.appendChild(transferButton);
+        transferMenu.appendChild(teamSelection);
+        transferMenu.appendChild(cancelButton);
+
+        // Add the menu to the page
+        document.body.appendChild(transferMenu);
+    }
 
     document.onclick = hideCustomContextMenu;
 </script>
@@ -592,23 +1103,38 @@
 
 <div id="customContextMenu" style="display: none;">
     <ul class="menuItems">
-        <li class="items"
-        on:click={(elm) => add(elm)}
-        on:keydown={(elm) => add(elm)}
-        >Add</li>
-        <li class="items"
-        on:click={(elm) => remove(elm)}
-        on:keydown={(elm) => remove(elm)}
-        >Remove</li>
-        <li class="items"
-        on:click={(elm) => transfer(elm)}
-        on:keydown={(elm) => transfer(elm)}
-        >Transfer</li>
+        <li
+            class="items"
+            on:click={(elm) => add(elm)}
+            on:keydown={(elm) => add(elm)}
+        >
+            Add
+        </li>
+        <li
+            class="items"
+            on:click={(elm) => remove(elm)}
+            on:keydown={(elm) => remove(elm)}
+        >
+            Remove
+        </li>
+        <li
+            class="items"
+            on:click={(elm) => transfer(elm)}
+            on:keydown={(elm) => transfer(elm)}
+        >
+            Transfer
+        </li>
         {#if isCustomPart(encodeProductName(partSelectedForMenu))}
             <li
                 class="items"
-                on:click={() => customPartSelected.set(encodeProductName(partSelectedForMenu))}
-                on:keypress={() => customPartSelected.set(encodeProductName(partSelectedForMenu))}
+                on:click={() =>
+                    customPartSelected.set(
+                        encodeProductName(partSelectedForMenu)
+                    )}
+                on:keypress={() =>
+                    customPartSelected.set(
+                        encodeProductName(partSelectedForMenu)
+                    )}
             >
                 Edit
             </li>
