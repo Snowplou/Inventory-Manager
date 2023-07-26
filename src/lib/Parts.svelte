@@ -1,6 +1,6 @@
 <script>
     // @ts-nocheck
-    import MiniSearch from 'minisearch'
+    import MiniSearch from "minisearch";
 
     import {
         organizationSelectionForParts,
@@ -15,7 +15,7 @@
         customPartSelected,
         logEvent,
     } from "../db";
-    import { append } from 'svelte/internal';
+    import { append } from "svelte/internal";
     let teamProducts = {};
     let selectedTeamForTransfer = "";
     let search = "";
@@ -27,27 +27,17 @@
 
     let sortedParts = [];
     applySearch();
-    
-    function canEditCustomPartsFunc() {
-        if (!$organizationSelectionForParts) return false;
-        if (!$teamSelected) return false;
-        return (
-            $userData.organizations[$organizationSelectionForParts].rank ==
-                "Owner" ||
-            $userData.organizations[$organizationSelectionForParts].rank ==
-                "Coach" ||
-            $userData.organizations[$organizationSelectionForParts].rank ==
-                $teamSelected
-        );
-    }
-
-    let canEditCustomParts = canEditCustomPartsFunc();
-    teamSelected.subscribe(() => {
-        canEditCustomParts = canEditCustomPartsFunc();
-    });
 
     // Determine if the part is a custom part
     function isCustomPart(name) {
+        if (!$organizationSelectionForParts) return false;
+        if (!$teamSelected) return false;
+        if (!$organizations[$organizationSelectionForParts].teams) return false;
+        if (
+            !$organizations[$organizationSelectionForParts].teams[$teamSelected]
+        )
+            return false;
+
         if (
             $organizations[$organizationSelectionForParts].teams[$teamSelected]
                 .customParts
@@ -119,7 +109,7 @@
     function decodeProductName(name) {
         let decodedName = name;
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
-            if(!decodedName) continue
+            if (!decodedName) continue;
             decodedName = decodedName.replaceAll(
                 Object.values(pathChanger)[i],
                 Object.keys(pathChanger)[i]
@@ -166,7 +156,7 @@
     function encodeProductName(name) {
         let encodedName = name;
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
-            if(!encodedName) continue
+            if (!encodedName) continue;
             encodedName = encodedName.replaceAll(
                 Object.keys(pathChanger)[i],
                 Object.values(pathChanger)[i]
@@ -233,147 +223,47 @@
         }
     }
 
-    async function removeProduct(elm, type) {
-        let product =
-            elm.target.parentElement.parentElement.children[1].children[0]
-                .innerHTML;
-        product = encodeProductName(product);
-        product = product.replaceAll("&amp;", "&");
-
-        let productCount =
-            $organizations[$organizationSelectionForParts].teams[$teamSelected]
-                .products[product];
-        let amount = Number(elm.target.parentElement.children[2].value);
-        if (!amount) amount = 1;
-        if (amount > productCount) amount = productCount;
-
-        let createdNewCustomPart = false; // Used for logging
-
-        if (type == "remove") {
-            if (productCount - amount <= 0) {
-                setToDb(
-                    `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
-                    null
-                );
-            } else {
-                setToDb(
-                    `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
-                    productCount - amount
-                )
-                elm.target.parentElement.children[0].innerHTML = "Removed!";
-                setTimeout(() => {
-                    elm.target.parentElement.children[0].innerHTML = "Remove";
-                }, 500);
-            }
-
-            logEvent($organizationSelectionForParts, {
-                type: "remove product",
-                part: product,
-                count: amount,
-                team: $teamSelected,
-            });
-        } else {
-            let transferTeam = document.getElementById(
-                "transferToTeamSelect"
-            ).value;
-            if (!transferTeam) {
-                alert("Please select a team to transfer to.");
-                return;
-            }
-            let teamCount;
-            if (
-                $organizations[$organizationSelectionForParts].teams[
-                    transferTeam
-                ]
-            ) {
-                teamCount =
-                    $organizations[$organizationSelectionForParts].teams[
-                        transferTeam
-                    ].products[product];
-            }
-            if (!teamCount) teamCount = 0;
-            setToDb(
-                `organizations/${$organizationSelectionForParts}/teams/${transferTeam}/products/${product}`,
-                teamCount + amount
-            );
-            if (productCount - amount <= 0) {
-                setToDb(
-                    `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
-                    null
-                );
-            } else {
-                setToDb(
-                    `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/products/${product}`,
-                    productCount - amount
-                );
-                elm.target.parentElement.children[1].innerHTML = "Transferred!";
-                setTimeout(() => {
-                    elm.target.parentElement.children[1].innerHTML = "Transfer";
-                }, 500);
-
-                // Create a duplicate custom product for the other team if needed
-                if(isCustomPart(product)){
-                let skipProductCreation = false;
-                if (
-                    $organizations[$organizationSelectionForParts].teams[
-                        transferTeam
-                    ].customParts
-                ) {
-                    if (
-                        $organizations[$organizationSelectionForParts].teams[
-                            transferTeam
-                        ].customParts[product]
-                    ) {
-                        skipProductCreation = true;
-                    }
-                }
-
-                if(!skipProductCreation){
-                    let productData = $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[product];
-                    setToDb(
-                        `organizations/${$organizationSelectionForParts}/teams/${transferTeam}/customParts/${product}`,
-                        productData
-                    );
-                    createdNewCustomPart = true;
-                }
-
-            }
-            }
-
-            logEvent($organizationSelectionForParts, {
-                type: "transfer product",
-                part: product,
-                count: amount,
-                team: $teamSelected,
-                newTeam: transferTeam,
-                createdNewCustomPart: createdNewCustomPart,
-            });
-        }
-    }
-
     function searchChanged(elm) {
         search = elm.target.value;
         applySearch();
     }
 
-    function applySearch(){
-        sortedParts = []
-        if(!$organizationSelectionForParts) return
-        if(!$teamSelected) return
-        if(!$organizations[$organizationSelectionForParts].teams) return
-        if(!$organizations[$organizationSelectionForParts].teams[$teamSelected]) return
-        if(!$organizations[$organizationSelectionForParts].teams[$teamSelected].products) return
+    function applySearch() {
+        sortedParts = [];
+        if (!$organizationSelectionForParts) return;
+        if (!$teamSelected) return;
+        if (!$organizations[$organizationSelectionForParts].teams) return;
+        if (
+            !$organizations[$organizationSelectionForParts].teams[$teamSelected]
+        )
+            return;
+        if (
+            !$organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .products
+        )
+            return;
 
-        let keys = Object.keys($organizations[$organizationSelectionForParts].teams[$teamSelected].products)
-        let values = Object.values($organizations[$organizationSelectionForParts].teams[$teamSelected].products)
-        for(let i = 0; i < keys.length; i++){
-            let key = keys[i]
-            key = decodeProductName(key)
-            let value = values[i]
-            sortedParts.push({name: key, count: value, sku: getSKU(key), id: i})
+        let keys = Object.keys(
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .products
+        );
+        let values = Object.values(
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .products
+        );
+        for (let i = 0; i < keys.length; i++) {
+            let key = keys[i];
+            key = decodeProductName(key);
+            let value = values[i];
+            sortedParts.push({
+                name: key,
+                count: value,
+                sku: getSKU(key),
+                id: i,
+            });
         }
 
-        if(search){
+        if (search) {
             // Use minisearch to search for the products by name and sku with a threshold of 0 (include everything)
             let miniSearch = new MiniSearch({
                 fields: ["name", "sku"],
@@ -390,25 +280,194 @@
             // Search for the parts
             sortedParts = miniSearch.search(search);
         }
-
-        
     }
 
-    function searchFilter(product) {
-        let searchTerms = search.split(" ");
-        let productName = decodeProductName(product);
-        let productSKU = getSKU(product);
+    let partSelectedForMenu = "";
 
-        for (let i = 0; i < searchTerms.length; i++) {
-            if (
-                !product.toLowerCase().includes(searchTerms[i].toLowerCase()) &&
-                !productSKU.toLowerCase().includes(searchTerms[i].toLowerCase())
-            ) {
-                return false;
+    // hiding the menu on click to the document
+    function hideCustomContextMenu() {
+        // Don't set style to none if it doesn't exist
+        if (document.getElementById("customContextMenu"))
+            document.getElementById("customContextMenu").style.display = "none";
+    }
+
+    // toggling the menu on right click to the page
+    function showCustomContextMenu(event) {
+        event.preventDefault();
+        var myContextMenu = document.getElementById("customContextMenu");
+        myContextMenu.style.display = "block";
+        myContextMenu.style.left = event.pageX + "px";
+        myContextMenu.style.top = event.pageY + "px";
+
+        // Hide the elements with the addMenu class
+        if (document.getElementsByClassName("addMenu")) {
+            for (let elm of document.getElementsByClassName("addMenu")) {
+                elm.style.display = "none";
             }
         }
-        return true;
+
+        // Check if the menu would be placed to the right of the screen
+        if (event.pageX + myContextMenu.offsetWidth + 25 > window.innerWidth) {
+            // Adjust the left position of the menu to keep it on the screen
+            myContextMenu.style.left =
+                event.pageX - myContextMenu.offsetWidth + "px";
+        }
+
+        // Check if the menu would be placed below the screen
+        if (event.pageY + myContextMenu.offsetHeight + 50 > window.innerHeight) {
+            // Adjust the top position of the menu to keep it above the screen
+            myContextMenu.style.top =
+                event.pageY - myContextMenu.offsetHeight + "px";
+        }
+
+        partSelectedForMenu =
+            event.currentTarget.children[1].children[0].innerHTML;
     }
+
+    function add(elm){
+        // Have a small menu appear asking how much to add. Have a input for typing the number. Below that are two buttons: ok and cancel.
+        // If ok is pressed, add the number to the count of the part. If cancel is pressed, do nothing.
+
+        // Create the menu
+        let addMenu = document.createElement("div");
+        addMenu.classList = "addMenu";
+        addMenu.style.position = "absolute";
+        addMenu.style.backgroundColor = "#84abb5";
+        addMenu.style.color = "white";
+        addMenu.style.textAlign = "center";
+        addMenu.style.padding = "5px";
+        addMenu.style.borderRadius = "10px";
+        addMenu.style.width = "100px";
+
+        // Set the left and top position of the menu and adjust if needed. When doing the calculations, remember to account for the width and height of the menu and that it is in vw/vh instead of px.
+        let left = elm.pageX;
+        let top = elm.pageY;
+        let leftThresh = 160;
+        let topThresh = 0;
+        if (elm.pageX + leftThresh > window.innerWidth) {
+            left = elm.pageX - leftThresh;
+        }
+        if (elm.pageY + topThresh > window.innerHeight) {
+            top = elm.pageY - topThresh;
+        }
+        addMenu.style.left = left + "px";
+        addMenu.style.top = top + "px";
+
+        // Create the input
+        let input = document.createElement("input");
+        input.type = "number";
+        input.id = "addMenuInput";
+        input.style.width = "50%";
+        input.style.marginRight = "0";
+        input.style.paddingRight = "0";
+        input.onchange = (event) => {
+            // Make sure the input is a number that is greater than or equal to 0
+            if (event.target.value < 0) {
+                event.target.value = 0;
+            }
+            if(isNaN(event.target.value)){
+                event.target.value = 0;
+            }
+            if(!event.target.value){
+                event.target.value = 0;
+            }
+        }
+        
+        // Create the ok button
+        let addButton = document.createElement("button");
+        addButton.innerHTML = "Add";
+        addButton.style.backgroundColor = "white";
+        addButton.style.transition = "background-color 0.25s ease-in-out";
+        addButton.style.cursor = "pointer";
+        addButton.style.marginTop = "5px";
+        addButton.style.marginBottom = "5px";
+        addButton.style.marginLeft = "5px";
+        addButton.style.marginRight = "5px";
+        addButton.style.paddingLeft = "5px";
+        addButton.style.paddingRight = "5px";
+        addButton.style.borderRadius = "10px";
+        addButton.style.border = "none";
+        addButton.style.outline = "none";
+        addButton.style.fontSize = "12px";
+        addButton.style.fontWeight = "bold";
+        addButton.style.color = "black";
+        addButton.style.transition = "background-color 0.25s ease-in-out";
+        addButton.onmouseover = () => {
+            addButton.style.backgroundColor = "lightgray";
+        }
+        addButton.onmouseout = () => {
+            addButton.style.backgroundColor = "white";
+        }
+        addButton.onclick = (event) => {
+            let addingCount = Number(event.target.parentElement.children[0].value)
+            if(addingCount == 0){
+                document.body.removeChild(addMenu);
+                return;
+            }
+            let partName = encodeProductName(partSelectedForMenu);
+            let currentCount = 0;
+            if($organizations[$organizationSelectionForParts].teams[$teamSelected])
+            if($organizations[$organizationSelectionForParts].teams[$teamSelected].products)
+            if($organizations[$organizationSelectionForParts].teams[$teamSelected].products[partName]){
+                currentCount = $organizations[$organizationSelectionForParts].teams[$teamSelected].products[partName];
+            }
+            let newCount = currentCount + addingCount;
+            if(newCount < 0){
+                newCount = 0;
+            }
+            setToDb(
+                "organizations/" +
+                    $organizationSelectionForParts +
+                    "/teams/" +
+                    $teamSelected +
+                    "/products/" +
+                    partName,
+                newCount
+            );
+            document.body.removeChild(addMenu);
+        }
+
+        // Create the cancel button
+        let cancelButton = document.createElement("button");
+        cancelButton.innerHTML = "Cancel";
+        cancelButton.style.backgroundColor = "white";
+        cancelButton.style.transition = "background-color 0.25s ease-in-out";
+        cancelButton.style.cursor = "pointer";
+        cancelButton.style.marginTop = "5px";
+        cancelButton.style.marginBottom = "5px";
+        cancelButton.style.marginLeft = "5px";
+        cancelButton.style.marginRight = "5px";
+        cancelButton.style.paddingLeft = "5px";
+        cancelButton.style.paddingRight = "5px";
+        cancelButton.style.borderRadius = "10px";
+        cancelButton.style.border = "none";
+        cancelButton.style.outline = "none";
+        cancelButton.style.fontSize = "12px";
+        cancelButton.style.fontWeight = "bold";
+        cancelButton.style.color = "black";
+        cancelButton.style.transition = "background-color 0.25s ease-in-out";
+        cancelButton.onmouseover = () => {
+            cancelButton.style.backgroundColor = "lightgray";
+        }
+        cancelButton.onmouseout = () => {
+            cancelButton.style.backgroundColor = "white";
+        }
+        cancelButton.onclick = () => {
+            document.body.removeChild(addMenu);
+        }
+
+        // Add the input and buttons to the menu
+        addMenu.appendChild(input);
+        addMenu.appendChild(addButton);
+        addMenu.appendChild(cancelButton);
+
+        // Add the menu to the page
+        document.body.appendChild(addMenu);
+    }
+
+    // function remove()
+
+    document.onclick = hideCustomContextMenu;
 </script>
 
 {#if !$organizationSelectionForParts}
@@ -462,76 +521,37 @@
             {#key sortedParts}
                 <div id="partsList">
                     {#each Object.values(sortedParts) as productValues, i}
-                            <div class="part">
-                                <img
-                                    class={canEditCustomParts &&
-                                    isCustomPart(encodeProductName(productValues.name))
-                                        ? "customPart"
-                                        : "notCustomPart"}
-                                    src={nameToImage(
-                                        encodeProductName(productValues.name)
-                                    )}
-                                    onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
-                                    alt={productValues.name}
-                                    on:click={() => {
-                                        if (
-                                            canEditCustomParts &&
-                                            isCustomPart(
-                                                encodeProductName(productValues.name)
-                                            )
-                                        ) {
-                                            customPartSelected.set(
-                                                encodeProductName(productValues.name)
-                                            );
-                                        }
-                                    }}
-                                    on:keydown={() => {
-                                        if (
-                                            canEditCustomParts &&
-                                            isCustomPart(
-                                                encodeProductName(productValues.name)
-                                            )
-                                        ) {
-                                            customPartSelected.set(
-                                                encodeProductName(productValues.name)
-                                            );
-                                        }
-                                    }}
-                                />
-                                <div class="partPList">
-                                    <p>
-                                        {productValues.name}
-                                    </p>
-                                    <p>
-                                        {productValues.sku}
-                                    </p>
-                                    <p>Count: {$organizations[$organizationSelectionForParts].teams[$teamSelected].products[encodeProductName(productValues.name)]}</p>
-                                </div>
-                                <div class="partListButtons">
-                                    <button
-                                        on:click={(elm) =>
-                                            removeProduct(elm, "remove")}
-                                        on:keydown={(elm) =>
-                                            removeProduct(elm, "remove")}
-                                        >Remove</button
-                                    >
-                                    <button
-                                        on:click={(elm) =>
-                                            removeProduct(elm, "transfer")}
-                                        on:keydown={(elm) =>
-                                            removeProduct(elm, "transfer")}
-                                        >Transfer</button
-                                    >
-                                    <input
-                                        type="number"
-                                        placeholder="1"
-                                        on:input={(elm) =>
-                                            (elm.target.value = Math.abs(
-                                                Math.round(elm.target.value)
-                                            ))}
-                                    />
-                                </div>
+                        <div
+                            class="part"
+                            on:contextmenu={(elm) => showCustomContextMenu(elm)}
+                            style="background-color: {partSelectedForMenu ==
+                            productValues.name
+                                ? '#0056b3'
+                                : '#007bff'}"
+                        >
+                            <img
+                                src={nameToImage(
+                                    encodeProductName(productValues.name)
+                                )}
+                                onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
+                                alt={productValues.name}
+                            />
+                            <div class="partPList">
+                                <p>
+                                    {productValues.name}
+                                </p>
+                                <p>
+                                    {productValues.sku}
+                                </p>
                             </div>
+                            <p id="count">
+                                Count: {$organizations[
+                                    $organizationSelectionForParts
+                                ].teams[$teamSelected].products[
+                                    encodeProductName(productValues.name)
+                                ]}
+                            </p>
+                        </div>
                     {:else}
                         <p id="noPartsFound">
                             No parts found.<br />You need to add parts to this
@@ -544,28 +564,6 @@
     {/key}
 {/if}
 
-{#key $teamSelected}
-    <div id="transferInputs">
-        {#if $organizations[$organizationSelectionForParts]}
-            <p id="transferToTeamText">Transfer to team:</p>
-            <select
-                id="transferToTeamSelect"
-                value="Unselected"
-                on:change={(elm) =>
-                    (selectedTeamForTransfer = elm.target.value)}
-            >
-                {#if $organizations[$organizationSelectionForParts]}
-                    {#each ["Inventory", ...Object.values($organizations[$organizationSelectionForParts].teamList)] as team}
-                        {#if team != "Unsorted" && team != "Coach" && (team == $userData.organizations[$organizationSelectionForParts].rank || $organizations[$organizationSelectionForParts].owner == $userData.email || $userData.organizations[$organizationSelectionForParts].rank == "Coach") && team != $teamSelected}
-                            <option value={team}>{team}</option>
-                        {/if}
-                    {/each}
-                {/if}
-            </select>
-        {/if}
-    </div>
-{/key}
-
 {#if $organizations[$organizationSelectionForParts]}
     <input
         type="text"
@@ -575,9 +573,61 @@
     />
 {/if}
 
+<div id="customContextMenu" style="display: none;">
+    <ul class="menuItems">
+        <li class="items"
+        on:click={(elm) => add(elm)}
+        on:keydown={(elm) => add(elm)}
+        >Add</li>
+        <li class="items"
+        on:click={(elm) => remove(elm)}
+        on:keydown={(elm) => remove(elm)}
+        >Remove</li>
+        <li class="items"
+        on:click={(elm) => transfer(elm)}
+        on:keydown={(elm) => transfer(elm)}
+        >Transfer</li>
+        {#if isCustomPart(encodeProductName(partSelectedForMenu))}
+            <li
+                class="items"
+                on:click={() => customPartSelected.set(encodeProductName(partSelectedForMenu))}
+                on:keypress={() => customPartSelected.set(encodeProductName(partSelectedForMenu))}
+            >
+                Edit
+            </li>
+        {/if}
+    </ul>
+</div>
+
 <style>
-    select {
+    #customContextMenu {
+        position: absolute;
+        background-color: #84abb5;
+        color: white;
+        scale: 1.25;
         text-align: center;
+    }
+    .menuItems {
+        list-style: none;
+        font-size: 12px;
+        padding: 0;
+        margin: 0;
+    }
+
+    .items {
+        cursor: pointer;
+    }
+
+    .items:hover {
+        background-color: #607074;
+    }
+
+    .menuItems .items {
+        padding: 5px;
+        border-bottom: 1px solid #e6d4b6;
+    }
+    .menuItems .items:last-child {
+        border: none;
     }
 
     #searchBar {
@@ -612,9 +662,9 @@
     #partsList {
         position: absolute;
         left: 24vw;
-        top: 24vh;
+        top: 20vh;
         width: 74vw;
-        height: 72vh;
+        height: 76vh;
         border-radius: 10px;
         background-color: #007bff;
         overflow-y: auto;
@@ -650,14 +700,10 @@
         transition: filter 0.25s ease-in-out;
     }
 
-    .customPart:hover {
-        /* Fade into a slight gray */
-        filter: brightness(80%);
-
-        cursor: pointer;
-
-        /* Transition */
-        transition: filter 0.25s ease-in-out;
+    .part {
+        border-radius: 10px;
+        padding-left: 6px;
+        padding-right: 6px;
     }
 
     .part p {

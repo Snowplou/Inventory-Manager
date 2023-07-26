@@ -36,7 +36,7 @@
         return encodedName;
     }
 
-    let updatedName = false;
+    let updatedPart = false;
     function updateName(elm) {
         let name = elm.target.value;
         name = encodeProductName(name);
@@ -54,7 +54,7 @@
             return;
         }
 
-        updatedName = true;
+        updatedPart = true;
 
         // If the team doesn't have a custom part, then they shouldn't have access to this page. This means that this shouldn't try to access null with a key.
         let part =
@@ -227,6 +227,8 @@
                 .products[$customPartSelected];
         let partName = encodeProductName($customPartSelected);
 
+        updatedPart = true;
+
         if (count != 0) {
             setToDb(
                 "organizations/" +
@@ -264,13 +266,13 @@
                 .customParts[$customPartSelected];
 
         if (!currentState) {
-            if (!updatedName) {
+            if (!updatedPart) {
                 window.location.reload();
             }
             else{
                 setTimeout(() => {
-                    updatedName = false;
-                }, 1500);
+                    updatedPart = false;
+                }, 3000);
             }
         }
     });
