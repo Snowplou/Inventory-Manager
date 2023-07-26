@@ -337,18 +337,33 @@
         addMenu.style.textAlign = "center";
         addMenu.style.padding = "5px";
         addMenu.style.borderRadius = "10px";
-        addMenu.style.width = "100px";
+        addMenu.style.width = "200px";
 
-        // Set the left and top position of the menu and adjust if needed. When doing the calculations, remember to account for the width and height of the menu and that it is in vw/vh instead of px.
+        // // Set the left and top position of the menu and adjust if needed. When doing the calculations, remember to account for the width and height of the menu and that it is in vw/vh instead of px.
+        // let left = elm.pageX;
+        // let top = elm.pageY;
+        // let leftThresh = 160;
+        // let topThresh = 0;
+        // if (elm.pageX + leftThresh > window.innerWidth) {
+        //     left = elm.pageX - leftThresh;
+        // }
+        // if (elm.pageY + topThresh > window.innerHeight) {
+        //     top = elm.pageY - topThresh;
+        // }
+        // addMenu.style.left = left + "px";
+        // addMenu.style.top = top + "px";
+
+
+        // Set the left and top position of the menu based on the cursor. If the cursor is on the right side of te screen, use the right corners, otherwise the left corners. If it is on the bottom of the screen, use the bottom corners, otherwise the top corners.
         let left = elm.pageX;
         let top = elm.pageY;
-        let leftThresh = 160;
-        let topThresh = 0;
-        if (elm.pageX + leftThresh > window.innerWidth) {
-            left = elm.pageX - leftThresh;
+        let leftMiddle = window.innerWidth / 2;
+        let topMiddle = window.innerHeight / 2;
+        if(elm.pageX > leftMiddle){
+            left = elm.pageX - 200;
         }
-        if (elm.pageY + topThresh > window.innerHeight) {
-            top = elm.pageY - topThresh;
+        if(elm.pageY > topMiddle){
+            top = elm.pageY - 100;
         }
         addMenu.style.left = left + "px";
         addMenu.style.top = top + "px";
@@ -358,6 +373,8 @@
         input.type = "number";
         input.id = "addMenuInput";
         input.style.width = "50%";
+        input.style.height = "4vh";
+        input.style.fontSize = "125%";
         input.style.marginRight = "0";
         input.style.paddingRight = "0";
         input.onchange = (event) => {
