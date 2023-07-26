@@ -261,9 +261,14 @@
     }
 
     organizations.subscribe(() => {
-        let currentState =
-            $organizations[$organizationSelectionForParts].teams[$teamSelected]
-                .customParts[$customPartSelected];
+        let currentState = {}
+        if($organizations[$organizationSelectionForParts].teams[$teamSelected]){
+            if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts){
+                if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[$customPartSelected]){
+                    currentState = $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[$customPartSelected]
+                }
+            }
+        }
 
         if (!currentState) {
             if (!updatedPart) {
