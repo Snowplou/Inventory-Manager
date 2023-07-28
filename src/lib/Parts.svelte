@@ -13,6 +13,7 @@
         pathChanger,
         products,
         customPartSelected,
+        showAllParts,
         logEvent,
     } from "../db";
     import { append } from "svelte/internal";
@@ -26,7 +27,6 @@
     });
 
     let sortedParts = [];
-    let showAllParts = false;
     applySearch();
 
     // Determine if the part is a custom part
@@ -108,8 +108,7 @@
     }
 
     async function showAllPartsClicked() {
-        showAllParts = !showAllParts;
-        // pageState.set("addParts");
+        showAllParts.set(!$showAllParts);
         applySearch();
     }
 
@@ -232,6 +231,23 @@
         }
     }
 
+    async function createCustomPart() {
+        let partCount =
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .customParts;
+        if (!partCount) partCount = 1;
+        else partCount = Object.keys(partCount).length + 1;
+
+        setToDb(
+            `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/customParts/Custom Part ${partCount}`,
+            {
+                image: "none",
+            }
+        );
+
+        customPartSelected.set(`Custom Part ${partCount}`);
+    }
+
     function searchChanged(elm) {
         search = elm.target.value;
         applySearch();
@@ -252,14 +268,28 @@
         )
             return;
 
-        if (showAllParts) {
+        if ($showAllParts) {
             // Add the custom parts to the sortedParts array
-            let customParts = Object.keys(
-                $organizations[$organizationSelectionForParts].teams[
-                    $teamSelected
-                ].customParts
-            );
-            
+            let customParts = [];
+            if ($organizations[$organizationSelectionForParts].teams) {
+                if (
+                    $organizations[$organizationSelectionForParts].teams[
+                        $teamSelected
+                    ]
+                ) {
+                    if (
+                        $organizations[$organizationSelectionForParts].teams[
+                            $teamSelected
+                        ].customParts
+                    ) {
+                        customParts = Object.keys(
+                            $organizations[$organizationSelectionForParts]
+                                .teams[$teamSelected].customParts
+                        );
+                    }
+                }
+            }
+
             for (let i = 0; i < customParts.length; i++) {
                 let key = customParts[i];
                 key = decodeProductName(key);
@@ -272,11 +302,11 @@
 
             // Add the main parts to the sortedParts array
             let info = Object.values($products);
-            for(let i = 0; i < info.length; i++) {
+            for (let i = 0; i < info.length; i++) {
                 sortedParts.push({
                     name: info[i].name,
                     sku: info[i].sku,
-                    id: i,
+                    id: i + customParts.length,
                 });
             }
         } else {
@@ -404,7 +434,8 @@
         }
 
         partSelectedForMenu = decodeProductName(
-            event.currentTarget.children[1].children[0].innerHTML);
+            event.currentTarget.children[1].children[0].innerHTML
+        );
     }
 
     function add(elm) {
@@ -685,7 +716,9 @@
                         partName,
                     null
                 );
-                applySearch();
+                if (!$showAllParts) {
+                    applySearch();
+                }
             } else {
                 setToDb(
                     "organizations/" +
@@ -920,7 +953,9 @@
                         partName,
                     null
                 );
-                applySearch();
+                if (!$showAllParts) {
+                    applySearch();
+                }
             } else {
                 setToDb(
                     "organizations/" +
@@ -1080,7 +1115,8 @@
         <button
             id="showAllParts"
             on:click={showAllPartsClicked}
-            on:keydown={showAllPartsClicked}>Show All Parts</button
+            on:keydown={showAllPartsClicked}
+            >{$showAllParts ? "Minimize Parts" : "Show All Parts"}</button
         >
     {/if}
 
@@ -1140,6 +1176,11 @@
         on:input={(elm) => searchChanged(elm)}
     />
 {/if}
+<button
+    id="createCustomPart"
+    on:click={() => createCustomPart()}
+    on:keydown={() => createCustomPart()}>Create Custom Part</button
+>
 
 <div id="customContextMenu" style="display: none;">
     <ul class="menuItems">
@@ -1215,31 +1256,37 @@
 
     #searchBar {
         position: absolute;
-        left: 25vw;
+        left: 24vw;
         top: 13vh;
-        width: 65vw;
+        width: 66vw;
+        /* width: 45vw; */
         height: 4vh;
         text-align: center;
         font-size: 4vmin;
     }
 
-    #transferToTeamText {
-        font-size: 3vw;
+    #createCustomPart {
+        position: absolute;
+        left: 24vw;
+        top: 93.5vh;
+        width: 74vw;
+        height: 5vh;
+        color: white;
+        background-color: #007bff;
+        transition: background-color 0.125s ease-in-out;
+        /* Center the text vertically and horizontally */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #createCustomPart:hover {
+        background-color: #0056b3;
+        transition: background-color 0.125s ease-in-out;
     }
 
     .partPList {
         width: 100%;
-    }
-
-    #transferInputs {
-        position: absolute;
-        left: 25vw;
-        top: 19.5vh;
-        width: 40vw;
-        height: 4vh;
-        display: flex;
-        align-items: center;
-        justify-content: space-around;
     }
 
     #partsList {
@@ -1247,21 +1294,14 @@
         left: 24vw;
         top: 20vh;
         width: 74vw;
-        height: 76vh;
+        /* height: 76vh; */
+        height: 72vh;
         border-radius: 10px;
         background-color: #007bff;
         overflow-y: auto;
         display: flex;
         /* flex-wrap: wrap; */
         flex-direction: column;
-    }
-
-    .partListButtons {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-evenly;
-        align-items: flex-end;
-        height: 100%;
     }
 
     input {
@@ -1287,6 +1327,7 @@
         border-radius: 10px;
         padding-left: 6px;
         padding-right: 6px;
+        transition: background-color 0.125s ease-in-out;
     }
 
     .part p {
@@ -1397,30 +1438,6 @@
 
     .organizationListItem:hover {
         background-color: #0056b3;
-    }
-
-    #addParts {
-        position: absolute;
-        top: 0;
-        right: 40vw;
-        color: white;
-        background-color: #007bff;
-        border-radius: 10px;
-        margin-top: 1vh;
-        margin-right: 1vw;
-        font-size: 4vmin;
-        width: 20vw;
-        height: 10vh;
-        /* Vertically align text */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        transition: background-color 0.125s ease-in-out;
-    }
-
-    #addParts:hover {
-        background-color: #0056b3;
-        transition: background-color 0.125s ease-in-out;
     }
 
     #showAllParts {

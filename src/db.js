@@ -52,6 +52,7 @@ export let emailChanger = {
 }
 export let teamSelected = writable("");
 export let customPartSelected = writable("");
+export let showAllParts = writable(false);
 
 export async function logEvent(organization, eventDetails){
     let time = new Date().getTime();
