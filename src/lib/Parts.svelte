@@ -1278,6 +1278,7 @@
     #edit {
         width: 45px;
         height: 45px;
+        cursor: pointer;
     }
 
     #searchBar {
@@ -1362,6 +1363,8 @@
     .part p {
         margin-top: 0;
         margin-bottom: 2px;
+        margin-left: 10px;
+        margin-right: 10px;
         color: white;
     }
 
