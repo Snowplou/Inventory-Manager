@@ -1106,19 +1106,19 @@
         >
     </div>
 
-    {#if $teamSelected && ($userData.organizations[$organizationSelectionForParts].rank == "Owner" || $userData.organizations[$organizationSelectionForParts].rank == "Coach")}
-        <!-- <button
+    <!-- {#if $teamSelected && ($userData.organizations[$organizationSelectionForParts].rank == "Owner" || $userData.organizations[$organizationSelectionForParts].rank == "Coach")} -->
+    <!-- <button
             id="addParts"
             on:click={addPartsClicked}
             on:keydown={addPartsClicked}>Add Parts</button
         > -->
-        <button
-            id="showAllParts"
-            on:click={showAllPartsClicked}
-            on:keydown={showAllPartsClicked}
-            >{$showAllParts ? "Minimize Parts" : "Show All Parts"}</button
-        >
-    {/if}
+    <button
+        id="showAllParts"
+        on:click={showAllPartsClicked}
+        on:keydown={showAllPartsClicked}
+        >{$showAllParts ? "Minimize Parts" : "Show All Parts"}</button
+    >
+    <!-- {/if} -->
 
     {#key $organizationSelectionForParts}
         {#key $teamSelected}
@@ -1157,10 +1157,16 @@
                             </p>
                         </div>
                     {:else}
-                        <p id="noPartsFound">
-                            No parts found.<br />You need to add parts to this
-                            team.
-                        </p>
+                        {#if !$teamSelected}
+                            <p id="noPartsFound">
+                                No team selected.<br />You need to select a team on the left side of the screen.
+                            </p>
+                        {:else}
+                            <p id="noPartsFound">
+                                No parts found.<br />You need to add parts to
+                                this team.
+                            </p>
+                        {/if}
                     {/each}
                 </div>
             {/key}
@@ -1175,12 +1181,13 @@
         placeholder="Search"
         on:input={(elm) => searchChanged(elm)}
     />
+
+    <button
+        id="createCustomPart"
+        on:click={() => createCustomPart()}
+        on:keydown={() => createCustomPart()}>Create Custom Part</button
+    >
 {/if}
-<button
-    id="createCustomPart"
-    on:click={() => createCustomPart()}
-    on:keydown={() => createCustomPart()}>Create Custom Part</button
->
 
 <div id="customContextMenu" style="display: none;">
     <ul class="menuItems">
