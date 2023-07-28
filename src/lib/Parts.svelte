@@ -1148,6 +1148,7 @@
                                     {productValues.sku}
                                 </p>
                             </div>
+                            <!-- <div id="countAndEdit"> -->
                             <p id="count">
                                 Count: {$organizations[
                                     $organizationSelectionForParts
@@ -1155,11 +1156,18 @@
                                     encodeProductName(productValues.name)
                                 ] || 0}
                             </p>
+                            <img
+                                id="edit"
+                                src="https://assets.stickpng.com/images/588a64e7d06f6719692a2d11.png"
+                                alt="edit"
+                            />
+                            <!-- </div> -->
                         </div>
                     {:else}
                         {#if !$teamSelected}
                             <p id="noPartsFound">
-                                No team selected.<br />You need to select a team on the left side of the screen.
+                                No team selected.<br />You need to select a team
+                                on the left side of the screen.
                             </p>
                         {:else}
                             <p id="noPartsFound">
@@ -1261,6 +1269,17 @@
         border: none;
     }
 
+    /* #countAndEdit {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    } */
+
+    #edit {
+        width: 45px;
+        height: 45px;
+    }
+
     #searchBar {
         position: absolute;
         left: 24vw;
@@ -1292,9 +1311,9 @@
         transition: background-color 0.125s ease-in-out;
     }
 
-    .partPList {
+    /* .partPList {
         width: 100%;
-    }
+    } */
 
     #partsList {
         position: absolute;
@@ -1306,9 +1325,11 @@
         border-radius: 10px;
         background-color: #007bff;
         overflow-y: auto;
+        /* display: flex;
+        flex-direction: column; */
         display: flex;
-        /* flex-wrap: wrap; */
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: wrap;
     }
 
     input {
@@ -1335,6 +1356,7 @@
         padding-left: 6px;
         padding-right: 6px;
         transition: background-color 0.125s ease-in-out;
+        min-width: 33vw;
     }
 
     .part p {
