@@ -26,6 +26,7 @@
     });
 
     let sortedParts = [];
+    let showAllParts = false;
     applySearch();
 
     // Determine if the part is a custom part
@@ -106,6 +107,12 @@
         pageState.set("addParts");
     }
 
+    async function showAllPartsClicked() {
+        showAllParts = !showAllParts;
+        // pageState.set("addParts");
+        applySearch();
+    }
+
     function decodeProductName(name) {
         let decodedName = name;
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
@@ -115,6 +122,8 @@
                 Object.keys(pathChanger)[i]
             );
         }
+        // Convert &amp; to &
+        decodedName = decodedName.replaceAll("&amp;", "&");
         return decodedName;
     }
 
@@ -243,24 +252,49 @@
         )
             return;
 
-        let keys = Object.keys(
-            $organizations[$organizationSelectionForParts].teams[$teamSelected]
-                .products
-        );
-        let values = Object.values(
-            $organizations[$organizationSelectionForParts].teams[$teamSelected]
-                .products
-        );
-        for (let i = 0; i < keys.length; i++) {
-            let key = keys[i];
-            key = decodeProductName(key);
-            let value = values[i];
-            sortedParts.push({
-                name: key,
-                count: value,
-                sku: getSKU(key),
-                id: i,
-            });
+        if (showAllParts) {
+            // Add the custom parts to the sortedParts array
+            let customParts = Object.keys(
+                $organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ].customParts
+            );
+            
+            for (let i = 0; i < customParts.length; i++) {
+                let key = customParts[i];
+                key = decodeProductName(key);
+                sortedParts.push({
+                    name: key,
+                    sku: getSKU(key),
+                    id: i,
+                });
+            }
+
+            // Add the main parts to the sortedParts array
+            let info = Object.values($products);
+            for(let i = 0; i < info.length; i++) {
+                sortedParts.push({
+                    name: info[i].name,
+                    sku: info[i].sku,
+                    id: i,
+                });
+            }
+        } else {
+            let keys = Object.keys(
+                $organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ].products
+            );
+
+            for (let i = 0; i < keys.length; i++) {
+                let key = keys[i];
+                key = decodeProductName(key);
+                sortedParts.push({
+                    name: key,
+                    sku: getSKU(key),
+                    id: i,
+                });
+            }
         }
 
         if (search) {
@@ -369,8 +403,8 @@
                 event.pageY - myContextMenu.offsetHeight + "px";
         }
 
-        partSelectedForMenu =
-            event.currentTarget.children[1].children[0].innerHTML;
+        partSelectedForMenu = decodeProductName(
+            event.currentTarget.children[1].children[0].innerHTML);
     }
 
     function add(elm) {
@@ -876,7 +910,7 @@
             let newCountForTransferTeam =
                 currentCountForTransferTeam + transferCount;
 
-            if (newCount < 0) {
+            if (newCount <= 0) {
                 setToDb(
                     "organizations/" +
                         $organizationSelectionForParts +
@@ -886,6 +920,7 @@
                         partName,
                     null
                 );
+                applySearch();
             } else {
                 setToDb(
                     "organizations/" +
@@ -1037,10 +1072,15 @@
     </div>
 
     {#if $teamSelected && ($userData.organizations[$organizationSelectionForParts].rank == "Owner" || $userData.organizations[$organizationSelectionForParts].rank == "Coach")}
-        <button
+        <!-- <button
             id="addParts"
             on:click={addPartsClicked}
             on:keydown={addPartsClicked}>Add Parts</button
+        > -->
+        <button
+            id="showAllParts"
+            on:click={showAllPartsClicked}
+            on:keydown={showAllPartsClicked}>Show All Parts</button
         >
     {/if}
 
@@ -1077,7 +1117,7 @@
                                     $organizationSelectionForParts
                                 ].teams[$teamSelected].products[
                                     encodeProductName(productValues.name)
-                                ]}
+                                ] || 0}
                             </p>
                         </div>
                     {:else}
@@ -1375,11 +1415,35 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        transition: background-color 0.25s ease-in-out;
+        transition: background-color 0.125s ease-in-out;
     }
 
     #addParts:hover {
         background-color: #0056b3;
-        transition: background-color 0.25s ease-in-out;
+        transition: background-color 0.125s ease-in-out;
+    }
+
+    #showAllParts {
+        position: absolute;
+        top: 0;
+        left: 35vw;
+        color: white;
+        background-color: #007bff;
+        border-radius: 10px;
+        margin-top: 1vh;
+        margin-right: 1vw;
+        font-size: 4vmin;
+        width: 30vw;
+        height: 10vh;
+        /* Vertically align text */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background-color 0.125s ease-in-out;
+    }
+
+    #showAllParts:hover {
+        background-color: #0056b3;
+        transition: background-color 0.125s ease-in-out;
     }
 </style>
