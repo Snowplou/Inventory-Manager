@@ -720,14 +720,14 @@
         cursor: pointer;
     }
 
-    @media screen and (max-width: 700px) {
+    @media screen and (min-width: 500px) {
         #newTeam {
-            width: 56vw;
+            width: 50vw;
         }
     }
-    @media screen and (min-width: 700px) {
+    @media screen and (max-width: 500px) {
         #newTeam {
-            width: 1550px;
+            width: 110%;
         }
     }
 
