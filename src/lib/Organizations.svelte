@@ -727,7 +727,7 @@
     }
     @media screen and (min-width: 700px) {
         #newTeam {
-            min-width: 700px;
+            width: 750px;
         }
     }
 
