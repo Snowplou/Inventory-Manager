@@ -47,13 +47,6 @@
     align-items: center;
   }
 
-  /* #credits {
-    text-align: center;
-    font-size: 2vh;
-    position: absolute;
-    top: 95vh;
-  } */
-
   #credits {
     font-size: 65%;
   }
@@ -62,6 +55,6 @@
     text-align: center;
     font-size: 150%;
     position: absolute;
-    top: 80vh;
+    top: 74vh;
   }
 </style>
