@@ -1156,11 +1156,11 @@
                                     encodeProductName(productValues.name)
                                 ] || 0}
                             </p>
-                            <img
+                            <!-- <img
                                 id="edit"
                                 src="https://assets.stickpng.com/images/588a64e7d06f6719692a2d11.png"
                                 alt="edit"
-                            />
+                            /> -->
                             <!-- </div> -->
                         </div>
                     {:else}
@@ -1357,7 +1357,14 @@
         padding-left: 6px;
         padding-right: 6px;
         transition: background-color 0.125s ease-in-out;
-        min-width: 33vw;
+        width: 33vw;
+    }
+
+    /* If the screen is less than a certain size, set the width of part to 100%, otherwise 33vw */
+    @media screen and (max-width: 1000px) {
+        .part {
+            width: 100%;
+        }
     }
 
     .part p {
