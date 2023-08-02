@@ -1185,7 +1185,7 @@
                             {#if $isTouchscreen}
                                 <img
                                     id="edit"
-                                    src="https://assets.stickpng.com/images/588a64e7d06f6719692a2d11.png"
+                                    src="menuButton.png"
                                     alt="edit"
                                     on:touchend={(elm) =>
                                         showCustomContextMenu(elm)}
