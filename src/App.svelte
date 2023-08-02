@@ -23,8 +23,7 @@
       <div id="linksCenter">
         <PartsLink />
         <OrganizationLink />
-        <p id="supportEmail">Do you need help or have any questions?<br>If so, email 15442C@gmail.com</p>
-        <p id = "credits">Made By Jacob Scheff</p>
+        <p id="supportEmail">Do you need help or have any questions?<br>If so, email 15442C@gmail.com<br><span id="credits">Made By Jacob Scheff</span></p>
       </div>
     {:else if $customPartSelected != ""}
       <PartEditor />
@@ -48,11 +47,15 @@
     align-items: center;
   }
 
-  #credits {
+  /* #credits {
     text-align: center;
-    font-size: 100%;
+    font-size: 2vh;
     position: absolute;
-    top: 92vh;
+    top: 95vh;
+  } */
+
+  #credits {
+    font-size: 65%;
   }
 
   #supportEmail {
