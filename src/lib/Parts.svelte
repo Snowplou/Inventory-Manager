@@ -803,7 +803,7 @@
     function transfer(elm) {
         // Create the menu
         let transferMenu = document.createElement("div");
-        transferMenu.classList = "trasferMenu";
+        transferMenu.classList = "transferMenu";
         transferMenu.style.position = "absolute";
         transferMenu.style.backgroundColor = "#84abb5";
         transferMenu.style.color = "white";
