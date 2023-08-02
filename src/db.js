@@ -6,6 +6,14 @@ import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } 
 import { get as writeableGet } from "svelte/store";
 import { compute_slots } from "svelte/internal";
 
+// Determine if the device is touchscreen or has a touchpad/mouse
+export let isTouchscreen = writable(false);
+
+window.addEventListener("touchstart", function onFirstTouch() {
+    isTouchscreen.set(true);
+    window.removeEventListener("touchstart", onFirstTouch, false);
+}, false);
+
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {

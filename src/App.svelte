@@ -23,7 +23,8 @@
       <div id="linksCenter">
         <PartsLink />
         <OrganizationLink />
-        <p id="supportEmail">Do you need help or have any questions?<br>If so, email 15442C@gmail.com!</p>
+        <p id="supportEmail">Do you need help or have any questions?<br>If so, email 15442C@gmail.com</p>
+        <p id = "credits">Made By Jacob Scheff</p>
       </div>
     {:else if $customPartSelected != ""}
       <PartEditor />
@@ -37,12 +38,6 @@
   {/if}
 {/key}
 
-<!-- <p>
-The website is currently closed for maintenance. Please check back later.<br>
-Reason For Maintenance: SKUs are being added to the products.<br><br>
-<i>Note: The ability to add SKUs to custom parts and edit custom parts will be added at a later time.</i>
-</p> -->
-
 <style>
   #linksCenter {
     display: flex;
@@ -51,6 +46,13 @@ Reason For Maintenance: SKUs are being added to the products.<br><br>
     align-content: center;
     justify-content: center;
     align-items: center;
+  }
+
+  #credits {
+    text-align: center;
+    font-size: 100%;
+    position: absolute;
+    top: 92vh;
   }
 
   #supportEmail {

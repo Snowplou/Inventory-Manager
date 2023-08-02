@@ -14,6 +14,7 @@
         products,
         customPartSelected,
         showAllParts,
+        isTouchscreen,
         logEvent,
     } from "../db";
     import { append } from "svelte/internal";
@@ -433,9 +434,16 @@
                 event.pageY - myContextMenu.offsetHeight + "px";
         }
 
-        partSelectedForMenu = decodeProductName(
-            event.currentTarget.children[1].children[0].innerHTML
-        );
+        try {
+            // Desktop
+            partSelectedForMenu = decodeProductName(
+                event.currentTarget.children[1].children[0].innerHTML
+            );
+        } catch {
+            partSelectedForMenu = decodeProductName(
+                event.currentTarget.parentNode.children[1].children[0].innerHTML
+            );
+        }
     }
 
     function add(elm) {
@@ -449,6 +457,9 @@
         addMenu.style.padding = "5px";
         addMenu.style.borderRadius = "10px";
         addMenu.style.width = "200px";
+        if($isTouchscreen){
+            addMenu.style.scale = "1.5";
+        }
 
         // Set the left and top position of the menu based on the cursor. If the cursor is on the right side of te screen, use the right corners, otherwise the left corners. If it is on the bottom of the screen, use the bottom corners, otherwise the top corners.
         let left = elm.pageX;
@@ -457,6 +468,9 @@
         let topMiddle = window.innerHeight / 2;
         if (elm.pageX > leftMiddle) {
             left = elm.pageX - 200;
+            if($isTouchscreen){
+                left += 50;
+            }
         }
         if (elm.pageY > topMiddle) {
             top = elm.pageY - 100;
@@ -606,7 +620,7 @@
     function remove(elm) {
         // Create the menu
         let removeMenu = document.createElement("div");
-        removeMenu.classList = "addMenu";
+        removeMenu.classList = "removeMenu";
         removeMenu.style.position = "absolute";
         removeMenu.style.backgroundColor = "#84abb5";
         removeMenu.style.color = "white";
@@ -614,6 +628,9 @@
         removeMenu.style.padding = "5px";
         removeMenu.style.borderRadius = "10px";
         removeMenu.style.width = "200px";
+        if($isTouchscreen){
+            removeMenu.style.scale = "1.5";
+        }
 
         // Set the left and top position of the menu based on the cursor. If the cursor is on the right side of te screen, use the right corners, otherwise the left corners. If it is on the bottom of the screen, use the bottom corners, otherwise the top corners.
         let left = elm.pageX;
@@ -622,6 +639,9 @@
         let topMiddle = window.innerHeight / 2;
         if (elm.pageX > leftMiddle) {
             left = elm.pageX - 200;
+            if($isTouchscreen){
+                left += 50;
+            }
         }
         if (elm.pageY > topMiddle) {
             top = elm.pageY - 100;
@@ -783,7 +803,7 @@
     function transfer(elm) {
         // Create the menu
         let transferMenu = document.createElement("div");
-        transferMenu.classList = "addMenu";
+        transferMenu.classList = "trasferMenu";
         transferMenu.style.position = "absolute";
         transferMenu.style.backgroundColor = "#84abb5";
         transferMenu.style.color = "white";
@@ -791,6 +811,9 @@
         transferMenu.style.padding = "5px";
         transferMenu.style.borderRadius = "10px";
         transferMenu.style.width = "200px";
+        if($isTouchscreen){
+            transferMenu.style.scale = "1.5";
+        }
 
         // Set the left and top position of the menu based on the cursor. If the cursor is on the right side of te screen, use the right corners, otherwise the left corners. If it is on the bottom of the screen, use the bottom corners, otherwise the top corners.
         let left = elm.pageX;
@@ -799,6 +822,9 @@
         let topMiddle = window.innerHeight / 2;
         if (elm.pageX > leftMiddle) {
             left = elm.pageX - 200;
+            if($isTouchscreen){
+                left += 50;
+            }
         }
         if (elm.pageY > topMiddle) {
             top = elm.pageY - 100;
@@ -1156,11 +1182,15 @@
                                     encodeProductName(productValues.name)
                                 ] || 0}
                             </p>
-                            <!-- <img
-                                id="edit"
-                                src="https://assets.stickpng.com/images/588a64e7d06f6719692a2d11.png"
-                                alt="edit"
-                            /> -->
+                            {#if $isTouchscreen}
+                                <img
+                                    id="edit"
+                                    src="https://assets.stickpng.com/images/588a64e7d06f6719692a2d11.png"
+                                    alt="edit"
+                                    on:touchend={(elm) =>
+                                        showCustomContextMenu(elm)}
+                                />
+                            {/if}
                             <!-- </div> -->
                         </div>
                     {:else}
@@ -1238,14 +1268,28 @@
     </ul>
 </div>
 
+{#if $isTouchscreen}
+    <style>
+        #customContextMenu {
+            scale: 2;
+        }
+    </style>
+{:else}
+    <style>
+        #customContextMenu {
+            scale: 1.25;
+        }
+    </style>
+{/if}
+
 <style>
     #customContextMenu {
         position: absolute;
         background-color: #84abb5;
         color: white;
-        scale: 1.25;
         text-align: center;
     }
+
     .menuItems {
         list-style: none;
         font-size: 12px;
