@@ -469,7 +469,7 @@
         if (elm.pageX > leftMiddle) {
             left = elm.pageX - 200;
             if($isTouchscreen){
-                left += 65;
+                left += 20;
             }
         }
         if (elm.pageY > topMiddle) {
@@ -640,7 +640,7 @@
         if (elm.pageX > leftMiddle) {
             left = elm.pageX - 200;
             if($isTouchscreen){
-                left += 65;
+                left += 20;
             }
         }
         if (elm.pageY > topMiddle) {
@@ -823,7 +823,7 @@
         if (elm.pageX > leftMiddle) {
             left = elm.pageX - 200;
             if($isTouchscreen){
-                left += 65;
+                left += 20;
             }
         }
         if (elm.pageY > topMiddle) {
