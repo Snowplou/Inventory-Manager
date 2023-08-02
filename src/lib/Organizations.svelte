@@ -727,7 +727,7 @@
     }
     @media screen and (min-width: 700px) {
         #newTeam {
-            width: 700px;
+            min-width: 700px;
         }
     }
 
@@ -737,7 +737,6 @@
         justify-content: space-evenly;
         align-items: center;
         align-content: center;
-        /* width: 56vw; */
         height: 7vh;
         background-color: #d4d4d4;
         border-radius: 10px;
