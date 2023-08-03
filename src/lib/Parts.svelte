@@ -868,7 +868,12 @@
         teamSelection.style.paddingRight = "5px";
         teamSelection.style.borderRadius = "10px";
 
-        // Set the options for the dropdown to the teams in the organization except for the current team
+        // Add Inventory as an option
+        let option = document.createElement("option");
+        option.value = "Inventory";
+        option.innerHTML = "Inventory";
+        teamSelection.appendChild(option);
+        // Add the teams in the organization except for the current team as options
         for (let team of $organizations[$organizationSelectionForParts]
             .teamList) {
             if (team == $teamSelected || team == "Coach" || team == "Unsorted")
@@ -878,10 +883,9 @@
             option.innerHTML = team;
             teamSelection.appendChild(option);
         }
-        let option = document.createElement("option");
-        option.value = "Inventory";
-        option.innerHTML = "Inventory";
-        teamSelection.appendChild(option);
+        if($teamSelected == selectedTeamForTransfer){
+            selectedTeamForTransfer = "Inventory";
+        }
         teamSelection.value = selectedTeamForTransfer;
         teamSelection.onchange = (event) => {
             selectedTeamForTransfer = event.target.value;
