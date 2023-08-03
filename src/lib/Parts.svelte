@@ -359,6 +359,13 @@
             event.target.tagName != "SELECT" &&
             event.target.tagName != "OPTION"
         ) {
+            if(event.target.classList){
+                let className = event.target.className
+                if(className == "addMenu" || className == "removeMenu" || className == "transferMenu"){
+                    return
+                }
+            }
+
             partSelectedForMenu = "";
 
             // Hide the elements with the addMenu class
