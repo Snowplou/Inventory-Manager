@@ -327,40 +327,6 @@
         }
 
         if (search) {
-            // for(let i = 0; i < sortedParts.length; i++) {
-            // // for (let i = 0; i < 1; i++) {
-            //     let searchTerms = [];
-            //     if (search.length > 1) {
-            //         for (let j = 0; j < search.length - 1; j++) {
-            //             searchTerms.push(search.substring(j, j + 2));
-            //         }
-            //         // Duplicate the search terms but reverse them
-            //         let reverseSearch = search.split("").reverse().join("");
-            //         for (let j = 0; j < reverseSearch.length - 1; j++) {
-            //             searchTerms.push(
-            //                 reverseSearch.substring(j, j + 2)
-            //             );
-            //         }
-            //     }
-            //     for (let j = 0; j < search.length; j++) {
-            //         searchTerms.push(search[j]);
-            //     }
-                
-            //     for (let searchTerm of searchTerms) {
-            //         if (
-            //             sortedParts[i].name
-            //                 .toLowerCase()
-            //                 .includes(searchTerm.toLowerCase())
-            //         ) {
-            //             sortedParts[i].score += 1;
-            //         }
-            //     }
-            // }
-            // // Rank the parts by score
-            // sortedParts.sort((a, b) => {
-            //     return b.score - a.score;
-            // });
-
             // Use minisearch to search for the products by name and sku with a threshold of 0 (include everything)
             let miniSearch = new MiniSearch({
                 fields: ["name", "sku"],
