@@ -19,13 +19,8 @@
     } from "../db";
     import { append } from "svelte/internal";
     let teamProducts = {};
-    let selectedTeamForTransfer = "";
+    let selectedTeamForTransfer = "Inventory";
     let search = "";
-    organizationSelectionForParts.subscribe(() => {
-        if (!$organizationSelectionForParts) return;
-        selectedTeamForTransfer =
-            $organizations[$organizationSelectionForParts].teamList[2];
-    });
 
     let sortedParts = [];
     applySearch();
@@ -482,6 +477,7 @@
         let input = document.createElement("input");
         input.type = "number";
         input.id = "addMenuInput";
+        input.value = 1;
         input.style.width = "50%";
         input.style.height = "4vh";
         input.style.fontSize = "125%";
@@ -653,6 +649,7 @@
         let input = document.createElement("input");
         input.type = "number";
         input.id = "removeMenuInput";
+        input.value = 1;
         input.style.width = "50%";
         input.style.height = "4vh";
         input.style.fontSize = "125%";
@@ -836,6 +833,7 @@
         let input = document.createElement("input");
         input.type = "number";
         input.id = "transferMenuInput";
+        input.value = 1;
         input.style.width = "50%";
         input.style.height = "4vh";
         input.style.fontSize = "125%";
@@ -884,6 +882,10 @@
         option.value = "Inventory";
         option.innerHTML = "Inventory";
         teamSelection.appendChild(option);
+        teamSelection.value = selectedTeamForTransfer;
+        teamSelection.onchange = (event) => {
+            selectedTeamForTransfer = event.target.value;
+        };
 
         // Create the ok button
         let transferButton = document.createElement("button");
