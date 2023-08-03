@@ -359,10 +359,14 @@
             event.target.tagName != "SELECT" &&
             event.target.tagName != "OPTION"
         ) {
-            if(event.target.classList){
-                let className = event.target.className
-                if(className == "addMenu" || className == "removeMenu" || className == "transferMenu"){
-                    return
+            if (event.target.classList) {
+                let className = event.target.className;
+                if (
+                    className == "addMenu" ||
+                    className == "removeMenu" ||
+                    className == "transferMenu"
+                ) {
+                    return;
                 }
             }
 
@@ -1305,6 +1309,13 @@
     <style>
         #customContextMenu {
             scale: 1.25;
+        }
+
+        .part:nth-child(odd) {
+            border-right: 2px solid white;
+        }
+        .part:nth-child(even) {
+            border-left: 2px solid white;
         }
     </style>
 {/if}
