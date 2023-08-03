@@ -7,7 +7,6 @@
   import Organizations from "./lib/Organizations.svelte";
   import SignOut from "./lib/SignOut.svelte";
   import Parts from "./lib/Parts.svelte";
-  import AddParts from "./lib/AddParts.svelte";
   import PartEditor from "./lib/PartEditor.svelte";
 </script>
 
@@ -31,8 +30,6 @@
       <Parts />
     {:else if $pageState == "organizations"}
       <Organizations />
-    {:else if $pageState == "addParts"}
-      <AddParts />
     {/if}
   {/if}
 {/key}

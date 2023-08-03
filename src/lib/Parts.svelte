@@ -69,15 +69,15 @@
         }
     }
 
-    organizations.subscribe((value) => {
+    organizations.subscribe(() => {
         updateParts();
     });
 
-    organizationSelectionForParts.subscribe((value) => {
+    organizationSelectionForParts.subscribe(() => {
         updateParts();
     });
 
-    teamSelected.subscribe((value) => {
+    teamSelected.subscribe(() => {
         updateParts();
     });
 
@@ -293,6 +293,7 @@
                     name: key,
                     sku: getSKU(key),
                     id: i,
+                    score: 0,
                 });
             }
 
@@ -303,6 +304,7 @@
                     name: info[i].name,
                     sku: info[i].sku,
                     id: i + customParts.length,
+                    score: 0,
                 });
             }
         } else {
@@ -319,11 +321,46 @@
                     name: key,
                     sku: getSKU(key),
                     id: i,
+                    score: 0,
                 });
             }
         }
 
         if (search) {
+            // for(let i = 0; i < sortedParts.length; i++) {
+            // // for (let i = 0; i < 1; i++) {
+            //     let searchTerms = [];
+            //     if (search.length > 1) {
+            //         for (let j = 0; j < search.length - 1; j++) {
+            //             searchTerms.push(search.substring(j, j + 2));
+            //         }
+            //         // Duplicate the search terms but reverse them
+            //         let reverseSearch = search.split("").reverse().join("");
+            //         for (let j = 0; j < reverseSearch.length - 1; j++) {
+            //             searchTerms.push(
+            //                 reverseSearch.substring(j, j + 2)
+            //             );
+            //         }
+            //     }
+            //     for (let j = 0; j < search.length; j++) {
+            //         searchTerms.push(search[j]);
+            //     }
+                
+            //     for (let searchTerm of searchTerms) {
+            //         if (
+            //             sortedParts[i].name
+            //                 .toLowerCase()
+            //                 .includes(searchTerm.toLowerCase())
+            //         ) {
+            //             sortedParts[i].score += 1;
+            //         }
+            //     }
+            // }
+            // // Rank the parts by score
+            // sortedParts.sort((a, b) => {
+            //     return b.score - a.score;
+            // });
+
             // Use minisearch to search for the products by name and sku with a threshold of 0 (include everything)
             let miniSearch = new MiniSearch({
                 fields: ["name", "sku"],
@@ -452,7 +489,7 @@
         addMenu.style.padding = "5px";
         addMenu.style.borderRadius = "10px";
         addMenu.style.width = "200px";
-        if($isTouchscreen){
+        if ($isTouchscreen) {
             addMenu.style.scale = "1.5";
         }
 
@@ -463,7 +500,7 @@
         let topMiddle = window.innerHeight / 2;
         if (elm.pageX > leftMiddle) {
             left = elm.pageX - 200;
-            if($isTouchscreen){
+            if ($isTouchscreen) {
                 left -= 40;
             }
         }
@@ -624,7 +661,7 @@
         removeMenu.style.padding = "5px";
         removeMenu.style.borderRadius = "10px";
         removeMenu.style.width = "200px";
-        if($isTouchscreen){
+        if ($isTouchscreen) {
             removeMenu.style.scale = "1.5";
         }
 
@@ -635,7 +672,7 @@
         let topMiddle = window.innerHeight / 2;
         if (elm.pageX > leftMiddle) {
             left = elm.pageX - 200;
-            if($isTouchscreen){
+            if ($isTouchscreen) {
                 left -= 40;
             }
         }
@@ -808,7 +845,7 @@
         transferMenu.style.padding = "5px";
         transferMenu.style.borderRadius = "10px";
         transferMenu.style.width = "200px";
-        if($isTouchscreen){
+        if ($isTouchscreen) {
             transferMenu.style.scale = "1.5";
         }
 
@@ -819,7 +856,7 @@
         let topMiddle = window.innerHeight / 2;
         if (elm.pageX > leftMiddle) {
             left = elm.pageX - 200;
-            if($isTouchscreen){
+            if ($isTouchscreen) {
                 left -= 40;
             }
         }
@@ -883,7 +920,7 @@
             option.innerHTML = team;
             teamSelection.appendChild(option);
         }
-        if($teamSelected == selectedTeamForTransfer){
+        if ($teamSelected == selectedTeamForTransfer) {
             selectedTeamForTransfer = "Inventory";
         }
         teamSelection.value = selectedTeamForTransfer;
