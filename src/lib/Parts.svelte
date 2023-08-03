@@ -974,6 +974,17 @@
                                 .teams[transferTeam].products[partName];
                     }
 
+            if (
+                transferCount >
+                $organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ].products[partName]
+            ) {
+                transferCount =
+                    $organizations[$organizationSelectionForParts].teams[
+                        $teamSelected
+                    ].products[partName];
+            }
             let newCount = currentCount - transferCount;
             let newCountForTransferTeam =
                 currentCountForTransferTeam + transferCount;
