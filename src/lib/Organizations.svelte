@@ -8,8 +8,11 @@
         setToDb,
         emailChanger,
         logEvent,
+        animationTime
     } from "../db";
     import { writable } from "svelte/store";
+    import { fade, fly } from "svelte/transition";
+    import { flip } from "svelte/animate";
     let organizationSelected = "";
     let organizationMembers = writable({});
     let organizationTeams = writable({});
@@ -296,7 +299,11 @@
 
 {#key $userData}
     <!-- Organization list -->
-    <div id="organizationList">
+    <div id="organizationList"
+    in:fly={{y: -100, duration: $animationTime}}
+    out:fly={{y: -100, duration: $animationTime}}
+
+    >
         {#if $userData.organizations}
             {#each Object.values($userData.organizations) as organization, i}
                 <div
@@ -324,7 +331,10 @@
     </div>
 {/key}
 
-<div id="newOrganization">
+<div id="newOrganization"
+in:fly={{y: 100, duration: $animationTime}}
+out:fly={{y: 100, duration: $animationTime}}
+>
     <input
         type="text"
         maxlength="100"
@@ -338,7 +348,10 @@
 </div>
 
 {#if organizationSelected}
-    <div id="organizationInfo">
+    <div id="organizationInfo"
+    in:fade={{duration: $animationTime}}
+    out:fade={{duration: $animationTime / 2}}
+    >
         <p id="organizationTitle">{organizationSelected}</p>
 
         {#if $userData.organizations[organizationSelected].rank == "Coach" || $userData.organizations[organizationSelected].rank == "Owner"}
@@ -409,9 +422,12 @@
 {/if}
 
 {#key $userData}
-    {#key $organizationTeams}
         {#if organizationSelected}
-            <div id="organizationTeamList">
+            <div id="organizationTeamList"
+            in:fade={{duration: $animationTime}}
+            out:fade={{duration: $animationTime / 2}}
+            >
+            {#key $organizationTeams}
                 <div id="organizationTeamsTitleAndAdd">
                     <p id="organizationTeamListTitle">Teams</p>
                     {#if $userData.organizations[organizationSelected].rank == "Coach" || $userData.organizations[organizationSelected].rank == "Owner"}
@@ -430,7 +446,7 @@
                     {/if}
                 </div>
                 <div id="organizationTeamListOfTeams">
-                    {#each Object.values($organizationTeams) as team}
+                    {#each Object.values($organizationTeams) as team (team)}
                         <div class="organizationTeamListItem">
                             <p>{team}</p>
                             {#if team != "Unsorted" && team != "Coach" && $organizations[organizationSelected].owner == $userData.email}
@@ -447,9 +463,9 @@
                         </div>
                     {/each}
                 </div>
+                {/key}
             </div>
         {/if}
-    {/key}
 {/key}
 
 <style>

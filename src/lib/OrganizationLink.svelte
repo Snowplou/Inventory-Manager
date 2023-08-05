@@ -1,12 +1,17 @@
 <script>
-    import { pageState } from "../db";
+    import { pageState, animationTime } from "../db";
+
+    import { fly } from "svelte/transition";
 
     function clicked(elm){
         pageState.set("organizations")
     }
 </script>
 
-<button on:click={(elm) => clicked(elm.target)}>
+<button on:click={(elm) => clicked(elm.target)}
+    in:fly={{x: 200, duration: $animationTime}}
+    out:fly={{x: 200, duration: $animationTime}}
+    >
     Manage Organizations
 </button>
 

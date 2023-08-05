@@ -9,6 +9,9 @@ import { compute_slots } from "svelte/internal";
 // Determine if the device is touchscreen or has a touchpad/mouse
 export let isTouchscreen = writable(false);
 
+// The animation duration
+export let animationTime = writable(1250);
+
 window.addEventListener("touchstart", function onFirstTouch() {
     isTouchscreen.set(true);
     window.removeEventListener("touchstart", onFirstTouch, false);

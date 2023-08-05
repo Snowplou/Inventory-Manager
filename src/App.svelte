@@ -1,5 +1,5 @@
 <script>
-  import { authWritable, pageState, userId, customPartSelected } from "./db";
+  import { authWritable, pageState, userId, customPartSelected, animationTime } from "./db";
   import HomeLink from "./lib/HomeLink.svelte";
   import LogIn from "./lib/LogIn.svelte";
   import OrganizationLink from "./lib/OrganizationLink.svelte";
@@ -8,6 +8,9 @@
   import SignOut from "./lib/SignOut.svelte";
   import Parts from "./lib/Parts.svelte";
   import PartEditor from "./lib/PartEditor.svelte";
+
+  import { fade, fly } from "svelte/transition";
+  import { flip } from "svelte/animate";
 </script>
 
 {#key $authWritable.currentUser}
@@ -22,7 +25,10 @@
       <div id="linksCenter">
         <PartsLink />
         <OrganizationLink />
-        <p id="supportEmail">Do you need help or have any questions?<br>If so, email 15442C@gmail.com<br><span id="credits">Made By Jacob Scheff</span></p>
+        <p id="supportEmail"
+        in:fly={{y: 100, duration: $animationTime}}
+        out:fly={{y: 100, duration: $animationTime}}
+        >Do you need help or have any questions?<br>If so, email 15442C@gmail.com<br><span id="credits">Made By Jacob Scheff</span></p>
       </div>
     {:else if $customPartSelected != ""}
       <PartEditor />

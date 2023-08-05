@@ -2,6 +2,9 @@
     // @ts-nocheck
     import MiniSearch from "minisearch";
 
+    import { fade, fly } from "svelte/transition";
+    import { flip } from "svelte/animate";
+
     import {
         organizationSelectionForParts,
         getFromDb,
@@ -16,6 +19,7 @@
         showAllParts,
         isTouchscreen,
         logEvent,
+        animationTime
     } from "../db";
     import { append } from "svelte/internal";
     let teamProducts = {};
@@ -244,9 +248,17 @@
         customPartSelected.set(`Custom Part ${partCount}`);
     }
 
+    let lastSearchTime = 0;
+    let timeThreshold = 350;
     function searchChanged(elm) {
         search = elm.target.value;
-        applySearch();
+        lastSearchTime = Date.now();
+        setTimeout(() => {
+            if (Date.now() - lastSearchTime >= timeThreshold) {
+                applySearch();
+            }
+        }, timeThreshold);
+        // applySearch();
     }
 
     function applySearch() {
@@ -1126,7 +1138,10 @@
 </script>
 
 {#if !$organizationSelectionForParts}
-    <div id="organizationSelection">
+    <div id="organizationSelection"
+    in:fade={{duration: $animationTime / 2, delay: $animationTime}}
+    out:fly={{y: -200, duration: $animationTime}}
+    >
         {#if $userData}
             {#each Object.keys($userData.organizations) as organization}
                 <p
@@ -1140,7 +1155,10 @@
         {/if}
     </div>
 {:else}
-    <div id="teamSelection">
+    <div id="teamSelection"
+    in:fly={{x: -100, duration: $animationTime}}
+    out:fly={{x: -100, duration: $animationTime}}
+    >
         {#each ["Inventory", ...$organizations[$organizationSelectionForParts].teamList] as team}
             {#if (team != "Unsorted" && team != "Coach" && (team == $userData.organizations[$organizationSelectionForParts].rank || $organizations[$organizationSelectionForParts].owner == $userData.email || $userData.organizations[$organizationSelectionForParts].rank == "Coach")) || team == "Inventory"}
                 <p
@@ -1173,72 +1191,80 @@
         id="showAllParts"
         on:click={showAllPartsClicked}
         on:keydown={showAllPartsClicked}
+        in:fly={{ y: -100, duration: $animationTime }}
+        out:fly={{ y: -100, duration: $animationTime }}
         >{$showAllParts ? "Minimize Parts" : "Show All Parts"}</button
     >
     <!-- {/if} -->
 
     {#key $organizationSelectionForParts}
         {#key $teamSelected}
-            {#key sortedParts}
-                <div id="partsList">
-                    {#each Object.values(sortedParts) as productValues, i}
-                        <div
-                            class="part"
-                            on:contextmenu={(elm) => showCustomContextMenu(elm)}
-                            style="background-color: {partSelectedForMenu ==
-                            productValues.name
-                                ? '#0056b3'
-                                : '#007bff'}"
-                        >
-                            <img
-                                src={nameToImage(
-                                    encodeProductName(productValues.name)
-                                )}
-                                onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
-                                alt={productValues.name}
-                            />
-                            <div class="partPList">
-                                <p>
-                                    {productValues.name}
-                                </p>
-                                <p>
-                                    {productValues.sku}
-                                </p>
-                            </div>
-                            <!-- <div id="countAndEdit"> -->
-                            <p id="count">
-                                Count: {$organizations[
-                                    $organizationSelectionForParts
-                                ].teams[$teamSelected].products[
-                                    encodeProductName(productValues.name)
-                                ] || 0}
+            <!-- {#key sortedParts} -->
+            <div id="partsList"
+            in:fly={{x: 500, duration: $animationTime}}
+            out:fly={{x: 500, duration: $animationTime}}
+            >
+                {#each Object.values(sortedParts) as productValues, i (productValues.name)}
+                    <div
+                        class="part"
+                        animate:flip={{ duration: $animationTime }}
+                        in:fly={{ x: 100, duration: $animationTime }}
+                        out:fly={{ x: 100, duration: $animationTime }}
+                        on:contextmenu={(elm) => showCustomContextMenu(elm)}
+                        style="background-color: {partSelectedForMenu ==
+                        productValues.name
+                            ? '#0056b3'
+                            : '#007bff'}"
+                    >
+                        <img
+                            src={nameToImage(
+                                encodeProductName(productValues.name)
+                            )}
+                            onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
+                            alt={productValues.name}
+                        />
+                        <div class="partPList">
+                            <p>
+                                {productValues.name}
                             </p>
-                            {#if $isTouchscreen}
-                                <img
-                                    id="edit"
-                                    src="menuButton.png"
-                                    alt="edit"
-                                    on:touchend={(elm) =>
-                                        showCustomContextMenu(elm)}
-                                />
-                            {/if}
-                            <!-- </div> -->
+                            <p>
+                                {productValues.sku}
+                            </p>
                         </div>
-                    {:else}
-                        {#if !$teamSelected}
-                            <p id="noPartsFound">
-                                No team selected.<br />You need to select a team
-                                on the left side of the screen.
-                            </p>
-                        {:else}
-                            <p id="noPartsFound">
-                                No parts found.<br />You need to add parts to
-                                this team.
-                            </p>
+                        <!-- <div id="countAndEdit"> -->
+                        <p id="count">
+                            Count: {$organizations[
+                                $organizationSelectionForParts
+                            ].teams[$teamSelected].products[
+                                encodeProductName(productValues.name)
+                            ] || 0}
+                        </p>
+                        {#if $isTouchscreen}
+                            <img
+                                id="edit"
+                                src="menuButton.png"
+                                alt="edit"
+                                on:touchend={(elm) =>
+                                    showCustomContextMenu(elm)}
+                            />
                         {/if}
-                    {/each}
-                </div>
-            {/key}
+                        <!-- </div> -->
+                    </div>
+                {:else}
+                    {#if !$teamSelected}
+                        <p id="noPartsFound">
+                            No team selected.<br />You need to select a team on
+                            the left side of the screen.
+                        </p>
+                    {:else}
+                        <p id="noPartsFound">
+                            No parts found.<br />You need to add parts to this
+                            team.
+                        </p>
+                    {/if}
+                {/each}
+            </div>
+            <!-- {/key} -->
         {/key}
     {/key}
 {/if}
@@ -1248,11 +1274,15 @@
         type="text"
         id="searchBar"
         placeholder="Search"
+        in:fly={{ y: -100, duration: $animationTime }}
+        out:fly={{ y: -100, duration: $animationTime }}
         on:input={(elm) => searchChanged(elm)}
     />
 
     <button
         id="createCustomPart"
+        in:fly={{ y: 100, duration: $animationTime }}
+        out:fly={{ y: 100, duration: $animationTime }}
         on:click={() => createCustomPart()}
         on:keydown={() => createCustomPart()}>Create Custom Part</button
     >
@@ -1311,12 +1341,12 @@
             scale: 1.25;
         }
 
-        .part:nth-child(odd) {
+        /* .part:nth-child(odd) {
             border-right: 2px solid white;
         }
         .part:nth-child(even) {
             border-left: 2px solid white;
-        }
+        } */
     </style>
 {/if}
 
@@ -1407,7 +1437,7 @@
         height: 72vh;
         border-radius: 10px;
         background-color: #007bff;
-        overflow-y: auto;
+        overflow-y: scroll;
         /* display: flex;
         flex-direction: column; */
         display: flex;
@@ -1421,6 +1451,23 @@
         padding-right: 0;
     }
 
+    .part {
+        border-radius: 10px;
+        padding-left: 6px;
+        padding-right: 6px;
+        transition: background-color 0.125s ease-in-out;
+        width: 32vw;
+        /* border: 4px white solid; */
+    }
+
+    /* If the screen is less than a certain size, set the width of part to 100%, otherwise 32vw */
+    @media screen and (max-width: 1000px) {
+        .part {
+            width: 100%;
+            border: none;
+        }
+    }
+
     .part img {
         margin-top: 5px;
         /* width: 50%; */
@@ -1432,21 +1479,6 @@
 
         /* Transition */
         transition: filter 0.25s ease-in-out;
-    }
-
-    .part {
-        border-radius: 10px;
-        padding-left: 6px;
-        padding-right: 6px;
-        transition: background-color 0.125s ease-in-out;
-        width: 33vw;
-    }
-
-    /* If the screen is less than a certain size, set the width of part to 100%, otherwise 33vw */
-    @media screen and (max-width: 1000px) {
-        .part {
-            width: 100%;
-        }
     }
 
     .part p {

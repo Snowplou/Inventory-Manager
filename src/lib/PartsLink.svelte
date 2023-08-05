@@ -1,10 +1,13 @@
 <script>
-    import { pageState } from "../db";
+    import { pageState, animationTime } from "../db";
+
+    import { fly } from "svelte/transition";
 </script>
 
-<button on:click={() => pageState.set("parts")}>
-    Manage Parts
-</button>
+<button on:click={() => pageState.set("parts")}
+    in:fly={{x: -200, duration: $animationTime}}
+    out:fly={{x: -200, duration: $animationTime}}
+    > Manage Parts </button>
 
 <style>
     button {

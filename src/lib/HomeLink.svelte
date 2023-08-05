@@ -1,8 +1,14 @@
 <script>
-    import { pageState } from "../db";
+    import { pageState, animationTime } from "../db";
+    import { fade, fly } from "svelte/transition";
+    import { flip } from "svelte/animate";
+
 </script>
 
-<button on:click={() => pageState.set("home")}>
+<button on:click={() => pageState.set("home")}
+    in:fly={{x: -100, duration: $animationTime}}
+    out:fly={{x: -100, duration: $animationTime}}
+    >
     Home
 </button>
 

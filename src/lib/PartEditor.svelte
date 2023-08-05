@@ -11,7 +11,9 @@
         products,
         customPartSelected,
         logEvent,
+        animationTime,
     } from "../db";
+    import { fade } from "svelte/transition";
     import LogIn from "./LogIn.svelte";
 
     function decodeProductName(name) {
@@ -261,11 +263,24 @@
     }
 
     organizations.subscribe(() => {
-        let currentState = {}
-        if($organizations[$organizationSelectionForParts].teams[$teamSelected]){
-            if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts){
-                if($organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[$customPartSelected]){
-                    currentState = $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[$customPartSelected]
+        let currentState = {};
+        if (
+            $organizations[$organizationSelectionForParts].teams[$teamSelected]
+        ) {
+            if (
+                $organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ].customParts
+            ) {
+                if (
+                    $organizations[$organizationSelectionForParts].teams[
+                        $teamSelected
+                    ].customParts[$customPartSelected]
+                ) {
+                    currentState =
+                        $organizations[$organizationSelectionForParts].teams[
+                            $teamSelected
+                        ].customParts[$customPartSelected];
                 }
             }
         }
@@ -273,8 +288,7 @@
         if (!currentState) {
             if (!updatedPart) {
                 window.location.reload();
-            }
-            else{
+            } else {
                 setTimeout(() => {
                     updatedPart = false;
                 }, 3000);
@@ -289,7 +303,11 @@
         customPartSelected.set("");
     }}>Back to Part List</button
 >
-<div id="list">
+<div
+    id="list"
+    in:fade={{ duration: $animationTime, delay: $animationTime / 2 }}
+    out:fade={{ duration: $animationTime / 4 }}
+>
     <div class="item">
         <p>{decodeProductName($customPartSelected)}</p>
         <input
@@ -301,8 +319,26 @@
     </div>
     <div class="item">
         <p>
-            {$organizations[$organizationSelectionForParts].teams[$teamSelected]
-                .customParts[$customPartSelected].sku || "SKU Not Found"}
+            {#if $organizations[$organizationSelectionForParts].teams}
+                {#if $organizations[$organizationSelectionForParts].teams[$teamSelected]}
+                    {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts}
+                        {#if $organizations[$organizationSelectionForParts].teams[$teamSelected].customParts[$customPartSelected]}
+                            {$organizations[$organizationSelectionForParts]
+                                .teams[$teamSelected].customParts[
+                                $customPartSelected
+                            ].sku || "SKU Not Found"}
+                        {:else}
+                            SKU Not Found
+                        {/if}
+                    {:else}
+                        SKU Not Found
+                    {/if}
+                {:else}
+                    SKU Not Found
+                {/if}
+            {:else}
+                SKU Not Found
+            {/if}
         </p>
         <input
             type="text"
