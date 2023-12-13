@@ -65,10 +65,25 @@ export let teamSelected = writable("");
 export let customPartSelected = writable("");
 export let showAllParts = writable(false);
 
-export async function logEvent(organization, eventDetails){
+export let logs = writable({})
+organizationSelectionForParts.subscribe((value) => {
+    onValue(ref(db, `logs/${value}`), (snapshot) => {
+        logs.set(snapshot.val())
+    }, (err) => {
+        console.log(err)
+    })
+})
+
+export let isConnected = writable(true);
+// When the firebase connection state changes, update the connectionState store
+onValue(ref(db, ".info/connected"), (snapshot) => {
+    isConnected.set(snapshot.val());
+});
+
+export async function logEvent(organization, eventDetails) {
     let time = new Date().getTime();
     // Create a local time string. Include date, time, and timezone.
-    let localTime = new Date().toLocaleString("en-US", {timeZoneName: "short"}).split(", ")
+    let localTime = new Date().toLocaleString("en-US", { timeZoneName: "short" }).split(", ")
     let localTimeStr = localTime[0] + ", " + localTime[1]
     eventDetails.time = localTimeStr
     eventDetails.userEmail = writeableGet(userData).email
@@ -89,20 +104,9 @@ authWritable.subscribe((value) => {
 
 userId.subscribe(async (value) => {
     if (value == undefined) return;
-    // userData.set(await getFromDb(`users/${value}`))
-    // Update userData whenever the firebase `users/${userId}` changes
     onValue(ref(db, `users/${writeableGet(userId)}`), (snapshot) => {
         userData.set(snapshot.val());
         if (writeableGet(userData).organizations) {
-            // for (let organization of writeableGet(userData).organizations) {
-            //     onValue(ref(db, `organizations/${organization.name}`), (snapshot) => {
-            //         organizations.update((organizations) => {
-            //             organizations[organization.name] = snapshot.val();
-            //             return organizations;
-            //         })
-            //     }
-            //     )
-            // }
             let orgsKeys = Object.keys(writeableGet(userData).organizations);
             for (let i = 0; i < orgsKeys.length; i++) {
                 onValue(ref(db, `organizations/${orgsKeys[i]}`), (snapshot) => {

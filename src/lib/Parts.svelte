@@ -21,7 +21,7 @@
         logEvent,
         animationTime
     } from "../db";
-    import { append } from "svelte/internal";
+    import Logs from "./Logs.svelte";
     let teamProducts = {};
     let selectedTeamForTransfer = "Inventory";
     let search = "";
@@ -1208,8 +1208,8 @@
                     <div
                         class="part"
                         animate:flip={{ duration: $animationTime }}
-                        in:fly={{ x: 100, duration: $animationTime }}
-                        out:fly={{ x: 100, duration: $animationTime }}
+                        in:fly={{ y: 100, duration: $animationTime }}
+                        out:fly={{ y: 100, duration: $animationTime }}
                         on:contextmenu={(elm) => showCustomContextMenu(elm)}
                         style="background-color: {partSelectedForMenu ==
                         productValues.name
@@ -1286,6 +1286,7 @@
         on:click={() => createCustomPart()}
         on:keydown={() => createCustomPart()}>Create Custom Part</button
     >
+    <Logs />
 {/if}
 
 <div id="customContextMenu" style="display: none;">
@@ -1398,7 +1399,6 @@
         left: 24vw;
         top: 13vh;
         width: 66vw;
-        /* width: 45vw; */
         height: 4vh;
         text-align: center;
         font-size: 4vmin;
@@ -1407,9 +1407,9 @@
     #createCustomPart {
         position: absolute;
         left: 24vw;
-        top: 93.5vh;
-        width: 74vw;
-        height: 5vh;
+        top: 91.5vh;
+        width: 43vw;
+        height: 7vh;
         color: white;
         background-color: #007bff;
         transition: background-color 0.125s ease-in-out;
@@ -1424,22 +1424,15 @@
         transition: background-color 0.125s ease-in-out;
     }
 
-    /* .partPList {
-        width: 100%;
-    } */
-
     #partsList {
         position: absolute;
         left: 24vw;
         top: 20vh;
         width: 74vw;
-        /* height: 76vh; */
-        height: 72vh;
+        height: 70vh;
         border-radius: 10px;
         background-color: #007bff;
         overflow-y: scroll;
-        /* display: flex;
-        flex-direction: column; */
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
