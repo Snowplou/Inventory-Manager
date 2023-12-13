@@ -44,6 +44,8 @@
               15442C@gmail.com<br /><span id="credits"
                 >Made By Jacob Scheff</span
               >
+              <br>
+              <a href="https://forms.gle/DAYpiGXuE6fGjz1M8" target="_blank" rel="noopener noreferrer">If you think that a part is missing from the list, click here!</a>
             </p>
           </div>
         {:else if $customPartSelected != ""}
@@ -79,5 +81,9 @@
     font-size: 150%;
     position: absolute;
     top: 74vh;
+  }
+
+  a {
+    font-size: medium;
   }
 </style>
