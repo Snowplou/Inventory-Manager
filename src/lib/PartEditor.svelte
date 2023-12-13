@@ -387,10 +387,10 @@
 <style>
     #list {
         position: absolute;
-        top: 14.5vh;
+        top: 12.5vh;
         left: 10vw;
         width: 80vw;
-        height: 80vh;
+        height: 85vh;
         background-color: #007bff;
         border-radius: 10px;
         display: flex;
@@ -420,6 +420,7 @@
     }
 
     p {
+        color: white;
         background-color: #007bff;
         border: none;
         width: 95%;
@@ -433,6 +434,7 @@
         width: 20vh;
         height: 20vh;
         margin-bottom: 3.5vh;
+        margin-top: 3vh;
     }
 
     #backToPartList {
@@ -452,5 +454,10 @@
         justify-content: center;
         align-items: center;
         transition: background-color 0.25s ease-in-out;
+    }
+
+    #deleteProduct {
+        margin-top: 1vh;
+        margin-bottom: 1vh;
     }
 </style>
