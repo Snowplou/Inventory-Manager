@@ -16,6 +16,52 @@
     import { fade } from "svelte/transition";
     import LogIn from "./LogIn.svelte";
 
+    const imgbbApiKey = "da8b4bf1847073505720c55d1387ebae"
+    function getImgBBSupport(fileName){
+        let allowedExtensions = ["jpg", "jpeg", "png", "bmp", "gif","webp", "heic", "tiff"]
+        for(let i = 0; i < allowedExtensions.length; i++){
+            if(fileName.includes(allowedExtensions[i])) return true
+        }
+        return false
+    }
+    
+    function updateImage(elm){
+        // get the file name
+        let file = elm.target.files[0];
+        if(!file) return
+        if(getImgBBSupport(file.name)){
+            let url = `https://api.imgbb.com/1/upload?key=${imgbbApiKey}`
+            let formData = new FormData();
+            formData.append("image", file);
+            fetch(url, {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                let url = data.data.url
+                setToDb(
+                    "organizations/" +
+                        $organizationSelectionForParts +
+                        "/teams/" +
+                        $teamSelected +
+                        "/customParts/" +
+                        $customPartSelected +
+                        "/image",
+                    url
+                );
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        }
+        else{
+            alert("File type not supported\nCurrent file uploaded: " + file.name)
+            // remove the file from the input
+            elm.target.value = null;
+        }
+    }
+
     function decodeProductName(name) {
         let decodedName = name;
         for (let i = 0; i < Object.keys(pathChanger).length; i++) {
@@ -150,28 +196,28 @@
         });
     }
 
-    function updateImage(elm) {
-        let image = elm.target.value;
-        let originalImage = elm.target.parentElement.children[0].src;
-        setToDb(
-            "organizations/" +
-                $organizationSelectionForParts +
-                "/teams/" +
-                $teamSelected +
-                "/customParts/" +
-                $customPartSelected +
-                "/image",
-            image
-        );
+    // function updateImage(elm) {
+    //     let image = elm.target.value;
+    //     let originalImage = elm.target.parentElement.children[0].src;
+    //     setToDb(
+    //         "organizations/" +
+    //             $organizationSelectionForParts +
+    //             "/teams/" +
+    //             $teamSelected +
+    //             "/customParts/" +
+    //             $customPartSelected +
+    //             "/image",
+    //         image
+    //     );
 
-        logEvent($organizationSelectionForParts, {
-            type: "edit custom part image",
-            name: $customPartSelected,
-            image: originalImage,
-            newImage: image,
-            team: $teamSelected,
-        });
-    }
+    //     logEvent($organizationSelectionForParts, {
+    //         type: "edit custom part image",
+    //         name: $customPartSelected,
+    //         image: originalImage,
+    //         newImage: image,
+    //         team: $teamSelected,
+    //     });
+    // }
 
     function getImageUrl() {
         let url =
@@ -358,9 +404,10 @@
             onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
         />
         <input
-            type="url"
-            value={getImageUrl()}
+            type="file"
+            accept="image/*"
             on:change={(elm) => updateImage(elm)}
+            id="imageUpload"
         />
     </div>
     <div class="item">
@@ -397,6 +444,14 @@
         flex-direction: column;
         justify-content: space-around;
         align-items: center;
+    }
+
+    #imageUpload {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+        width: 100%;
     }
 
     #countEditor {
