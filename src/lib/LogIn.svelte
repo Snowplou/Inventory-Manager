@@ -20,7 +20,10 @@
                     alert("User not found.");
                 } else if (error == "auth/wrong-password") {
                     alert("Wrong password.");
+                } else if(error == "auth/too-many-requests") {
+                    alert("Too many requests. Try again in a few minutes.");
                 } else {
+                    console.log(error);
                     alert("An error has occured.");
                 }
             });
