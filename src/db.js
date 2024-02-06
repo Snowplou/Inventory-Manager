@@ -2,9 +2,8 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, onValue, child, get, set } from "firebase/database";
 import { writable } from "svelte/store";
-import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "firebase/auth";
+import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, sendPasswordResetEmail } from "firebase/auth";
 import { get as writeableGet } from "svelte/store";
-import { compute_slots } from "svelte/internal";
 
 // Determine if the device is touchscreen or has a touchpad/mouse
 export let isTouchscreen = writable(false);
@@ -42,6 +41,17 @@ export let authWritable = writable(auth);
 onAuthStateChanged(auth, (user) => {
     authWritable.set(auth);
 });
+
+export function resetPassword(email) {
+    sendPasswordResetEmail(auth, email)
+        .then(() => {
+            alert("If an account with that email exists, a password reset email has been sent.")
+        }
+        ).catch((error) => {
+            console.log(error)
+            alert("If an account with that email exists, a password reset email has been sent.")
+        });
+}
 
 export let pageState = writable("home");
 

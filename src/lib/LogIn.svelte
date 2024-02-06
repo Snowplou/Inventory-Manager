@@ -3,7 +3,7 @@
         signInWithEmailAndPassword,
         createUserWithEmailAndPassword,
     } from "firebase/auth";
-    import { auth, authWritable, userId, setToDb, emailChanger } from "../db";
+    import { auth, authWritable, userId, setToDb, emailChanger, resetPassword } from "../db";
     import { writable } from "svelte/store";
 
     function logIn() {
@@ -61,6 +61,13 @@
                 }
             });
     }
+
+    function forgotPassword(){
+        let email = prompt("What is the email of the account you forgot the password for?");
+        if(email != "" && email != null){
+            resetPassword(email);
+        }
+    }
 </script>
 
 <div id="mainPage">
@@ -74,6 +81,7 @@
             <button on:click={logIn}>Log In</button>
             <button on:click={signUp}>Sign Up</button>
         </div>
+        <button on:click={() => forgotPassword()}>Forgot Password</button>
     </div>
 </div>
 
