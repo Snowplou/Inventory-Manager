@@ -90,15 +90,22 @@
         name = encodeProductName(name);
 
         if (!name) {
-            alert("Name cannot be empty");
+            alert("The name cannot be empty.");
             return;
         }
 
+        // Check if the part already exists in official parts
+        if($products.filter(product => product.name == name).length > 0){
+            alert("A part with this name already exists.");
+            return;
+        }
+
+        // Check if the part already exists in custom parts
         if (
             $organizations[$organizationSelectionForParts].teams[$teamSelected]
                 .customParts[name]
         ) {
-            alert("Part with that name already exists");
+            alert("A part with this name already exists.");
             return;
         }
 

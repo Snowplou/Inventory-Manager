@@ -355,6 +355,15 @@
             // Search for the parts
             sortedParts = miniSearch.search(search);
         }
+
+        // Check for duplicate part names
+        for(let i = 0; i < sortedParts.length; i++) {
+            for(let j = i + 1; j < sortedParts.length; j++) {
+                if(sortedParts[i].name == sortedParts[j].name) {
+                    console.log("Duplicate part name: " + sortedParts[i].name);
+                }
+            }
+        }
     }
 
     let partSelectedForMenu = "";
