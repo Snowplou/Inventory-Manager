@@ -88,9 +88,9 @@
         } else if (type == "member removed") {
             return `${info.userEmail} removed ${info.member} from the organization`;
         } else if (type == "team added") {
-            return `${info.userEmail} created ${info.team}`;
+            return `${info.userEmail} created the team ${info.team}`;
         } else if (type == "team removed") {
-            return `${info.userEmail} removed ${info.team}`;
+            return `${info.userEmail} removed the team ${info.team}`;
         } else if (type == "edit custom part name") {
             return `${info.userEmail} renamed ${info.name} to ${info.newName}`;
         } else if (type == "edit custom part sku") {
@@ -107,6 +107,8 @@
             return `${info.userEmail} removed ${info.count} ${info.part} from ${info.team}`;
         } else if (type == "transfer product") {
             return `${info.userEmail} transferred ${info.count} ${info.part} from ${info.team} to ${info.newTeam}`;
+        } else if (type == "organization creation") {
+            return `${info.userEmail} created the organization ${info.organization}`;
         } else {
             return "Unknown log type. Please email 15442C@gmail.com if you see this.";
         }

@@ -77,7 +77,10 @@ export let showAllParts = writable(false);
 
 export let logs = writable({})
 organizationSelectionForParts.subscribe((value) => {
+    if(value == "") return;
+    let currentOrg = value;
     onValue(ref(db, `logs/${value}`), (snapshot) => {
+        if(writeableGet(organizationSelectionForParts) != currentOrg) return;
         logs.set(snapshot.val())
     }, (err) => {
         console.log(err)
