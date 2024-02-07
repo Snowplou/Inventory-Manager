@@ -19,9 +19,10 @@
         showAllParts,
         isTouchscreen,
         logEvent,
-        animationTime
+        animationTime,
     } from "../db";
     import Logs from "./Logs.svelte";
+    import { ProviderId } from "firebase/auth";
     let teamProducts = {};
     let selectedTeamForTransfer = "Inventory";
     let search = "";
@@ -118,7 +119,7 @@
             if (!decodedName) continue;
             decodedName = decodedName.replaceAll(
                 Object.values(pathChanger)[i],
-                Object.keys(pathChanger)[i]
+                Object.keys(pathChanger)[i],
             );
         }
         // Convert &amp; to &
@@ -167,34 +168,45 @@
             if (!encodedName) continue;
             encodedName = encodedName.replaceAll(
                 Object.keys(pathChanger)[i],
-                Object.values(pathChanger)[i]
+                Object.values(pathChanger)[i],
             );
         }
         return encodedName;
     }
 
     function nameToImage(name) {
-        if (
-            $organizations[$organizationSelectionForParts].teams[$teamSelected]
-                .customParts
-        ) {
-            if (
-                $organizations[$organizationSelectionForParts].teams[
-                    $teamSelected
-                ].customParts[name]
-            ) {
+        if ($organizationSelectionForParts) {
+            if ($organizations[$organizationSelectionForParts].teams) {
                 if (
                     $organizations[$organizationSelectionForParts].teams[
                         $teamSelected
-                    ].customParts[name].image == "none"
+                    ]
                 ) {
-                    return "https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg";
+                    if (
+                        $organizations[$organizationSelectionForParts].teams[
+                            $teamSelected
+                        ].customParts
+                    ) {
+                        if (
+                            $organizations[$organizationSelectionForParts]
+                                .teams[$teamSelected].customParts[name]
+                        ) {
+                            if (
+                                $organizations[$organizationSelectionForParts]
+                                    .teams[$teamSelected].customParts[name]
+                                    .image == "none"
+                            ) {
+                                return "https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg";
+                            }
+                            return $organizations[
+                                $organizationSelectionForParts
+                            ].teams[$teamSelected].customParts[name].image;
+                        }
+                    }
                 }
-                return $organizations[$organizationSelectionForParts].teams[
-                    $teamSelected
-                ].customParts[name].image;
             }
         }
+
         for (let product of Object.values($products)) {
             if (product.name == name) {
                 return product.url;
@@ -203,27 +215,38 @@
 
         name = decodeProductName(name);
 
-        if (
-            $organizations[$organizationSelectionForParts].teams[$teamSelected]
-                .customParts
-        ) {
-            if (
-                $organizations[$organizationSelectionForParts].teams[
-                    $teamSelected
-                ].customParts[name]
-            ) {
+        if ($organizationSelectionForParts) {
+            if ($organizations[$organizationSelectionForParts].teams) {
                 if (
                     $organizations[$organizationSelectionForParts].teams[
                         $teamSelected
-                    ].customParts[name].image == "none"
+                    ]
                 ) {
-                    return "https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg";
+                    if (
+                        $organizations[$organizationSelectionForParts].teams[
+                            $teamSelected
+                        ].customParts
+                    ) {
+                        if (
+                            $organizations[$organizationSelectionForParts]
+                                .teams[$teamSelected].customParts[name]
+                        ) {
+                            if (
+                                $organizations[$organizationSelectionForParts]
+                                    .teams[$teamSelected].customParts[name]
+                                    .image == "none"
+                            ) {
+                                return "https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg";
+                            }
+                            return $organizations[
+                                $organizationSelectionForParts
+                            ].teams[$teamSelected].customParts[name].image;
+                        }
+                    }
                 }
-                return $organizations[$organizationSelectionForParts].teams[
-                    $teamSelected
-                ].customParts[name].image;
             }
         }
+
         for (let product of Object.values($products)) {
             if (product.name == name) {
                 return product.url;
@@ -242,7 +265,7 @@
             `organizations/${$organizationSelectionForParts}/teams/${$teamSelected}/customParts/Custom Part ${partCount}`,
             {
                 image: "none",
-            }
+            },
         );
 
         customPartSelected.set(`Custom Part ${partCount}`);
@@ -265,16 +288,21 @@
         sortedParts = [];
         if (!$organizationSelectionForParts) return;
         if (!$teamSelected) return;
-        if (!$organizations[$organizationSelectionForParts].teams) return;
-        if (
-            !$organizations[$organizationSelectionForParts].teams[$teamSelected]
-        )
-            return;
-        if (
-            !$organizations[$organizationSelectionForParts].teams[$teamSelected]
-                .products
-        )
-            return;
+        if (!showAllParts) {
+            if (!$organizations[$organizationSelectionForParts].teams) return;
+            if (
+                !$organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ]
+            )
+                return;
+            if (
+                !$organizations[$organizationSelectionForParts].teams[
+                    $teamSelected
+                ].products
+            )
+                return;
+        }
 
         if ($showAllParts) {
             // Add the custom parts to the sortedParts array
@@ -292,7 +320,7 @@
                     ) {
                         customParts = Object.keys(
                             $organizations[$organizationSelectionForParts]
-                                .teams[$teamSelected].customParts
+                                .teams[$teamSelected].customParts,
                         );
                     }
                 }
@@ -320,11 +348,28 @@
                 });
             }
         } else {
-            let keys = Object.keys(
-                $organizations[$organizationSelectionForParts].teams[
-                    $teamSelected
-                ].products
-            );
+            let keys = [];
+            if ($organizations) {
+                if ($organizations[$organizationSelectionForParts]) {
+                    if ($organizations[$organizationSelectionForParts].teams) {
+                        if (
+                            $organizations[$organizationSelectionForParts]
+                                .teams[$teamSelected]
+                        ) {
+                            if (
+                                $organizations[$organizationSelectionForParts]
+                                    .teams[$teamSelected].products
+                            ) {
+                                keys = Object.keys(
+                                    $organizations[
+                                        $organizationSelectionForParts
+                                    ].teams[$teamSelected].products,
+                                );
+                            }
+                        }
+                    }
+                }
+            }
 
             for (let i = 0; i < keys.length; i++) {
                 let key = keys[i];
@@ -357,9 +402,9 @@
         }
 
         // Check for duplicate part names
-        for(let i = 0; i < sortedParts.length; i++) {
-            for(let j = i + 1; j < sortedParts.length; j++) {
-                if(sortedParts[i].name == sortedParts[j].name) {
+        for (let i = 0; i < sortedParts.length; i++) {
+            for (let j = i + 1; j < sortedParts.length; j++) {
+                if (sortedParts[i].name == sortedParts[j].name) {
                     console.log("Duplicate part name: " + sortedParts[i].name);
                 }
             }
@@ -410,7 +455,7 @@
             // Hide the elements with the transferMenu class
             if (document.getElementsByClassName("transferMenu")) {
                 for (let elm of document.getElementsByClassName(
-                    "transferMenu"
+                    "transferMenu",
                 )) {
                     elm.style.display = "none";
                 }
@@ -467,11 +512,12 @@
         try {
             // Desktop
             partSelectedForMenu = decodeProductName(
-                event.currentTarget.children[1].children[0].innerHTML
+                event.currentTarget.children[1].children[0].innerHTML,
             );
         } catch {
             partSelectedForMenu = decodeProductName(
-                event.currentTarget.parentNode.children[1].children[0].innerHTML
+                event.currentTarget.parentNode.children[1].children[0]
+                    .innerHTML,
             );
         }
     }
@@ -558,7 +604,7 @@
         };
         addButton.onclick = (event) => {
             let addingCount = Number(
-                event.target.parentElement.children[0].value
+                event.target.parentElement.children[0].value,
             );
             if (addingCount == 0) {
                 document.body.removeChild(addMenu);
@@ -596,7 +642,7 @@
                     $teamSelected +
                     "/products/" +
                     partName,
-                newCount
+                newCount,
             );
 
             // Log the event
@@ -730,7 +776,7 @@
         };
         removeButton.onclick = (event) => {
             let removingCount = Number(
-                event.target.parentElement.children[0].value
+                event.target.parentElement.children[0].value,
             );
             if (removingCount == 0) {
                 document.body.removeChild(removeMenu);
@@ -766,7 +812,7 @@
                         $teamSelected +
                         "/products/" +
                         partName,
-                    null
+                    null,
                 );
                 if (!$showAllParts) {
                     applySearch();
@@ -779,7 +825,7 @@
                         $teamSelected +
                         "/products/" +
                         partName,
-                    newCount
+                    newCount,
                 );
             }
 
@@ -953,7 +999,7 @@
         };
         transferButton.onclick = (event) => {
             let transferCount = Number(
-                event.target.parentElement.children[0].value
+                event.target.parentElement.children[0].value,
             );
             if (transferCount == 0) {
                 document.body.removeChild(transferMenu);
@@ -1029,7 +1075,7 @@
                         $teamSelected +
                         "/products/" +
                         partName,
-                    null
+                    null,
                 );
                 if (!$showAllParts) {
                     applySearch();
@@ -1042,7 +1088,7 @@
                         $teamSelected +
                         "/products/" +
                         partName,
-                    newCount
+                    newCount,
                 );
             }
 
@@ -1053,7 +1099,7 @@
                     transferTeam +
                     "/products/" +
                     partName,
-                newCountForTransferTeam
+                newCountForTransferTeam,
             );
 
             let createdNewCustomPart = false;
@@ -1085,7 +1131,7 @@
                             transferTeam +
                             "/customParts/" +
                             partName,
-                        productData
+                        productData,
                     );
                     createdNewCustomPart = true;
                 }
@@ -1143,13 +1189,37 @@
         document.body.appendChild(transferMenu);
     }
 
+    function getCount(partName) {
+        if (!$organizationSelectionForParts) return 0;
+        if (!$teamSelected) return 0;
+        if (!$organizations[$organizationSelectionForParts].teams) return 0;
+        if (
+            !$organizations[$organizationSelectionForParts].teams[$teamSelected]
+        )
+            return 0;
+        if (
+            !$organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .products
+        )
+            return 0;
+        if (
+            !$organizations[$organizationSelectionForParts].teams[$teamSelected]
+                .products[partName]
+        )
+            return 0;
+        return $organizations[$organizationSelectionForParts].teams[
+            $teamSelected
+        ].products[partName];
+    }
+
     document.onclick = hideCustomContextMenu;
 </script>
 
 {#if !$organizationSelectionForParts}
-    <div id="organizationSelection"
-    in:fade={{duration: $animationTime / 2, delay: $animationTime}}
-    out:fly={{y: -200, duration: $animationTime}}
+    <div
+        id="organizationSelection"
+        in:fade={{ duration: $animationTime / 2, delay: $animationTime }}
+        out:fly={{ y: -200, duration: $animationTime }}
     >
         {#if $userData}
             {#each Object.keys($userData.organizations) as organization}
@@ -1164,9 +1234,10 @@
         {/if}
     </div>
 {:else}
-    <div id="teamSelection"
-    in:fly={{x: -100, duration: $animationTime}}
-    out:fly={{x: -100, duration: $animationTime}}
+    <div
+        id="teamSelection"
+        in:fly={{ x: -100, duration: $animationTime }}
+        out:fly={{ x: -100, duration: $animationTime }}
     >
         {#each ["Inventory", ...$organizations[$organizationSelectionForParts].teamList] as team}
             {#if (team != "Unsorted" && team != "Coach" && (team == $userData.organizations[$organizationSelectionForParts].rank || $organizations[$organizationSelectionForParts].owner == $userData.email || $userData.organizations[$organizationSelectionForParts].rank == "Coach")) || team == "Inventory"}
@@ -1209,9 +1280,10 @@
     {#key $organizationSelectionForParts}
         {#key $teamSelected}
             <!-- {#key sortedParts} -->
-            <div id="partsList"
-            in:fly={{x: 500, duration: $animationTime}}
-            out:fly={{x: 500, duration: $animationTime}}
+            <div
+                id="partsList"
+                in:fly={{ x: 500, duration: $animationTime }}
+                out:fly={{ x: 500, duration: $animationTime }}
             >
                 {#each Object.values(sortedParts) as productValues, i (productValues.name)}
                     <div
@@ -1227,7 +1299,7 @@
                     >
                         <img
                             src={nameToImage(
-                                encodeProductName(productValues.name)
+                                encodeProductName(productValues.name),
                             )}
                             onerror="this.src='https://static.vecteezy.com/system/resources/previews/000/365/820/original/question-mark-vector-icon.jpg'"
                             alt={productValues.name}
@@ -1242,11 +1314,9 @@
                         </div>
                         <!-- <div id="countAndEdit"> -->
                         <p id="count">
-                            Count: {$organizations[
-                                $organizationSelectionForParts
-                            ].teams[$teamSelected].products[
-                                encodeProductName(productValues.name)
-                            ] || 0}
+                            Count: {getCount(
+                                encodeProductName(productValues.name),
+                            )}
                         </p>
                         {#if $isTouchscreen}
                             <img
@@ -1326,11 +1396,11 @@
                 class="items"
                 on:click={() =>
                     customPartSelected.set(
-                        encodeProductName(partSelectedForMenu)
+                        encodeProductName(partSelectedForMenu),
                     )}
                 on:keypress={() =>
                     customPartSelected.set(
-                        encodeProductName(partSelectedForMenu)
+                        encodeProductName(partSelectedForMenu),
                     )}
             >
                 Edit
