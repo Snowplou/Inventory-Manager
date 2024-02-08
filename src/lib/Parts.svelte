@@ -1,6 +1,6 @@
 <script>
     // @ts-nocheck
-    import MiniSearch from "minisearch";
+    import Fuse from "fuse.js";
 
     import { fade, fly } from "svelte/transition";
     import { flip } from "svelte/animate";
@@ -276,7 +276,7 @@
     }
 
     let lastSearchTime = 0;
-    let timeThreshold = 350;
+    let timeThreshold = 400;
     function searchChanged(elm) {
         search = elm.target.value;
         lastSearchTime = Date.now();
@@ -285,7 +285,6 @@
                 applySearch();
             }
         }, timeThreshold);
-        // applySearch();
     }
 
     function applySearch() {
@@ -382,27 +381,31 @@
                     name: key,
                     sku: getSKU(key),
                     id: i,
-                    score: 0,
                 });
             }
         }
 
         if (search) {
-            // Use minisearch to search for the products by name and sku with a threshold of 0 (include everything)
-            let miniSearch = new MiniSearch({
-                fields: ["name", "sku"],
-                storeFields: ["name", "sku", "count"],
-                searchOptions: {
-                    prefix: true,
-                    fuzzy: 0.1,
-                },
+            // Use fuse.js to search for the products by name and sku
+            let fuse = new Fuse(sortedParts, {
+                keys: ["name", "sku"],
+                includeScore: true,
+                threshold: 0.6,
             });
 
             // Add all the parts to the search
-            miniSearch.addAll(sortedParts);
+            fuse.setCollection(sortedParts);
 
             // Search for the parts
-            sortedParts = miniSearch.search(search);
+            let searchedParts = fuse.search(search);
+            console.log(searchedParts);
+            let newSortedParts = [];
+            for (let part of searchedParts) {
+                part = part.item;
+                part.score = part.score * 100;
+                newSortedParts.push(part);
+            }
+            sortedParts = newSortedParts;
         }
 
         // Check for duplicate part names
