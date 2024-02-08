@@ -30,6 +30,10 @@
     let sortedParts = [];
     applySearch();
 
+    organizationSelectionForParts.subscribe(() => {
+        applySearch();
+    });
+
     // Determine if the part is a custom part
     function isCustomPart(name) {
         if (!$organizationSelectionForParts) return false;
@@ -613,6 +617,9 @@
             let partName = encodeProductName(partSelectedForMenu);
             let currentCount = 0;
             if (
+                $organizations &&
+                $organizations[$organizationSelectionForParts] &&
+                $organizations[$organizationSelectionForParts].teams &&
                 $organizations[$organizationSelectionForParts].teams[
                     $teamSelected
                 ]
@@ -1313,11 +1320,21 @@
                             </p>
                         </div>
                         <!-- <div id="countAndEdit"> -->
-                        <p id="count">
-                            Count: {getCount(
-                                encodeProductName(productValues.name),
-                            )}
-                        </p>
+                        <!-- {#key $organizations} -->
+                            {#if $organizations[$organizationSelectionForParts] && $teamSelected && $organizations[$organizationSelectionForParts].teams && $organizations[$organizationSelectionForParts].teams[$teamSelected] && $organizations[$organizationSelectionForParts].teams[$teamSelected].products && $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encodeProductName(productValues.name)]}
+                                {#key $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encodeProductName(productValues.name)]}
+                                    <p id="count">
+                                        Count: {getCount(
+                                            encodeProductName(
+                                                productValues.name,
+                                            ),
+                                        )}
+                                    </p>
+                                {/key}
+                            {:else}
+                                <p id="count">Count: 0</p>
+                            {/if}
+                        <!-- {/key} -->
                         {#if $isTouchscreen}
                             <img
                                 id="edit"
