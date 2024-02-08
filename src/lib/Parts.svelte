@@ -398,7 +398,6 @@
 
             // Search for the parts
             let searchedParts = fuse.search(search);
-            console.log(searchedParts);
             let newSortedParts = [];
             for (let part of searchedParts) {
                 part = part.item;
@@ -960,10 +959,12 @@
         teamSelection.style.borderRadius = "10px";
 
         // Add Inventory as an option
-        let option = document.createElement("option");
-        option.value = "Inventory";
-        option.innerHTML = "Inventory";
-        teamSelection.appendChild(option);
+        if ($teamSelected != "Inventory") {
+            let option = document.createElement("option");
+            option.value = "Inventory";
+            option.innerHTML = "Inventory";
+            teamSelection.appendChild(option);
+        }
         // Add the teams in the organization except for the current team as options
         for (let team of $organizations[$organizationSelectionForParts]
             .teamList) {
@@ -976,6 +977,14 @@
         }
         if ($teamSelected == selectedTeamForTransfer) {
             selectedTeamForTransfer = "Inventory";
+        }
+        if (
+            selectedTeamForTransfer == "Inventory" &&
+            $teamSelected == "Inventory" &&
+            $organizations[$organizationSelectionForParts].teamList.length >= 3
+        ) {
+            selectedTeamForTransfer =
+                $organizations[$organizationSelectionForParts].teamList[2];
         }
         teamSelection.value = selectedTeamForTransfer;
         teamSelection.onchange = (event) => {
@@ -1324,19 +1333,17 @@
                         </div>
                         <!-- <div id="countAndEdit"> -->
                         <!-- {#key $organizations} -->
-                            {#if $organizations[$organizationSelectionForParts] && $teamSelected && $organizations[$organizationSelectionForParts].teams && $organizations[$organizationSelectionForParts].teams[$teamSelected] && $organizations[$organizationSelectionForParts].teams[$teamSelected].products && $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encodeProductName(productValues.name)]}
-                                {#key $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encodeProductName(productValues.name)]}
-                                    <p id="count">
-                                        Count: {getCount(
-                                            encodeProductName(
-                                                productValues.name,
-                                            ),
-                                        )}
-                                    </p>
-                                {/key}
-                            {:else}
-                                <p id="count">Count: 0</p>
-                            {/if}
+                        {#if $organizations[$organizationSelectionForParts] && $teamSelected && $organizations[$organizationSelectionForParts].teams && $organizations[$organizationSelectionForParts].teams[$teamSelected] && $organizations[$organizationSelectionForParts].teams[$teamSelected].products && $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encodeProductName(productValues.name)]}
+                            {#key $organizations[$organizationSelectionForParts].teams[$teamSelected].products[encodeProductName(productValues.name)]}
+                                <p id="count">
+                                    Count: {getCount(
+                                        encodeProductName(productValues.name),
+                                    )}
+                                </p>
+                            {/key}
+                        {:else}
+                            <p id="count">Count: 0</p>
+                        {/if}
                         <!-- {/key} -->
                         {#if $isTouchscreen}
                             <img
@@ -1404,13 +1411,15 @@
         >
             Remove
         </li>
-        <li
-            class="items"
-            on:click={(elm) => transfer(elm)}
-            on:keydown={(elm) => transfer(elm)}
-        >
-            Transfer
-        </li>
+        {#if $organizations[$organizationSelectionForParts] && $organizations[$organizationSelectionForParts].teamList.length >= 3}
+            <li
+                class="items"
+                on:click={(elm) => transfer(elm)}
+                on:keydown={(elm) => transfer(elm)}
+            >
+                Transfer
+            </li>
+        {/if}
         {#if isCustomPart(encodeProductName(partSelectedForMenu))}
             <li
                 class="items"
